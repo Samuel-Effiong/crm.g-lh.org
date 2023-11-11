@@ -1,0 +1,209 @@
+
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-12" style="margin-top: 70px;">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="border-bottom text-center pb-3 mt-5">
+                            <div>
+                                <h4 class="mb-3"><b>Search Catalog</b></h4>
+                            </div>
+                            <form  method="POST">
+                                <div class="form-group form-group-alt" style="padding: 0 5%; height: 30px">
+                                    <input type="text" name="search_text" class="form-control" style="margin: auto; border:1px solid grey;" placeholder="Enter Text" value="{% if search_text %}{{ search_text }}{% endif %}" required>
+                                </div>
+                                <button type="submit" id="search_button" class="btn btn-primary mb-2" style="margin-top: 20px;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                                {% csrf_token %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if results %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Search Results</h4>
+                            </div>
+                            <p>Number of Results: <span id="no_of_results">{{ no_of_results }}</span></p>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-striped" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>S/N</th>
+                                        <th>Day</th>
+                                        <th>Date</th>
+                                        <th>Sermon Title</th>
+                                        <th>Things Spoken About</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in results %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>
+                                                {% if item.correct_date %}
+                                                    {{ item.correct_date|date:"l" }}
+                                                {% else %}
+                                                    {{ item.day|format_text }}
+                                                {% endif %}
+
+                                                <div style="float:right;">
+                                                    <a id="more_detail_{{ forloop.counter }}" class="btn btn-sm btn-icon text-primary flex-end" data-bs-toggle="modal" data-bs-target="#exampleModalFullscreen" title="More detail" data-unique-id="{{ item.id }}" data-bs-original-title="More detail">
+                                                        <span class="btn-inner">
+                                                            <svg width="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M16.334 2.75H7.665C4.644 2.75 2.75 4.889 2.75 7.916V16.084C2.75 19.111 4.635 21.25 7.665 21.25H16.333C19.364 21.25 21.25 19.111 21.25 16.084V7.916C21.25 4.889 19.364 2.75 16.334 2.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M10.6889 11.9999C10.6889 13.0229 9.85986 13.8519 8.83686 13.8519C7.81386 13.8519 6.98486 13.0229 6.98486 11.9999C6.98486 10.9769 7.81386 10.1479 8.83686 10.1479H8.83986C9.86086 10.1489 10.6889 10.9779 10.6889 11.9999Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>                                    <path d="M10.6919 12H17.0099V13.852" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>                                    <path d="M14.1816 13.852V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if item.correct_date %}
+                                                    {{ item.correct_date|date:"jS E, Y" }}
+                                                {% else %}
+                                                    {{ item.date|format_text }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ item.sermon_title|format_text }}</td>
+                                            <td style="text-wrap: normal">{{ item.things_spoken_about|format_text }}</td>
+
+                                        </tr>
+                                    {% empty %}
+                                        Search keywords not found
+                                    {% endfor %}
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <th>S/N</th></t>
+                                        <th>Day</th>
+                                        <th>Date</th>
+                                        <th>Sermon Title</th>
+                                        <th>Things Spoken About</th>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-lg-12" style="margin-top: 70px;">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="border-bottom text-center pb-3 mt-5">
+                                <div>
+                                    <h4 class="mb-3"><b>No Matching Record Found</b></h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="exampleModalFullscreen" tabindex="-1" aria-labelledby="exampleModalFullscreenLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title h6" id="exampleModalFullscreenLabel"><span id="sermon_title_label"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Date: </h6><span id="day_label"></span> <span id="date_label"></span>
+                <h6>Count: </h6><span id="count_label"></span><br><br>
+                <h6>New songs received: </h6> <span id="new_songs_label"></span>
+                <h6>Recommended Books/Movies: </h6><span id="recommend_label"></span><br><br>
+                <h6>Testimonies: </h6><span id="testimonies_label"></span><br><br>
+                <h6>Things Spoken About:</h6>
+                <p id="message_label" style="text-align: justify"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+        </div>
+{% endblock content %}
+
+{% block javascript %}
+    {% if results %}
+        <script>
+{#        TODO: VERY INEFFECTIVE CODE, REFACTOR IT #}
+
+            for (let index = 1; index <= {{ no_of_results }}; index++) {
+                    const more_detail = document.getElementById(`more_detail_${index}`);
+
+                    more_detail.addEventListener('click', ev => {
+                        const unique_id = more_detail.dataset.uniqueId
+
+                        const url = `{% url 'catalog' %}?unique_id=${unique_id}`
+                        fetch(url, {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Accept': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            const catalog = data['catalog']
+
+                            let correct_date = catalog['correct_date']
+                            console.log(correct_date)
+
+                            let day = null;
+                            let date = null;
+
+                            if (correct_date){
+                                correct_date = new Date(correct_date)
+
+                                options = {day: 'numeric', weekday: 'long', month:'long', year:'numeric'}
+                                date = correct_date.toLocaleDateString('en-GB', options);
+                            }
+                            else{
+                                day = catalog['day'];
+                                date = catalog['date'];
+                            }
+                            document.getElementById("day_label").textContent = day;
+                            document.getElementById("date_label").textContent = date;
+
+                            document.getElementById("sermon_title_label").textContent = catalog['sermon_title'];
+                            document.getElementById("count_label").textContent = catalog['count'];
+                            document.getElementById("new_songs_label").textContent = catalog['new_songs_received'];
+                            document.getElementById("recommend_label").textContent = catalog['recommended_books_movies'];
+                            document.getElementById("testimonies_label").textContent = catalog['testimonies'];
+                            document.getElementById("message_label").textContent = catalog['things_spoken_about'];
+
+
+                        })
+                        .then(error => {
+                            console.log(error);
+                        })
+                    })
+
+                }
+        </script>
+    {% endif %}
+{% endblock javascript %}

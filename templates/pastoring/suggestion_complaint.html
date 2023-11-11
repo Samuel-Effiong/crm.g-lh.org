@@ -1,0 +1,214 @@
+
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block welcome_text %}
+  <div class="col-md-12">
+      <div class="flex-wrap d-flex justify-content-between align-items-center">
+          <div>
+              <h1>I Too I Am A Warrior!</h1>
+              <p>What troubles our soldiers?</p>
+          </div>
+      </div>
+  </div>
+{% endblock welcome_text %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        {% if user.level == 'core_shep' or chief_shep_bypass %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Suggestions</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sheep</th>
+                                            <th>Title</th>
+                                            <th>Level of Urgency</th>
+                                            <th>Date Sent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for message in suggestions %}
+                                             <tr class="{% if not message.message_seen %}table-danger{% endif %}">
+                                                 <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.sender }}', '{{ message.date_sent }}', '{{ message.message }}', '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
+                                                <td>{{ message.title|truncatewords:'7' }}</td>
+                                                <td>{{ message.level_of_urgency }}</td>
+                                                <td>{{ message.date_sent }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Sheep</th>
+                                            <th>Title</th>
+                                            <th>Level of Urgency</th>
+                                            <th>Date Sent</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Complaints</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Sheep</th>
+                                        <th>Title</th>
+                                        <th>Level of Urgency</th>
+                                        <th>Date Sent</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for message in complaints %}
+                                            <tr class="{% if not message.message_seen %}table-danger{% endif %}">
+                                                <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.sender }}', '{{ message.date_sent }}', '{{ message.message }}', '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
+                                                <td>{{ message.title|truncatewords:'7' }}</td>
+                                                <td>{{ message.level_of_urgency }}</td>
+                                                <td>{{ message.date_sent }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <th>Sheep</th>
+                                        <th>Title</th>
+                                        <th>Level of Urgency</th>
+                                        <th>Date Sent</th>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="DisplayShepherdSuggestionComplaintScrollable" tabindex="-1" aria-labelledby="DisplayShepherdSuggestionComplaintScrollableTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title birthday_intro" id="DisplayShepherdSuggestionComplaintScrollableTitle"></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6>Sender:</h6>
+                                    <span id="displaySuggestionComplaintSender"></span>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h6>Date Sent:</h6>
+                                    <span id="displaySuggestionComplaintDateSent"></span>
+                                </div>
+
+                                <div class="mt-2">
+                                    <h6>Level of Urgency</h6>
+                                    <span id="displaySuggestionComplaintLOU"></span>
+                                </div>
+
+                                <div class="mt-3 mb-3">
+                                    <h6>Message</h6>
+                                    <p id="displaySuggestionComplaintMessage"></p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% elif user.level == 'chief_shep' %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title"></h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Shepherd</th>
+                                        <th>Suggestions</th>
+                                        <th>Complaints</th>
+                                        <th>Unread Messages</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for shepherd in receivers_dict %}
+                                        <tr>
+                                            <td><a href="{% url 'suggestion-complaint' 'Shepherd' %}?chief_shep_bypass=True&shepherd_id={{ shepherd }}">{% special_dictionary_formatter receivers_dict shepherd 'full_name' %}</a></td>
+                                            <td>{% special_dictionary_formatter receivers_dict shepherd 'suggestions' %}</td>
+                                            <td>{% special_dictionary_formatter receivers_dict shepherd 'complaints' %}</td>
+                                            <td>{% special_dictionary_formatter receivers_dict shepherd 'unread_message' %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Shepherd</th>
+                                            <th>Suggestions</th>
+                                            <th>Complaints</th>
+                                            <th>Unread Messages</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script src="{% static 'assets/js/sub_main.js' %}"></script>
+    <script>
+        const populate_shepherd_suggestion_complaint_dialog_box = (title, sender, date_sent, message, LOU, is_anonymous, message_seen, id=null) => {
+            document.getElementById("DisplayShepherdSuggestionComplaintScrollableTitle").textContent = title;
+
+            document.getElementById("displaySuggestionComplaintSender").textContent = is_anonymous === 'True'? 'Anonymous': sender;
+            document.getElementById("displaySuggestionComplaintDateSent").textContent = date_sent;
+            document.getElementById("displaySuggestionComplaintLOU").textContent = LOU;
+            document.getElementById("displaySuggestionComplaintMessage").textContent = message;
+
+            {% if not user.level == 'chief_shep' %}
+                if (message_seen === 'False') {
+                    const url = `/suggestion-complaints/Shepherd/?message_seen=True&message_id=${id}`;
+    
+                    fetch(url, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                }
+            {% endif %}
+        }
+    </script>
+{% endblock javascript %}

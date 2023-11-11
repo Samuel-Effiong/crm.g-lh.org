@@ -1,0 +1,10 @@
+
+@keyframes imgRotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#coming_soon_container img {
+    animation: imgRotate 50s linear infinite;
+}

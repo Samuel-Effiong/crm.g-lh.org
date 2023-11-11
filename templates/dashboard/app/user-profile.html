@@ -1,0 +1,1054 @@
+
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+  <div class="conatiner-fluid content-inner mt-n5 py-0">
+      <div class="row">
+          <div class="col-lg-12">
+             <div class="card">
+                  <div class="card-body">
+                     <div class="d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="d-flex flex-wrap align-items-center">
+                           <div class="profile-img position-relative me-3 mb-3 mb-lg-0 profile-logo profile-logo1">
+                              {% if user.profile_pic %}
+                                  <img src="{{ user.profile_pic.url }}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
+                              {% else %}
+                                  <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_1.png' %}" alt="User-Profile" id="preview" class="theme-color-purple-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_2.png' %}" alt="User-Profile" id="preview" class="theme-color-blue-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_4.png' %}" alt="User-Profile" id="preview" class="theme-color-green-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_5.png' %}" alt="User-Profile" id="preview" class="theme-color-yellow-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_3.png' %}" alt="User-Profile" id="preview" class="theme-color-pink-img img-fluid rounded-pill avatar-100">
+                              {% endif %}
+                           </div>
+                           <div class="d-flex flex-wrap align-items-center mb-3 mb-sm-0">
+                              <h4 class="me-2 h4">{{ user.username }}</h4>
+                           </div>
+                        </div>
+                         <ul class="d-flex nav nav-pills mb-0 text-center profile-tab" data-toggle="slider-tab" id="profile-pills-tab" role="tablist">
+                             <li class="nav-item">
+                                 <a class="nav-link active show" data-bs-toggle="tab" href="#profile-overview" role="tab" aria-selected="false">Overview</a>
+                             </li>
+                             {% block profile_edit_nav %}
+                                 <li class="nav-item">
+                                     <a class="nav-link" data-bs-toggle="tab" href="#profile-edit" role="tab" aria-selected="false">Edit Profile</a>
+                                 </li>
+                             {% endblock profile_edit_nav %}
+
+                             {% block profile_password_nav %}
+                                 <li class="nav-item">
+                                     <a class="nav-link" data-bs-toggle="tab" href="#profile-activity" role="tab" aria-selected="false">Change Password</a>
+                                 </li>
+                             {% endblock profile_password_nav %}
+
+                             {% block profile_settings_nav %} 
+                                 <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#profile-setting" role="tab" aria-selected="false">Settings</a>
+                                 </li>
+                             {% endblock profile_settings_nav %}
+                        </ul>
+                     </div>
+                  </div>
+             </div>
+          </div>
+          <div class="col-lg-4">
+             <div class="card">
+               <div class="card-header">
+                  <div class="header-title">
+                     <h4 class="card-title">Hello,</h4>
+                  </div>
+               </div>
+               <div class="card-body">
+                  <ul class="list-inline m-0 p-0">
+                     <li class="d-flex mb-2">
+                        <div class="news-icon me-3">
+                           <svg width="20" viewBox="0 0 24 24">
+                              <path fill="currentColor" d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z" />
+                           </svg>
+                        </div>
+                        <p class="news-detail mb-0">Always Keep your Profile up-to Date!</p>
+                     </li>
+                     <li class="d-flex">
+                        <div class="news-icon me-3">
+                           <svg width="20" viewBox="0 0 24 24">
+                              <path fill="currentColor" d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z" />
+                           </svg>
+                        </div>
+                        <p class="news-detail mb-0">Have a problem? Meet a Leader or better yet your Shepherd!</p>
+                     </li>
+                  </ul>
+               </div>
+             </div>
+             <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Upcoming Birthday</h4>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% block celebrant_birthday %}
+                        {% for celeb in celebrant %}
+                            <div class="d-flex justify-content-start align-items-center mt-4">
+                                <div class="pe-3">
+                                    {% if celeb.profile_pic %}
+                                       <img id="celebrant_image_data" src="/media/{{ celeb.profile_pic }}" class="rounded-circle bg-soft-primary p-1" width="50" height="50" alt="1">
+                                    {% else %}
+                                        <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-35">
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="#" onclick="birthday_pop_box('{{ celeb.get_full_name }}', '{{ celeb.username }}', '{{ celeb.about }}', '{{ celeb.gender }}', '{{ user.username }}', {% if celeb.profile_pic %}'{{ celeb.profile_pic.url }}'{% else %}'{% static 'assets/images/avatars/01.png' %}'{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+                                        <h6 id="celebrant" class="mb-1" style="color: #3a57e8">
+                                            {{ celeb.get_full_name }}
+                                        </h6>
+                                    </a>
+                                    <p class="mb-0">Today</p>
+                                </div>
+                            </div>
+
+                        {% empty %}
+                            <h6 class="mt-5" style="margin-bottom: 20px"><i>...Sorry no birthdays today</i></h6>
+                        {% endfor %}
+                    {% endblock celebrant_birthday %}
+                </div>
+            </div>
+
+          </div>
+          <div class="modal fade" id="exampleModalCenteredScrollable" tabindex="-1" aria-labelledby="exampleModalCenteredScrollableTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title birthday_intro" id="exampleModalCenteredScrollableTitle">Say Hi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <div class="user-profile">
+                                        <img id="celebrant_image" src="/static/assets/images/avatars/01.png" alt="profile-img" class="rounded-pill avatar-155 img-fluid">
+                                    </div>
+                                    <div class="mt-3">
+                                        <h4 id="celebrant_full_name" style="display: inline">Ita Udoh </h4>
+                                        <span id="celebrant_nickname">
+                                            (Hellosky)
+                                        </span>
+                                        <p id="celebrant_about">About me</p>
+                                    </div>
+                                    {% if user.is_birthday %}
+                                        <div class="accordion" id="accordionExample">
+                                            {% for wishes in celebrant_birthday_messages %}
+                                                <div class="accordion-item">
+                                                    <h4 class="accordion-header" id="heading{{ forloop.counter }}">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="true" aria-controls="collapse{{ forloop.counter }}">
+                                                            From {{ wishes.name.get_full_name }}
+                                                        </button>
+                                                    </h4>
+                                                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                                        <div class="accordion-body">
+                                                            <p>{{ wishes.message }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% empty %}
+                                                <h4>...Loading message</h4>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="mt-3" id="message_input_form">
+                                            <form>
+                                                <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                                    <input type="text"  class="form-control outline-primary" id="birthdayMessageInput" placeholder="Send a message!">
+                                                    <label for="birthdayMessageInput">Send a message!</label>
+
+                                                    <input type="text" id="birthday_url" value="{% url 'users-profiles' user.username %}" hidden>
+                                                </div>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">...close</button>
+                                                <button type="button" id="birthMessageSubmitButton" class="btn btn-outline-primary" onclick="send_birthday_message(event, '{{ user.username }}')">Send!</button>
+                                            </form>
+                                        </div>
+                                        <div class="mt-3" id="birthday_reply_container" style="display: none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                                <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                                                </symbol>
+                                                <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+                                                </symbol>
+                                                <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                                </symbol>
+                                            </svg>
+                                            <div class="alert alert-primary d-flex align-items-center" id="message_sent_already" role="alert" style="display: none !important;">
+                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24">
+                                                    <use xlink:href="#info-fill" />
+                                                </svg>
+                                                <div>
+                                                    You have already sent a message...
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-success d-flex align-items-center" id="message_delivered" role="alert" style="display: none !important;">
+                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24">
+                                                    <use xlink:href="#check-circle-fill" />
+                                                </svg>
+                                                <div>
+                                                    Message have been sent successfully!
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-danger d-flex align-items-center" id="message_failed" role="alert" style="display: none !important;">
+                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24">
+                                                    <use xlink:href="#exclamation-triangle-fill" />
+                                                </svg>
+                                                <div>
+                                                    Message not sent! Please Try again
+                                                </div>
+                                            </div>`
+
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">...close</button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+             <div class="profile-content tab-content">
+                 {% block profile_edit %}
+                   <div id="profile-edit" class="tab-pane fade">
+                       <form method="POST" enctype="multipart/form-data" id="profile_form">
+                          {% csrf_token %}
+
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                    <div class="d-flex flex-wrap">
+                                      <div class="media-support-user-img me-3">
+                                         <img class="rounded-pill img-fluid avatar-60 bg-soft-danger p-1 ps-2" src="{% static 'assets/images/avatars/02.png' %}" alt="">
+                                      </div>
+                                      <div class="media-support-info mt-2">
+                                         <h5 class="mb-0">Edit Profile</h5>
+                                      </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                <div class="new-user-info" style="margin-top: 20px">
+                                    <div class="row">
+                                       <fieldset id="personal_information" class="row">
+                                           <legend>Bio Data</legend><br>
+
+                                           <div class="form-group col-lg-12 col-md-12">
+                                               <input class="form-control" type="text" name="form_name" hidden value="profile">
+                                           </div>
+
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="firstName">First Name:</label>
+                                               <input type="text" class="form-control" id="firstName" name="first_name" placeholder="First Name" value="{{ user.first_name }}">
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="surname">Last Name:</label>
+                                               <input type="text" class="form-control" id="surname" name="surname" placeholder="Surname" value="{{ user.last_name }}">
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="date_of_birth">Date of Birth</label>
+                                               <input type="date" class="form-control" name="date_of_birth" id="date_of_birth" value="{% if user.date_of_birth %}{{ user.get_iso_date_of_birth }}{% endif %}" required>
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label for="" class="form-label">Gender</label>
+                                               <div>
+                                                   <input type="radio" id="male" name="gender" value="M" {% if user.gender == 'M' %}checked{% endif %} >
+                                                   <label for="male">Male</label>
+
+                                                   <input type="radio" id="female" name="gender" value="F" {% if user.gender == 'F' %}checked{% endif %}>
+                                                   <label for="female">Female</label>
+                                               </div>
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                                <label class="form-label" for="about">About</label>
+                                                <textarea class="form-control" name="about" id="about" rows="5" placeholder="A short description about yourself">{{ user.about|empty_space_if_none }}</textarea>
+                                           </div>
+
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="profilePic">Upload Profile Pics!:</label>
+                                               <input type="file" class="form-control" id="profilePic" name="profile_pic">
+                                           </div>
+                                       </fieldset>
+                                    </div>
+                                </div>
+                             </div>
+                          </div>
+
+                       {#                          PERSONAL DATA    #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">Personal Data</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                <div class="new-user-info">
+                                    <div class="row">
+                                       <fieldset id="contact_information" class="row">
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="phoneNumber">Phone Number:</label>
+                                               <input type="text" class="form-control" id="phoneNumber" name="phone_number" placeholder="e.g. 09012345678" maxlength="20" value="{{ user.phone_number }}">
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="email">Email: <sup style="color: red;">You can't change this</sup></label>
+                                               <input type="email" class="form-control" id="email" name="email" placeholder="e.g. name@example.com" value="{{ user.email }}" disabled>
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="occupation">Occupation:</label>
+                                               <input type="text" class="form-control" id="occupation" name="occupation" placeholder="e.g. Tailor" value="{{ user.occupation|empty_space_if_none }}">
+                                           </div>
+
+                                           <div class="form-group col-md-12">
+                                             <label class="form-label" for="address">Address:</label>
+                                             <input type="text" class="form-control" id="address" name="address" placeholder="e.g. 15 Ikpa Road, Uyo, Akwa Ibom" value="{{ user.address }}">
+                                           </div>
+
+                                           <div class="form-group col-md-12">
+                                               <label for="skills" class="form-label">Skills</label>
+                                               <input type="text" class="form-control" id="skills" name="skills" placeholder="Enter a comma-separated list of your skills (e.g., Writing, Voice over, Graphic Designer)" value="{{ user.skills|empty_space_if_none }}">
+                                           </div>
+                                       </fieldset>
+                                    </div>
+                                </div>
+                             </div>
+                          </div>
+
+                       {#                          BASIC MEDICAL INFORMATION    #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">Basic Medical Information</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                 <div class="new-user-info">
+                                     <div class="row">
+                                       <fieldset id="basic_medic_information" class="row">
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="blood_group">Blood Group:</label>
+                                               <select name="blood_group" id="blood_group" class="form-select mb-3">
+                                                   {% for option in blood_group %}
+                                                       <option value="{{ option.0 }}" {% if option.0 == user.blood_group %}selected{% endif %}>{{ option.1 }}</option>
+                                                   {% endfor %}
+                                               </select>
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="genotype">Genotype:</label>
+                                               <select name="genotype" id="genotype"  class="form-select mb-3">
+                                                   {% for option in genotype %}
+                                                       <option value="{{ option.0 }}" {% if option.0 == user.genotype %}selected{% endif %}>{{ option.1 }}</option>
+                                                   {% endfor %}
+                                               </select>
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="chronic_illness">Chronic illness <small><i>(leave blank if you don't have any)</i></small>:</label>
+                                               <input type="text" class="form-control" id="chronic_illness" name="chronic_illness" value="{{ user.chronic_illness|empty_space_if_none }}">
+                                           </div>
+                                       </fieldset>
+                                     </div>
+                                 </div>
+                             </div>
+                          </div>
+
+                       {#                          RESIDENTIAL INFORMATION    #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">Residential Information</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                 <div class="new-user-info">
+                                     <div class="row">
+                                       <fieldset id="origin_information" class="row">
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="lga">LGA:</label>
+                                               <input type="text" class="form-control" id="lga" name="lga" placeholder="e.g. Ikono" value="{{ user.lga|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="state">State:</label>
+                                               <input type="text" class="form-control" id="state" name="state" placeholder="e.g. Abuja" value="{{ user.state|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="country">Country:</label>
+                                               <input type="text" class="form-control" id="country" name="country" placeholder="e.g. Nigeria" value="{{ user.country|empty_space_if_none }}">
+                                           </div>
+                                       </fieldset>
+                                     </div>
+                                 </div>
+                             </div>
+                          </div>
+
+                       {#                          SCHOOL INFORMATION    #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">School Information</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                 <div class="new-user-info">
+                                     <div class="row">
+                                       <fieldset id="school_information" class="row">
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="course_of_study">Course of Study:</label>
+                                               <input type="text" class="form-control" id="course_of_study" name="course_of_study" placeholder="e.g. Computer Engineering" value="{{ user.course_of_study|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-6">
+                                               <label class="form-label" for="years_of_study">Years of Study:</label>
+                                               <input type="number" min="1" max="10" maxlength="20" class="form-control" id="years_of_study" name="years_of_study" value="{{ user.years_of_study|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="current_year_of_study">Current Year of Study:</label>
+                                               <input type="number" min="1" max="10" maxlength="20" class="form-control" id="current_year_of_study" name="current_year_of_study" value="{{ user.current_year_of_study|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="final_year_status">Final Year Status <i><small>(Update when appropriate)</small></i>:</label>
+                                               <input type="text" class="form-control" id="final_year_status" name="final_year_status" value="{{ user.final_year_status|empty_space_if_none }}">
+                                           </div>
+                                       </fieldset>
+                                     </div>
+                                 </div>
+                             </div>
+                          </div>
+
+                       {#                          NEXT OF KIN INFORMATION    #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">Next of Kin Information</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                <div class="new-user-info">
+                                    <div class="row">
+                                       <fieldset id="next_of_kin_information" class="row">
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="next_of_kin_full_name">Full Name:</label>
+                                               <input type="text" class="form-control" id="next_of_kin_full_name" name="next_of_kin_full_name" placeholder="e.g Samuel Umoh" value="{{ user.next_of_kin_full_name|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="next_of_kin_relationship">Relationship:</label>
+                                               <input type="text" class="form-control" id="next_of_kin_relationship" name="next_of_kin_relationship" placeholder="e.g Brethren" value="{{ user.next_of_kin_relationship|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="next_of_kin_phone_number">Phone Number:</label>
+                                               <input type="text" class="form-control" id="next_of_kin_phone_number" name="next_of_kin_phone_number" placeholder="e.g +2340901237489" value="{{ user.next_of_kin_phone_number|empty_space_if_none }}">
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="next_of_kin_address">Address:</label>
+                                               <input type="text" class="form-control" id="next_of_kin_address" name="next_of_kin_address" value="{{ user.next_of_kin_address|empty_space_if_none }}">
+                                           </div>
+                                       </fieldset>
+                                    </div>
+                                </div>
+                             </div>
+                          </div>
+
+                       {#                          SPIRITUAL INFORMATION               #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <h5 class="mb-0">Spiritual Information</h5>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                <div class="row">
+                                   <fieldset id="spiritual_information" class="row">
+                                       <div class="form-group col-md-12">
+                                           <label class="form-label" for="gift_graces">Gifts & Graces:</label>
+                                           <input type="text" class="form-control" id="gift_graces" name="gift_graces" placeholder="e.g prophetic, healing" value="{{ user.gift_graces|empty_space_if_none }}">
+                                       </div>
+                                   </fieldset>
+                                </div>
+                             </div>
+                          </div>
+
+                       {#                          ADDITIONAL INFORMATION               #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <div class="media-support-info mt-2">
+                                           <h5 class="mb-0">Additional Information</h5>
+                                       </div>
+                                   </div>
+                                </div>
+                             </div>
+                              <div class="card-body">
+                                <div class="new-user-info">
+                                    <div class="row">
+                                       <fieldset id="additional_information" class="row">
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="unit_of_work">Unit of Work:</label>
+                                               <input type="text" class="form-control" id="unit_of_work" name="unit_of_work" placeholder="e.g GAT CC, TTC" value="{{ user.unit_of_work|empty_space_if_none }}">
+                                           </div>
+
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="shepherd">Shepherd:</label>
+                                               <select name="shepherd" id="shepherd" class="form-select mb-3">
+                                                   <option value=" ">None</option>
+                                                   {% for person in shepherd %}
+                                                       <option value="{{ person.name.username }}" {% if user.shepherd == person %}selected{% endif %}>
+                                                           {{ person.name.get_full_name }}
+                                                       </option>
+                                                   {% endfor %}
+                                               </select>
+                                           </div>
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="sub_shepherd">Sub Shepherd:</label>
+                                               <select name="sub_shepherd" id="sub_shepherd" class="form-select mb-3">
+                                                   <option value=" ">None</option>
+                                                   {% for person in sub_shepherd %}
+                                                       <option value="{{ person.name.username }}" {% if user.sub_shepherd == person %}selected{% endif %}>
+                                                           {{ person.name.get_full_name }}
+                                                       </option>
+                                                   {% endfor %}
+                                               </select>
+                                           </div>
+                                       </fieldset>
+                                    </div>
+                                </div>
+                             </div>
+                          </div>
+
+                       {#                          SPECIAL KNOWLEDGE               #}
+                          <div class="card">
+                             <div class="card-header d-flex align-items-center justify-content-between pb-4">
+                                <div class="header-title">
+                                   <div class="d-flex flex-wrap">
+                                       <h5 class="mb-0">Special Knowledge</h5>
+                                   </div>
+                                </div>
+                             </div>
+                             <div class="card-body">
+                                <div class="row">
+                                   <fieldset id="special_knowledge" class="row">
+                                       <div class="form-group col-md-12">
+                                           <label class="form-label" for="shoe_size">Shoe Size:</label>
+                                           <input type="text" class="form-control" id="shoe_size" name="shoe_size" value="{{ user.shoe_size|empty_space_if_none }}">
+                                       </div>
+
+                                       <div class="form-group col-md-12">
+                                           <label class="form-label" for="shoe_size">Cloth Size:</label>
+                                           <input type="text" class="form-control" id="cloth_size" name="cloth_size" value="{{ user.cloth_size|empty_space_if_none }}">
+                                       </div>
+                                   </fieldset>
+                                </div>
+                             </div>
+                          </div>
+
+
+                          <div class="card">
+                              <div class="card-body">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                             </div>
+                          </div>
+                       </form>
+                   </div>
+                 {% endblock profile_edit %}
+
+                 {% block profile_password %}
+                   <div id="profile-activity" class="tab-pane fade">
+                      <div class="card">
+                          <div class="card-header d-flex justify-content-between">
+                             <div class="header-title">
+                                <h4 class="card-title">Change Password</h4>
+                             </div>
+                          </div>
+                          <div class="card-body">
+                             <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" id="password_form" novalidate>
+                                {% csrf_token %}
+                                <div style="text-align: center">
+                                    <p id="password_successful" style="color: green; display: none"><i>Password change successfully...<br>Please wait as page reloads</i></p>
+                                    <p id="password_failed" style="color: red; display: none"><i>Current password is incorrect</i></p>
+                                    <p id="password_error" style="color: red; display: none">An error occurred...Try again</p>
+                                </div>
+
+                                 <div class="form-group col-lg-12 col-md-12">
+                                   <input class="form-control" type="text" name="form_name" hidden value="password">
+                                </div>
+
+                                <div class="col-md-12">
+                                   <label for="currentPassword" class="form-label">Current Password</label>
+                                   <input type="password" class="form-control" id="currentPassword" name="current_password" required>
+                                </div>
+
+                                <div class="col-md-12">
+                                   <label for="newPassword" class="form-label">New Password</label>
+                                   <input type="text" class="form-control" id="newPassword" name="new_password" required>
+                                </div>
+
+                                <div class="col-md-12">
+                                   <label for="confirmPassword" class="form-label">Re-enter New Password</label>
+                                   <input type="text" class="form-control" id="confirmPassword" name="confirm_password" required>
+                                </div>
+
+                                <div class="col-12">
+                                   <button class="btn btn-primary" type="submit" disabled id="password_submit_button">Submit form</button>
+                                </div>
+                             </form>
+                          </div>
+                       </div>
+
+                   </div>
+                 {% endblock profile_password %}
+
+               <div id="profile-overview" class="tab-pane fade active show">
+                   {% if profile_update == 'successful' %}
+                       <div class="mb-3 alert alert-left alert-success alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                            <span id="message"> Your profile has been successfully updated!</span>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                       </div>
+                   {% elif profile_update == 'failed' %}
+                       <div class="alert alert-bottom alert-danger alert-dismissible fade show " role="alert" style="margin-top: 10px;">
+                            <span id="message"> Your profile failed to be updated </span>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                       </div>
+                   {% endif %}
+
+                  {% if password_update == 'failed' %}
+                      <div class="alert alert-bottom alert-danger alert-dismissible fade show " role="alert" style="margin-top: 10px;">
+                            <span id="message"> Your password failed to be change </span>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                  {% elif password_update == 'successful' %}
+                      <div class="mb-3 alert alert-left alert-success alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                            <span id="message"> Your password has been successfully changed!</span>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                  {% endif %}
+                  <div class="card">
+                     <div class="card-header">
+
+
+                        <div class="header-title">
+                           <h4 class="card-title">Profile</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+                        <div class="text-center">
+                           <div class="user-profile">
+                               {% if user.profile_pic %}
+                                   <img src="{{ user.profile_pic.url }}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
+                               {% else %}
+                                   <img src="{% static 'assets/images/avatars/01.png' %}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
+                               {% endif %}
+                           </div>
+                           <div class="mt-3">
+                              <h3 class="d-inline-block" id="displayFullName2">{{ user.first_name }} {{ user.last_name }}</h3>
+                              <p class="mb-0" id="displayAbout" style="margin-top: 15px;">
+                                  {{ user.about }}
+                              </p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Bio Data</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Full Name:</h6>
+                                <p id="displayFullName1">{{ user.first_name }} {{ user.last_name }}</p>
+                            </div>
+
+                            <div class="mt-2">
+                                <h6 class="mb-1">Gender:</h6>
+                                <p id="displayGender">{% if user.gender == 'M'%}Male{% else %}Female{% endif %}</p>
+                            </div>
+
+                            <div class="mt-2">
+                                <h6 class="mb-1">Date of Birth:</h6>
+                                <p id="displayDateOfBirth">{{ user.date_of_birth|my_date_filter }}</p>
+                            </div>
+
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Personal Data</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Phone Number:</h6>
+                                <p id="displayPhoneNumber">{{ user.phone_number }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Email:</h6>
+                                <p id="displayEmail">{{ user.email }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Occupation:</h6>
+                                <p id="displayOccupation">{{ user.occupation }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Address:</h6>
+                                <p id="displayAddress">{{ user.address }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Skills:</h6>
+                                <pd id="displaySkills">{{ user.skills }}</pd>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Basic Medical Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Blood Group:</h6>
+                                <p id="displayBloodGroup">{{ user.blood_group }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Genotype:</h6>
+                                <p id="displayGenotype">{{ user.genotype }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Any Chronic Ailment:</h6>
+                                <p id="displayChronicIllness">{{ user.chronic_illness }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Residential Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">LGA:</h6>
+                                <p id="displayLga">{{ user.lga }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">State:</h6>
+                                <p id="displayState">{{ user.state }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Country:</h6>
+                                <p id="displayCountry">{{ user.country }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">School Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Course of Study:</h6>
+                                <p id="displayCourseOfStudy">{{ user.course_of_study }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Years of Study:</h6>
+                                <p id="displayYearsOfStudy">{{ user.YearsOfStudy }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Current Year of Study:</h6>
+                                <p id="displayCurrentYearOfStudy">{{ user.current_year_of_study }}</p>
+                            </div>
+
+                            <div class="mt-2">
+                                <h6 class="mb-1">Final Year Status:</h6>
+                                <p id="displayFinalYearStatus">{{ user.FinalYearStatus }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Next of Kin Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Full Name:</h6>
+                                <p id="displayNextOfKinFullName">{{ user.next_of_kin_full_name }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Relationship:</h6>
+                                <p id="displayNextOfKinRelationship">{{ user.next_of_kin_relationship }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Phone number:</h6>
+                                <p id="displayNextOfKinPhoneNumber">{{ user.next_of_kin_phone_number}}</p>
+                            </div>
+
+                            <div class="mt-2">
+                                <h6 class="mb-1">Address:</h6>
+                                <p id="displayNextOfKinAddress">{{ user.next_of_kin_address }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Spiritual Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Gift & Graces:</h6>
+                                <p id="displayGiftGraces">{{ user.gift_graces }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Callings: <small>(To be made visible by the decision of your shepherd)</small></h6>
+                                {% if user.reveal_calling_by_shepherd %}
+                                    <p>{{ user.callings|empty_space_if_none }}</p>
+                                {% else %}
+                                    <p>Calling to be revealed by Shepherd</p>
+                                {% endif %}
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Additional Information</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Unit of Work:</h6>
+                                <p id="displayUnitOfWork">{{ user.unit_of_work }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Shepherd:</h6>
+                                <p id="displayShepherd">{{ user.shepherd }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Sub Shepherd:</h6>
+                                <p id="displaySubShepherd">{{ user.sub_shepherd }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+                  <div class="card">
+                     <div class="card-header">
+                        <div class="header-title">
+                           <h4 class="card-title">Special Knowledge</h4>
+                        </div>
+                     </div>
+                     <div class="card-body">
+                        <fieldset class="row">
+                            <div class="mt-2">
+                                <h6 class="mb-1">Level:</h6>
+                                <p id="displayLevel">
+                                    {% if user.level == 'new_mem' %}
+                                        New Member
+                                    {% elif user.level == 'mem' %}
+                                        Member
+                                    {% elif user.level == 'worker' %}
+                                        Worker
+                                    {% elif user.level == 'sub_shep' %}
+                                        Sub Shepherd
+                                    {% elif user.level == 'core_shep' %}
+                                        Core Shepherd
+                                    {% elif user.level == 'chief_shep' %}
+                                        Chief Shepherd
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            <div class="mt-2">
+                                <h6 class="mb-1">Shoe Size:</h6>
+                                <p id="displayShoeSize">{{ user.shoe_size }}</p>
+                            </div>
+                            <div class="mt-2">
+                                <h6 class="mb-1">Cloth Size:</h6>
+                                <p id="displayClothSize">{{ user.cloth_size }}</p>
+                            </div>
+                        </fieldset>
+                     </div>
+                  </div>
+
+
+               </div>
+
+               {% block profile_settings %}
+                   <div id="profile-setting" class="tab-pane fade">
+                      <div class="card">
+                          <div class="card-header d-flex justify-content-between">
+                             <div class="header-title">
+                                <h4 class="card-title">Settings</h4>
+                             </div>
+                          </div>
+                          <div class="card-body">
+                             <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" id="password_form" novalidate>
+                                {% csrf_token %}
+                                <div style="text-align: center">
+                                    <p id="password_successful" style="color: green; display: none"><i>Password change successfully...<br>Please wait as page reloads</i></p>
+                                    <p id="password_failed" style="color: red; display: none"><i>Current password is incorrect</i></p>
+                                    <p id="password_error" style="color: red; display: none">An error occurred...Try again</p>
+                                </div>
+
+                                 <div class="form-group col-lg-12 col-md-12">
+                                   <input class="form-control" type="text" name="form_name" hidden value="password">
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="strict_report" name="strict_report" required onclick="toggle_strict_discipline()" {% if user.strict_report != 'None' %}checked{% endif %}>
+                                    <label class="form-check-label" for="strict_report">Enable strict report discipline </label>
+                                    <a data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Choose specific day you will be allowed to submit your report for the week. You won't be allowed to submit on any other day of the week if you miss your specified day." data-bs-original-title="Important" title="Important">
+                                        <small class="text-danger text-decoration-underline">(Click here)</small>
+                                    </a>
+                                </div>
+
+                                <div class="form-group" style="display: {% if user.strict_report == 'None' %}none{% endif %};" id="report_day_select_box">
+                                    <label class="form-label">Select Report Day</label>
+                                    <select class="form-select mb-3 shadow-none">
+                                        <option value="mon" {% if user.strict_report == 'mon' %}selected{% endif %}>Monday</option>
+                                        <option value="tue" {% if user.strict_report == 'tue' %}selected{% endif %}>Tuesday</option>
+                                        <option value="wed" {% if user.strict_report == 'wed' %}selected{% endif %}>Wednessday</option>
+                                        <option value="thur" {% if user.strict_report == 'thur' %}selected{% endif %}>Thursday</option>
+                                        <option value="fri" {% if user.strict_report == 'fri' %}selected{% endif %}>Friday</option>
+                                        <option value="sat" {% if user.strict_report == 'sat' %}selected{% endif %}>Saturday</option>
+                                        <option value="sun" {% if user.strict_report == 'None' or  user.strict_report == 'sun' %}selected{% endif %}>Sunday</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                   <button class="btn btn-primary" type="submit" disabled id="password_submit_button">Submit form</button>
+                                </div>
+                             </form>
+                          </div>
+                       </div>
+
+                   </div>
+                 {% endblock profile_settings %}
+            </div>
+          </div>
+      </div>
+      <div class="offcanvas offcanvas-bottom share-offcanvas" tabindex="-1" id="share-btn" aria-labelledby="shareBottomLabel">
+         <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="shareBottomLabel">Share</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+         </div>
+         <div class="offcanvas-body small">
+            <div class="d-flex flex-wrap align-items-center">
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/08.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>Facebook</h6>
+               </div>
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/09.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>Twitter</h6>
+               </div>
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/10.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>Instagram</h6>
+               </div>
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/11.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>Google Plus</h6>
+               </div>
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/13.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>In</h6>
+               </div>
+               <div class="text-center me-3 mb-3">
+                  <img src="../../assets/images/brands/12.png" class="img-fluid rounded mb-2" alt="">
+                  <h6>YouTube</h6>
+               </div>
+            </div>
+         </div>
+      </div>
+  </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script src="{% static 'assets/js/sub_main.js' %}"></script>
+    <script>
+        url = "{% url 'users-profiles' user.username %}";
+        {#change_password(url);#}
+        password_validation();
+        {#preview_image();#}
+        {#edit_profile(url);#}
+
+        const toggle_strict_discipline = () => {
+            const strict_report = document.getElementById('strict_report').checked;
+            const report_day_select_box = document.getElementById('report_day_select_box')
+            if (strict_report) {
+                report_day_select_box.style.display = 'block';
+            }
+            else {
+                report_day_select_box.style.display = 'none';
+            }
+        }
+
+    </script>
+
+{% endblock javascript %}

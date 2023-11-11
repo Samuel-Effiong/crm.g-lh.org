@@ -1,0 +1,225 @@
+
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="modal fade" id="DisplayUniqueTestifiersModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="DisplayUniqueTestifiersModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DisplayUniqueTestifierModalScrollableTitle">Testifiers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for testifier in unique_testifiers %}
+                                <tr>
+                                    <td>{{ testifier }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="EditTestimonyModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="EditTestimonyModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="EditTestimonyModalScrollableTitle">Edit Testimony</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div hidden>
+                                <input type="text" name="pk" id="pk">
+                            </div>
+
+                            <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                <input type="text" class="form-control" name="testimony_title" id="testimony_title">
+                                <label for="testimony_title">Sermon Title</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="testimony_testifier">Testifier</label>
+                                <input type="text" class="form-control" name="testimony_testifier" id="testimony_testifier">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="testimony_date">Date</label>
+                                <input type="date" class="form-control" id="testimony_date" name="testimony_date">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select name="testimony_category" id="testimony_category" class="form-select mb-3 shadow-none">
+                                    <option value="life">Life Testimony</option>
+                                    <option value="general">General Testimony</option>
+                                    <option value="evangelism">Evangelism Testimony</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="testimony_message">Message</label>
+                                <textarea class="form-control" name="testimony_message" id="testimony_message" rows="10" cols="30"></textarea>
+                            </div>
+                            
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+                 <div class="card border-bottom border-4 border-0 border-success">
+                    <div class="card-body">
+                       <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                             <span>Total Number of Testimonies</span>
+                          </div>
+                          <div>
+                             <span class="counter" style="visibility: visible;">{{ total_testimonies }}</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+                 <div class="card border-bottom border-4 border-0 border-success">
+                    <div class="card-body">
+                       <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                              <span>No of Testifiers</span>
+                       
+                              {% if no_of_testifiers > 0 %}
+                                  <span><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayUniqueTestifiersModalScrollable">...See all</a></span>
+                              {% endif %}
+                          </div>
+                          <div>
+                              <span class="counter" style="visibility: visible;">{{ no_of_testifiers }}</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">TESTIMONIES </h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Testifier</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for testimony in testimonies %}
+                                        <tr>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditTestimonyModalScrollable" onclick="populate_testimony_modal('{{testimony.pk}}', '{{testimony.testifier}}', '{{testimony.formatted_date}}', '{{testimony.category}}', '{{testimony.message}}', '{{testimony.title}}')">{{ testimony.title|truncatewords:"7"}}</a></td>
+                                            <td>{{ testimony.testifier }}</td>
+                                            <td>{{ testimony.date|date:"jS E, Y" }}</td>
+                                            <td>{{ testimony.category }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <th colspan="4"><b>No Testimonies</b></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Testifier</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-6"><a href="{% url 'pastoring:add-testimonies' %}">
+                 <div class="card bg-success">
+                    <div class="card-body">
+                       <div>
+                          <div class="text-white">
+                                <h2 class="counter text-white" style="visibility: visible; color: white; text-align: center">Add</h2>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </a></div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+        const populate_testimony_modal = (pk, testifier, date, category, message, title) => {
+            const pk_input = document.getElementById('pk');
+            const title_input = document.getElementById('testimony_title');
+            const testifier_input = document.getElementById('testimony_testifier');
+            const date_input = document.getElementById('testimony_date');
+            const category_input = document.getElementById('testimony_category');
+            const message_input = document.getElementById('testimony_message');
+
+            pk_input.value = pk;
+            title_input.value = title;
+            testifier_input.value = testifier;
+
+            date_input.value = date;
+            category_input.value = category;
+            message_input.value = message;
+        }
+    </script>
+{% endblock javascript %}

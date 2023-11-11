@@ -1,0 +1,49 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>{{ title }}</title>
+      <link rel="stylesheet" href="{% static 'assets/css/my_styles.css' %}">
+      {% include 'includes/vendor_css.html' %}
+  </head>
+  <body class=" " data-bs-spy="scroll" data-bs-target="#elements-section" data-bs-offset="0" tabindex="0">
+    <!-- loader Start -->
+    <div id="loading">
+      <div class="loader simple-loader">
+          <div class="loader-body"></div>
+      </div>
+    </div>
+    <!-- loader END -->
+    
+    <div class="wrapper">
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+
+        <div class="gradient">
+
+            <div class="container" id="coming_soon_container" style="width=100%">
+                <img src="{% static 'assets/images/coming_soon.webp' %}" class="img-sm img-fluid" alt="Cute baby">
+                <h2 class="mb-0 mt-4 text-white">{{ page_title }}</h2>
+                <p class="mt-2 text-white">{{ page_content }}</p>
+                <a class="btn bg-white text-primary d-inline-flex align-items-center" href="{% url 'home' %}">Back to Home</a>
+            </div>
+
+            <div class="box">
+                <div class="c xl-circle">
+                    <div class="c lg-circle">
+                        <div class="c md-circle">
+                            <div class="c sm-circle">
+                                <div class="c xs-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'includes/vendor_js.html' %}
+  </body>
+</html>

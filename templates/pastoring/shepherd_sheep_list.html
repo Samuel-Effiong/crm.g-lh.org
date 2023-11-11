@@ -1,0 +1,68 @@
+{% extends 'pastoring/index.html' %}
+
+{% block account_dropdown %}
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div style="padding: 5px 0 15px 0">
+                            <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='currentColor'/%3E%3C/svg%3E&#34;);"
+                                aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'pastoring:dashboard' %}">Dashboard</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Sheep</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-striped" data-toggle="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Sub Shepherd</th>
+                                        <th>Last Active</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for person in sheep %}
+                                        <tr>
+                                            <td><a href="{% url 'pastoring:sheep-summary' shepherd.name.username person.username %}">{{ person.get_full_name }}</a></td>
+                                            <td>{{ person.gender }}</td>
+                                            <td>{{ person.sub_shepherd.name.get_full_name }}</td>
+                                            <td>{{ person.last_active_date|date:"l d F Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr class="table-success">
+                                        <td><a href="{% url 'pastoring:sheep-summary' user.username shepherd.name.username %}">{{ shepherd.name.get_full_name }}</a></td>
+                                        <td>{{ shepherd.name.gender }}</td>
+                                        <td> - </td>
+                                        <td>{{ shepherd.name.last_active_date|date:"l d F Y" }}</td>
+                                    </tr>
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Sub Shepherd</th>
+                                        <th>Last Active</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+{% endblock %}

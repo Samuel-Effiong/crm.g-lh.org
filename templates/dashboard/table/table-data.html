@@ -1,0 +1,493 @@
+
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+       <div class="row">
+          <div class="col-sm-12">
+             <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                   <div class="header-title">
+                      <h3 class="card-title">{% if shepherd_bypass %}Hello Shepherd {% else %} {{ category }} {% endif %}</h3><br>
+                      {% if shepherd_bypass %}
+                          <h5 class="mb-3">Welcome to {{ sheep.get_full_name }} Reports</h5>
+                      {% else %}
+                          <h5 class="mb-3">Hello, {{ user.first_name }} {{ user.last_name }} </h5>
+                      {% endif %}
+                   </div>
+                </div>
+                <div class="card-body">
+                   <p>
+                       {% if not shepherd_bypass %}
+                           {% if category == 'Bible Reading' %}
+                               All Scripture is breathed out by God and profitable for reproof, for correction,
+                               and for training in righteousness, that the man of God may be complete, equipped for
+                               every good work. <em>&dash; 2 Timothy 3:16-17</em>
+                           {% elif category == 'Prayer Marathon' %}
+                               Quit playing, start praying. Quit feasting, start fasting. Talk less with men, talk
+                               more with God. Listen less to men, listen to the words of God. Skip travel, start
+                               travail. <em>&dash; Leonard Ravenhill</em>
+                           {% elif category == 'Church Work' %}
+                               Dedicate time to doing the work of your Father
+                           {% elif category == 'Prophetic Vision' %}
+                               Write the vision; make it plain on tablets, so he may run who
+                               reads it.  <em>- Habakkuk 2:2</em>
+                            {% elif category == 'Shepherd Report' %}
+                                Subject yourself to your leaders, so that they watch over your soul
+                                with all <em>JOY</em> and not with <em>groaning</em>.
+                           {% endif %}
+                       {% endif %}
+                   </p>
+                   <div class="table-responsive">
+                      <table id="datatable" class="table table-striped" data-toggle="data-table">
+                         <thead>
+                            <tr>
+                                {% if category == 'Bible Reading' %}
+                                    <th>Bible Passage</th>
+                                    <th>Comment</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                {% elif category == 'Prayer Marathon' %}
+                                    <th>Comment</th>
+                                    <th>Date</th>
+                                {% elif category == 'Church Work' %}
+                                    <th>Details</th>
+                                    <th>Work Category</th>
+                                    <th>Hours Spent</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Date</th>
+                                {% elif category == 'Evangelism' %}
+                                    <td>Field of Visit</td>
+                                    <td>No led to Christ / Week</td>
+                                    <td>No Followed up</td>
+                                    <td>No of Holy Spirit Baptism</td>
+                                    <td>No of People Prayed</td>
+                                {% elif category == 'Prophetic Vision' %}
+                                    <td>Description</td>
+                                    <td>Date</td>
+                                    <td>Body</td>
+                                {% elif category == 'Shepherd Report' %}
+                                    <td>Date</td>
+                                    <td>Books Read </td>
+                                    <td>Church Work</td>    
+                                {% endif %}
+                            </tr>
+                         </thead>
+                         <tbody>
+                            {% for item in lists %}
+                                {% if category == 'Bible Reading' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}">{{ item.bible_passage }}</a></td>
+                                        <td>{{ item.comment|truncatewords:"5" }}</td>
+                                        {% if item.status == 'completed' %}
+                                            <td><p class="text-success" style="font-size: 12px">Completed</p></td>
+                                        {% elif item.status == 'in_progress' %}
+                                            <td><p class="text-warning" style="font-size: 12px">In Progress</p></td>
+                                        {% elif item.status == 'not_started' %}
+                                            <td><p class="text-danger" style="font-size: 12px">Not Started</p></td>
+                                        {% endif %}
+                                        <td>{{ item.date }}</td>
+                                    </tr>
+                                {% elif category == 'Prayer Marathon' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}">{{ item.comment|truncatewords:"10" }}</a></td>
+                                        <td>{{ item.date }}</td>
+                                    </tr>
+                                {% elif category == 'Church Work' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}">{{ item.details|truncatewords:"5" }}</a> </td>
+                                        <td>{{ item.work_category|format_text }}</td>
+                                        <td>{{ item.hours_spent }}</td>
+                                        <td>{{ item.start_time|my_time_filter }}</td>
+                                        <td>{{ item.end_time|my_time_filter }}</td>
+                                        <td>{{ item.date }}</td>
+                                    </tr>
+                                {% elif category == 'Evangelism' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}">{{ item.field_of_visit }}</a></td>
+                                        <td>{{ item.no_led_to_christ }}</td>
+                                        <td>{{ item.follow_up }}</td>
+                                        <td>{{ item.holy_spirit_baptism }}</td>
+                                        <td>{{ item.no_of_people_prayed }}</td>
+                                    </tr>
+                                {% elif category == 'Prophetic Vision' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}">{{ item.description|truncatewords:"7" }}</a></td>
+                                        <td>{{ item.date }}</td>
+                                        <td>{{ item.body|truncatewords:"5" }}</td>
+                                    </tr>
+                                {% elif category == 'Shepherd Report' %}
+                                    <tr>
+                                        <td><a href="{{ item.get_absolute_url }}?shepherd_bypass=True">{{ item.date }} </a></td>
+                                        <td>{{ item.books_read }} </td>
+                                        <td>{{ item.church_work }} </td>
+                                    </tr>
+                                {% endif %}
+                            {% empty %}
+                                {% if category == 'Shepherd Report' %}
+                                    {% if user.level == 'chief_shep' %} 
+                                        <td colspan="3">
+                                            <em>Hello, We don't have the technology to send reports to God...yet</em><br>
+                                            <p><i>But you can click <a target="_blank" href="{% url 'pastoring:shepherd-reports' %}">here</a> to read others reports...while you wait</i></p>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                         </tbody>
+                         <tfoot>
+                            <tr>
+                                {% if category == 'Bible Reading' %}
+                                    <th>Bible Passage</th>
+                                    <th>Comment</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                {% elif category == 'Prayer Marathon' %}
+                                    <th>Comment</th>
+                                    <th>Date</th>
+                                {% elif category == 'Church Work' %}
+                                    <th>Details</th>
+                                    <th>Work Category</th>
+                                    <th>Hours Spent</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Date</th>
+                                {% elif category == 'Evangelism' %}
+                                    <td>Field of Visit</td>
+                                    <td>No led to Christ / Week</td>
+                                    <td>No Followed up</td>
+                                    <td>No of Holy Spirit Baptism</td>
+                                    <td>No of People Prayed</td>
+                                {% elif category == 'Prophetic Vision' %}
+                                    <td>Description</td>
+                                    <td>Date</td>
+                                    <td>Body</td>
+                                {% elif category == 'Shepherd Report' %}
+                                    <td>Date</td>
+                                    <td>Books Read </td>
+                                    <td>Church Work</td>    
+                                {% endif %}
+                            </tr>
+                         </tfoot>
+                      </table>
+                   </div>
+                {% if not shepherd_bypass %}
+                    <button class="btn btn-primary mt-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+                        aria-controls="offcanvasRight"><i class="ri ri-add-circle-line"></i>Add
+                    </button>
+                {% endif %}
+
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header">
+                        <h5 id="offcanvasRightLabel">Add to {{ category }}</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        {% if not shepherd_bypass %}
+                            {% if category == 'Bible Reading' %}
+                                <div>
+                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                        <div class="col-md-12">
+                                           <label for="validationCustom01" class="form-label">Bible Passage</label>
+                                           <input type="text" class="form-control" name="bible_passage" id="validationCustom01" required>
+                                        </div>
+                                        {% if bible_challenge_on %}
+                                             <div class="col-12">
+                                                <input type="checkbox" value="false" name="bible_reading_status" id="toggle_challenge">
+                                                <label class="form-check-label" id="display_toggle" for="toggle_challenge">Enable Challenge passages</label>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="selected_bible_passage" class="form-label">Bible Passage</label>
+                                                    <select class="form-select" name="custom_bible_passage" id="selected_bible_passage" disabled>
+                                                        <option selected="" disabled="">Select your Passage</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="col-md-12">
+                                            <label for="validationCustom02" class="form-label">Comment</label>
+                                            <textarea class="form-control" style="height: 200px;" id="validationCustom02" name="bible_reading_comment" required></textarea>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="date" class="form-label">Date</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="bible_reading_date" autocomplete="off" placeholder="Date" id="date" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-check-label" for="invalidCheck">
+                                                Status
+                                            </label>
+                                            <select class="form-select" name="bible_reading_status">
+                                               <option value="completed">Completed</option>
+                                               <option value="in_progress">In Progress</option>
+                                               <option value="not_started" selected>Not Started</option>
+                                           </select>
+                                        </div>
+                                        <div class="col-12">
+                                           <button class="btn btn-primary" type="submit">Submit</button>
+                                        </div>
+                                        {% csrf_token %}
+                                    </form>
+                                </div>
+                            {% elif category == 'Prayer Marathon' %}
+                                <div>
+                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                        <div class="col-md-12">
+                                            <label for="validationCustom02" class="form-label">Comment</label>
+                                            <textarea class="form-control" style="height: 200px;" id="validationCustom02" name="prayer_marathon_comment" required></textarea>
+                                        </div>
+
+
+                                        <div class="col-md-12">
+                                            <label for="date" class="form-label">Date</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="prayer_marathon_date" autocomplete="off" placeholder="Date" id="date" required>
+                                        </div>
+                                        <div class="col-12">
+                                           <button id="submit_table" class="btn btn-primary" type="submit">Submit form</button>
+                                        </div>
+                                        {% csrf_token %}
+                                    </form>
+                                </div>
+                            {% elif category == 'Church Work' %}
+                                <div>
+                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                        <div class="col-12">
+                                            <label class="form-check-label" for="invalidCheck">
+                                                Work Category
+                                            </label>
+                                            <select class="form-select" name="church_work_category" id="invalidCheck">
+                                                <option value="" disabled>Choose category</option>
+                                                <option value="transcription">Transcription</option>
+                                                <option value="video_editing">Video Editing</option>
+                                                <option value="building">Building</option>
+                                                <option value="extraction">Extraction</option>
+                                                <option value="audio_editing">Audio Editing</option>
+                                                <option value="audio_video_review">Audio/Video Review</option>
+                                                <option value="audio_video_snippets">Audio/Video Snippets</option>
+                                           </select>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="validationCustom02" class="form-label">Details</label>
+                                            <textarea class="form-control" style="height: 200px;" id="validationCustom02" name="church_work_details" required></textarea>
+                                        </div>
+                                        <div class="col-md-12">
+                                           <label for="validationCustom01" class="form-label">Hours Spent</label>
+                                           <input type="number" class="form-control" name="church_work_hours_spent" id="validationCustom01" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                           <label for="validationCustom02" class="form-label">Start Time</label>
+                                           <input type="time" class="form-control" name="church_work_start_time" id="validationCustom02" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                           <label for="validationCustom03" class="form-label">End Time</label>
+                                           <input type="time" class="form-control" name="church_work_end_time" id="validationCustom03" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="date" class="form-label">Date</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="church_work_date" autocomplete="off" placeholder="Date" id="date" required>
+                                        </div>
+                                        <div class="col-12">
+                                           <button id="submit_table" class="btn btn-primary" type="submit">Submit form</button>
+                                        </div>
+                                        {% csrf_token %}
+                                    </form>
+                                </div>
+                            {% elif category == 'Evangelism' %}
+                                <div>
+                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                        <div class="col-md-12">
+                                           <label for="validationCustom01" class="form-label">Field of Visit</label>
+                                           <input type="text" class="form-control" name="evangelism_field_of_visit" id="validationCustom01" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="validationCustom02" class="form-label">Hours Spent</label>
+                                            <input type="number" class="form-control" id="validationCustom02" name="evangelism_hours_spent" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom03" class="form-label">No led to Christ</label>
+                                           <input type="number" class="form-control" name="evangelism_no_led_to_christ" id="validationCustom03" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom04" class="form-label">No of Follow up</label>
+                                           <input type="number" class="form-control" name="evangelism_follow_up" id="validationCustom04" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom05" class="form-label">No of Invites</label>
+                                           <input type="number" class="form-control" name="evangelism_no_of_invites" id="validationCustom05" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom06" class="form-label">No of Baptism</label>
+                                           <input type="number" class="form-control" name="evangelism_no_baptism" id="validationCustom06" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom07" class="form-label">People Prayed for</label>
+                                           <input type="number" class="form-control" name="evangelism_people_prayed" id="validationCustom07" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom08" class="form-label">Prints Shared</label>
+                                           <input type="number" class="form-control" name="evangelism_prints_shared" id="validationCustom08" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                           <label for="validationCustom09" class="form-label">Snippets Shared</label>
+                                           <input type="number" class="form-control" name="evangelism_snippets" id="validationCustom09" required>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                           <label for="validationCustom10" class="form-label">Messages Shared</label>
+                                           <textarea class="form-control" name="evangelism_message_shared" style="height: 200px;" id="validationCustom10" required></textarea>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">First Date of Week</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="evangelism_first_date" autocomplete="off" placeholder="Date" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="validationCustom12" class="form-label">Last Date of Week</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="evangelism_last_date" autocomplete="off" placeholder="Date" required>
+                                        </div>
+                                        <div class="col-12">
+                                           <button id="submit_table" class="btn btn-primary" type="submit">Submit form</button>
+                                        </div>
+                                        {% csrf_token %}
+                                    </form>
+                                </div>
+                            {% elif category == 'Prophetic Vision' %}
+                                <div>
+                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                        <div class="col-md-12">
+                                            <label for="validationCustom01" class="form-label">Description</label>
+                                            <input type="text" class="form-control" name="prophetic_vision_description" id="validationCustom01" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="date" class="form-label">Date</label>
+                                            <input type="text" class="form-control vanila-datepicker" name="prophetic_vision_date" autocomplete="off" placeholder="Date" id="date" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="validationCustom02" class="form-label">Body</label>
+                                            <textarea class="form-control" style="height: 200px;" id="validationCustom02" name="prophetic_vision_body" required></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                           <button id="submit_table" class="btn btn-primary" type="submit">Submit form</button>
+                                        </div>
+                                        {% csrf_token %}
+                                    </form>
+                                </div>
+
+                            {% elif category == 'Shepherd Report' %}
+                                <div>
+                                    {% if user.level == 'chief_shep' %}
+                                        <p><em>Sorry Sir, you are not allowed to use this feature</em></p>
+                                    {% else %}
+                                        <form method="POST" class="row g-3 needs-validation" novalidate>
+                                            <div class="col-md-12">
+                                                <label for="date" class="form-label">Date</label>
+                                                <input type="text" class="form-control vanila-datepicker" name="shepherd_report_date" autocomplete="off" placeholder="Date" id="date" required>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="validationCustom01" class="form-label">Books Read <span type="button" class="ri ri-alarm-warning-fill text-danger" data-bs-toggle="tooltip" data-bs-html="true" title="<em>Ensure title of books is written as</em> <u>EXACTLY</u> as what is on the book covercover.<br><br><b>DO NOT</b> include the name of the author"><small>click here</small></span> (<small class="text-danger">Separate books by semi-colon</small>)</label>
+                                                <textarea class="form-control" rows="3" id="validationCustom01" name="shepherd_report_books_read" placeholder="e.g., This Present Darkness; Sit, Walk, Stand; The Spiritual Man;"></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="validationCustom02" class="form-label">Church Work</label>
+                                                <textarea class="form-control" rows="5" id="validationCustom02" name="shepherd_report_church_work"></textarea>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label for="validationCustom03" class="form-label">Personal Details</label>
+                                                <textarea class="form-control" rows="5" id="validationCustom03" name="shepherd_report_personal_details"></textarea>
+                                            </div>
+
+                                            <div class="col-12 justify-content-between">
+                                                <button id="submit_table" class="btn btn-primary" type="submit">Submit</button>
+                                                <button type="button" class="btn btn-danger" disabled>Schedule Submit</button>
+                                            </div>
+                                            {% csrf_token %}
+                                        </form>
+                                    {% endif %}
+                                </div>
+
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script src="{% static 'assets/js/sub_main.js' %}"></script>
+    <script>
+        const category = '{{ category }}'
+
+        if (category === 'Bible Reading') {
+
+            let first_day = '10/6/2022';
+            first_day = new Date(first_day);
+
+            const passages = [
+                'Genesis 1 - Gen 20', 'Genesis 21 -  Genesis 40', 'Genesis 41 - Exodus 10',
+                'Exodus 11 - Exodus 30', 'Exodus 31 - Leviticus 10', 'Leviticus 11 - Numbers 3',
+                'Numbers 4 - Numbers 23', 'Numbers 24 - Deuteronomy 7', 'Deuteronomy 8 - Deuteronomy 27',
+                'Deuteronomy 28 - Joshua 13', 'Joshua 14 - Judges 9', 'Judges 10 - 1 Samuel 4',
+                '1 Samuel 5 - 1 Samuel 24'
+            ]
+
+            let dates = []
+            const select_element = document.querySelector('#selected_bible_passage');
+            const custom_passage = document.querySelector('#validationCustom01');
+
+            for (let i = 0; i < passages.length; i++) {
+                let date = new Date(new Date(first_day).setDate(first_day.getDate() + i));
+
+                let option_element = document.createElement('option')
+                option_element.value = passages[i]
+                option_element.textContent = `${date.getDate()} ${date.toLocaleString('default', {'month': 'short'})} \t- ${passages[i]}`;
+
+                const current_date = new Date();
+                if (current_date.getMonth() === date.getMonth() && current_date.getDay() === date.getDay()) {
+                    option_element.selected = true;
+                }
+
+                select_element.appendChild(option_element)
+            }
+
+
+            const enable_challenge = document.querySelector('#toggle_challenge');
+            const toggle_display = document.querySelector('#display_toggle');
+            enable_challenge.addEventListener('click', event => {
+                console.log('Love God')
+                if (enable_challenge.value === 'true') {
+                    select_element.disabled = true;
+                    custom_passage.disabled = false;
+
+                    enable_challenge.value = 'false';
+
+                    toggle_display.textContent = 'Enable Challenge passages';
+                }
+                else {
+                    select_element.disabled = false;
+
+                    custom_passage.disabled = true;
+                    enable_challenge.value = 'true';
+                    toggle_display.textContent = 'Enable Custom passage';
+                }
+            })
+        }
+    </script>
+{% endblock javascript %}

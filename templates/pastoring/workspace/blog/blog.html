@@ -1,0 +1,173 @@
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="modal fade" id="EditBlogModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="EditBlogModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="EditBlogModalScrollableTitle">Edit Blog</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div hidden>
+                                <input type="text" name="pk" id="pk">
+                            </div>
+
+                            <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                <input type="text" class="form-control" name="blog_title" id="blog_title">
+                                <label for="blog_title">Title</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="blog_author">author</label>
+                                <input type="text" class="form-control" name="blog_author" id="blog_author">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="blog_date">Date</label>
+                                <input type="date" class="form-control" id="blog_date" name="blog_date">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="blog_message">Message</label>
+                                <textarea class="form-control" name="blog_message" id="blog_message" rows="10" cols="30"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+                 <div class="card border-bottom border-4 border-0 border-success">
+                    <div class="card-body">
+                       <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                             <span>Total Number of Blog</span>
+                          </div>
+                          <div>
+                             <span class="counter" style="visibility: visible;">{{ total_blog }}</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">BLOG</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in blog %}
+                                        <tr>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditBlogModalScrollable" onclick="populate_blog_modal('{{ article.pk }}')">{{ article.title|truncatewords:"7"}}</a></td>
+                                            <td>{{ article.author }}</td>
+                                            <td>{{ article.date|date:"jS E, Y" }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <th colspan="4"><b>No Blog</b></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Date</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-6"><a href="{% url 'pastoring:add-blog' %}">
+                 <div class="card bg-success">
+                    <div class="card-body">
+                       <div>
+                          <div class="text-white">
+                                <h2 class="counter text-white" style="visibility: visible; color: white; text-align: center">Add</h2>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </a></div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+        const populate_blog_modal = pk => {
+            const url = `{% url 'pastoring:blog' %}?unique_id=${pk}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    const pk_input = document.getElementById('pk');
+                    const title_input = document.getElementById('blog_title');
+                    const author_input = document.getElementById('blog_author');
+                    const date_input = document.getElementById('blog_date');
+                    const message_input = document.getElementById('blog_message');
+
+                    pk_input.value = pk;
+                    title_input.value = data['title'];
+                    author_input.value = data['author'];
+                    date_input.value = data['date'];
+                    message_input.value = data['message'];
+                })
+                .then(error => {
+                    console.log(error);
+                })
+
+        }
+    </script>
+{% endblock javascript %}

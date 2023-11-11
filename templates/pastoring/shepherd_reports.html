@@ -1,0 +1,311 @@
+
+{% extends 'pastoring/index.html' %} 
+{% load static %} 
+{% load extra_tags %} 
+
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="modal fade" id="DisplaySheepReportStatisticScrollable" tabindex="-1" aria-labelledby="DisplaySheepReportStatisticScrollableTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="DisplaySheepReportStatisticScrollableTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <table class="table table-hover" id="sheep_report_modal_table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">No of Reports</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {#             DASHBOARD #}
+        <div class="row">
+            <div class="col-lg-8">
+                <div>
+                    <div class="card" data-aos="fade-up" data-aos-delay="1000">
+                        <div class="flex-wrap card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Sheep Report Time Tracker</h4>
+                                <p>Track the day with the highest turn-in of Sheep reports </p>
+                            </div>
+                            <div class="d-flex align-items-center align-self-center">
+                                 <div class="d-flex align-items-center text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 24 24" fill="currentColor">
+                                       <g>
+                                          <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                       </g>
+                                    </svg>
+                                    <div class="ms-2">
+                                       <span class="text-secondary">Male</span>
+                                    </div>
+                                 </div>
+                                 <div class="d-flex align-items-center ms-3 text-info">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" viewBox="0 0 24 24" fill="currentColor">
+                                       <g>
+                                          <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                       </g>
+                                    </svg>
+                                    <div class="ms-2">
+                                       <span class="text-secondary">Female</span>
+                                    </div>
+                                 </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="d-activity-sheep-report" class="d-activity"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="row">
+                    <div>
+                         <div class="card" data-aos="fade-up" data-aos-delay="1000">
+                            <div class="card-body">
+                               <div class="d-flex justify-content-between align-items-center">
+                                  <div class="bg-soft-primary rounded p-3">
+                                      {% if top_5_diligent_sheep %}
+                                          {% special_dictionary_formatter top_5_diligent_sheep_full_names top_5_diligent_sheep.0 %}
+                                      {% else %}
+                                          None
+                                      {% endif %}
+                                  </div>
+                                  <div class="text-end">
+                                      <h6 class="counter" style="visibility: visible;">Most Diligent</h6>
+                                      {% if top_5_diligent_sheep %}
+                                          <small>
+                                              <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySheepReportStatisticScrollable" onclick="displayTop5(`Most Diligent (Top 5) - ${new Date().getFullYear()}`, {{ top_5_diligent_sheep }}, {{ top_5_diligent_sheep_counts }}, {{ top_5_diligent_sheep_full_names }}, 'Diligent')">
+                                                  See more (Top 5)
+                                              </a>
+                                          </small>
+                                      {% endif %}
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                    <div>
+                         <div class="card" data-aos="fade-up" data-aos-delay="1000">
+                            <div class="card-body">
+                               <div class="d-flex justify-content-between align-items-center">
+                                  <div class="bg-soft-primary rounded p-3">
+                                      {% if most_read_books %}
+                                          {{ most_read_books.0 }}
+                                      {% else %}
+                                          None
+                                      {% endif %}
+                                  </div>
+                                  <div class="text-end">
+                                      <h6 class="counter" style="visibility: visible;">Most Read Books</h6>
+                                      {% if most_read_books %}
+                                          <small><a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySheepReportStatisticScrollable" onclick="displayTop5(`Most Read Books (Top 5) - ${new Date().getFullYear()}`, {{ most_read_books }}, {{ most_read_books_counts }}, null, 'Books')">See more (Top 5)</a></small>
+                                      {% endif %}
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                    <div>
+                         <div class="card" data-aos="fade-up" data-aos-delay="1000">
+                            <div class="card-body">
+                               <div class="d-flex justify-content-between align-items-center">
+                                  <div class="bg-soft-primary rounded p-3">
+                                     {% if unique_gender %}
+                                         <h4>{% if unique_gender.0 == 'F' %}{% if gender_percentage.1 %}{{ gender_percentage.1 }}{% else %}0{% endif %} / {{ gender_percentage.0 }}{% else %}{{ gender_percentage.0 }} / {% if gender_percentage.1 %}{{ gender_percentage.1 }}{% else %}0{% endif %}{% endif %}</h4>
+                                     {% else %}
+                                         <h4>0 / 0</h4>
+                                     {% endif %}
+                                  </div>
+                                  <div class="text-end">
+                                        <h6 class="counter" style="visibility: visible;">Male / Female (%)</h6>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {#            END DASHBOARD #}
+
+        {% if user.level == 'core_shep' or chief_shep_bypass %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Reports {% if chief_shep_bypass %}for {{ shepherd.name.get_full_name }} {% endif %}</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Full name</th>
+                                        <th>No of Reports</th>
+                                        <th>No of missed weeks</th>
+                                        <th>Diligence (%)</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for sheep in sheep_reports %}
+                                        <tr>
+                                            <td><a href="{% url 'shepherd_report:list' %}?shepherd_bypass=True&sheep_username={{ sheep }}">{% special_dictionary_formatter sheep_reports sheep 'full_name' %}</a></td>
+                                            <td>{% special_dictionary_formatter sheep_reports sheep 'no_of_reports' %}</td>
+                                            <td>{% special_dictionary_formatter sheep_reports sheep 'no_of_missed_weeks' %}</td>
+                                            <td>{% special_dictionary_formatter sheep_reports sheep 'diligence' %}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td>Love God</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Full name</th>
+                                            <th>No of Reports</th>
+                                            <th>No of missed weeks</th>
+                                            <th>Diligence (%)</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif user.level == 'chief_shep' %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title"></h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Shepherd</th>
+                                        <th>Total No. of Reports</th>
+                                        <th>Male (%)</th>
+                                        <th>Female (%)</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for shepherd in sheep_report_analysis %}
+                                        <tr>
+                                            <td><a href="{% url 'pastoring:shepherd-reports' %}?chief_shep_bypass=True&shepherd_username={{ shepherd }}">{% special_dictionary_formatter sheep_report_analysis shepherd 'full_name' %}</a></td>
+                                            <td>{% special_dictionary_formatter sheep_report_analysis shepherd 'no_of_reports' %}</td>
+                                            <td>{% special_dictionary_formatter sheep_report_analysis shepherd 'male' %}</td>
+                                            <td>{% special_dictionary_formatter sheep_report_analysis shepherd 'female' %}</td>
+                                        </tr>
+                                    {% empty %} 
+                                        <tr>
+                                            <td>Love God</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Shepherd</th>
+                                            <th>Total No. of Reports</th>
+                                            <th>Male (%)</th>
+                                            <th>Female (%)</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script src="{% static 'assets/js/data_analysis.js' %}"></script>
+    <script>
+        const displayTop5 = (modal_title, items, counts, dictionary=null, category=null) => {
+            console.log(items, counts, dictionary)
+
+            const title = document.getElementById('DisplaySheepReportStatisticScrollableTitle');
+            title.textContent = modal_title;
+
+            const tbody = document.querySelector('#sheep_report_modal_table tbody');
+
+            if (category === 'Books') {
+                const thead = document.querySelector('#sheep_report_modal_table thead');
+
+                thead.innerHTML = `
+                    <th scope="col">Name</th>
+                    <th scope="col">No of Time Read</th>
+                `
+            }
+            else if (category === 'Diligent') {
+                const thead = document.querySelector('#sheep_report_modal_table thead');
+
+                thead.innerHTML = `
+                    <th scope="col">Name</th>
+                    <th scope="col">No of Reports</th>
+                `
+            }
+            let text = "";
+
+            for (let i = 0; i < items.length; i++){
+                let tr = `
+                <td>${dictionary? dictionary[items[i]]: items[i]}</td>
+                <td>${counts[i]}</td>
+            `
+                text += `<tr>${tr}</tr>\n\n`;
+            }
+
+            tbody.innerHTML = text;
+        }
+
+        const chief_shep_bypass = '{{ chief_shep_bypass }}'
+
+        let url = null;
+        if (chief_shep_bypass) {
+            url = "{% url 'pastoring:shepherd-reports' %}?chart_request=true&chief_shep_bypass=true&shepherd_username={{ shepherd.name.username }}";
+        }
+        else {
+            url = "{% url 'pastoring:shepherd-reports' %}?chart_request=true";
+        }
+        update_charts(url);
+    </script>
+{% endblock javascript %}

@@ -1,0 +1,71 @@
+
+{% extends 'pastoring/workspace/testimonies/testimonies.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-12" style="margin-top: 70px">
+                {% block upload_notification %}
+                    {{ block.super }}
+                {% endblock upload_notification %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" class="row">
+                            {% csrf_token %}
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_testimony_date">Date</label>
+                                <input type="date" class="form-control" id="add_testimony_date" name="add_testimony_date">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_testimony_title">Title</label>
+                                <input type="text" class="form-control" id="add_testimony_title" name="add_testimony_title">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_testimony_testifier">Testifier</label>
+                                <input type="text" class="form-control" id="add_testimony_testifier" name="add_testimony_testifier">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label">Category</label>
+                                <select name="add_testimony_category" id="add_testimony_category" class="form-select mb-3 shadow-none">
+                                    <option value="life">Life Testimony</option>
+                                    <option value="general">General Testimony</option>
+                                    <option value="evangelism">Evangelism Testimony</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="add_testimony_message">Message</label>
+                                <textarea class="form-control" id="add_testimony_message" name="add_testimony_message" rows="30"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary text-center">Submit</button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        const toggle_meta_information = () => {
+            const strict_report = document.getElementById('add_meta_information').checked;
+            const report_day_select_box = document.getElementById('meta_information_textarea')
+            if (strict_report) {
+                report_day_select_box.style.display = 'block';
+            }
+            else {
+                report_day_select_box.style.display = 'none';
+            }
+        }
+    </script>
+{% endblock %}

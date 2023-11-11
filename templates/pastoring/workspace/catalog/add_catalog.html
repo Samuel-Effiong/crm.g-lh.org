@@ -1,0 +1,81 @@
+
+{% extends 'pastoring/workspace/catalog/catalog.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-12" style="margin-top: 70px">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" class="row">
+                            {% csrf_token %}
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_catalog_date">Date</label>
+                                <input type="date" class="form-control" id="add_catalog_date" name="add_catalog_date">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_category_title">Sermon Title</label>
+                                <input type="text" class="form-control" id="add_catalog_title" name="add_catalog_title">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_catalog_recommended_books_movies">Recommended Books/Movies</label>
+                                <input type="text" class="form-control" id="add_catalog_recommended_books_movies" name="add_catalog_recommended_books_movies">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_new_song_received">New Song Received</label>
+                                <input type="text" class="form-control" id="add_catalog_new_song_received" name="add_catalog_new_song_received">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="add_catalog_testimonies">Testimonies</label>
+                                <textarea class="form-control" id="add_catalog_testimonies" name="add_catalog_testimonies" rows="5"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="add_catalog_things_spoken_about">Things Spoken About</label>
+                                <textarea class="form-control" id="add_catalog_things_spoken_about" name="add_catalog_things_spoken_about" rows="30"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <input class="form-check-input" type="checkbox" id="add_meta_information" onclick="toggle_meta_information()">
+                                <label class="form-check-label" for="add_meta_information">Add Meta Information </label>
+                                <a data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Add additional information about this catalog that might be important or side notes that gives more contextual information about what happened during the service, that will be useful to someone reading the catalog." data-bs-original-title="" title="">
+                                    <small class="text-danger text-decoration-underline">(Click here)</small>
+                                </a>
+                            </div>
+
+                            <div class="form-group mt-3" style="display: none;" id="meta_information_textarea">
+                                <label class="form-label" for="add_catalog_meta_information">Meta Information</label>
+                                <textarea class="form-control" id="add_catalog_meta_information" name="add_catalog_meta_information" rows="7"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary text-center">Submit</button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        const toggle_meta_information = () => {
+            const strict_report = document.getElementById('add_meta_information').checked;
+            const report_day_select_box = document.getElementById('meta_information_textarea')
+            if (strict_report) {
+                report_day_select_box.style.display = 'block';
+            }
+            else {
+                report_day_select_box.style.display = 'none';
+            }
+        }
+    </script>
+{% endblock %}

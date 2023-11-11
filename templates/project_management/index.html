@@ -1,0 +1,1240 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>{{ project_title }}</title>
+      
+      <!-- Favicon -->
+      <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}" />
+      <link rel="stylesheet" href="{% static 'assets_project_management/css/backend-plugin.min.css' %}">
+      <link rel="stylesheet" href="{% static 'assets_project_management/css/backend.css' %}">
+      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css' %}">
+      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/remixicon/fonts/remixicon.css' %}">
+      
+      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-calendar/dist/tui-calendar.css' %}">
+      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-date-picker/dist/tui-date-picker.css' %}">
+      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-time-picker/dist/tui-time-picker.css' %}">
+
+      {% block extra_css %}
+      {% endblock extra_css %}
+
+  </head>
+  <body class="  ">
+        <!-- Wrapper Start -->
+        <div class="wrapper">
+
+          <div class="iq-sidebar  sidebar-default ">
+              <div class="iq-sidebar-logo d-flex align-items-center">
+                  <a href="{% url 'project_management:dashboard' %}" class="header-logo">
+                  <svg width="40" viewBox="0 0 419 451" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:square;stroke-miterlimit:2;">
+                    <g transform="matrix(1,0,0,1,-14434,-7520)">
+                        <g transform="matrix(0.588483,0,0,0.608637,6028.11,3030.09)">
+                            <rect id="Artboard4" x="14284" y="7377" width="712" height="741" style="fill:none;"/>
+                            <g id="Artboard41" serif:id="Artboard4">
+                                <g transform="matrix(0.313089,2.77336e-33,-2.86834e-33,0.27668,14232.3,7337.05)">
+                                    <g transform="matrix(135.952,0,0,135.952,-1972.85,-11987.7)">
+                                        <path d="M23.182,98.981C22.851,98.981 22.686,99.29 22.679,99.302L22.665,99.331L22.665,100.333L23.699,100.333L23.699,99.331L23.684,99.302C23.678,99.29 23.513,98.981 23.182,98.981Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M23.427,100.065L22.937,100.065L22.937,99.401C22.97,99.352 23.056,99.248 23.182,99.248C23.308,99.248 23.393,99.352 23.427,99.4L23.427,100.065Z" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <path d="M25.252,104.875L25.252,105.119L24.158,105.119L24.157,104.941L24.149,102.985L24.137,102.022L24.147,101.9C24.154,101.867 24.164,101.846 24.171,101.819C24.191,101.765 24.224,101.708 24.266,101.665C24.35,101.575 24.478,101.518 24.614,101.514C24.748,101.51 24.883,101.559 24.975,101.648C25.068,101.739 25.121,101.867 25.128,102.011C25.137,102.167 25.139,102.335 25.146,102.496L25.161,102.985C25.187,103.615 25.212,104.245 25.252,104.875Z" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <path d="M25.818,96.507L25.818,95.556L26.44,95.556L26.44,96.507L25.818,96.507ZM25.545,96.507L24.759,96.508L24.759,95.556L25.545,95.556L25.545,96.507ZM24.487,96.508L23.701,96.508L23.701,95.556L24.487,95.556L24.487,96.508ZM23.429,96.508L22.644,96.508L22.644,95.556L23.429,95.556L23.429,96.508ZM22.371,96.508L21.733,96.508L21.733,95.556L22.371,95.556L22.371,96.508ZM23.067,93.983L23.924,93.983L23.924,95.288L23.067,95.288L23.067,93.983ZM23.281,93.173C23.499,92.903 23.864,92.838 23.864,92.838C23.864,92.838 23.526,93.108 23.51,93.441C23.495,93.726 23.063,93.442 23.281,93.173ZM30.375,104.872C29.907,104.85 29.439,104.838 28.971,104.823L27.567,104.791L26.33,104.775C26.3,104.196 26.277,103.619 26.24,103.041L26.185,102.095L26.122,101.148C26.101,100.833 26.081,100.517 26.055,100.203L25.98,99.258C25.928,98.63 25.872,98.003 25.806,97.377C25.814,97.351 25.816,97.326 25.831,97.294C25.844,97.263 25.856,97.231 25.871,97.2C25.901,97.138 25.932,97.075 25.964,97.014C26.004,96.935 26.047,96.857 26.09,96.779L27.184,96.779C27.26,96.779 27.322,96.719 27.322,96.645C27.322,96.57 27.261,96.509 27.185,96.509L26.712,96.507L26.712,95.288L25.393,95.288L25.393,94.711L25.121,94.683L25.121,95.288L24.197,95.288L24.197,93.983L25.121,93.983L25.121,94.368L25.393,94.357L25.393,93.983L25.825,93.983L25.825,93.716L25.283,93.716C25.251,93.446 25.127,93.203 24.94,93.02C24.774,92.856 24.56,92.741 24.319,92.697L24.085,89.763L23.869,92.697C23.359,92.793 22.965,93.204 22.906,93.716L22.363,93.716L22.363,93.983L22.795,93.983L22.795,95.288L21.46,95.288L21.46,96.509L20.989,96.509C20.912,96.509 20.851,96.57 20.851,96.645C20.851,96.719 20.913,96.78 20.989,96.779L21.574,96.777L21.822,96.777C21.978,96.994 22.139,97.242 22.158,97.308C22.133,97.688 21.819,103.704 21.764,104.782C21.245,104.788 20.728,104.795 20.21,104.807C19.574,104.819 18.938,104.838 18.302,104.858C17.666,104.882 17.029,104.906 16.393,104.944C17.029,104.983 17.666,105.006 18.302,105.03C18.938,105.05 19.574,105.069 20.21,105.081C20.846,105.097 21.482,105.102 22.118,105.11L23.072,105.118L23.963,105.121L24.026,105.121L24.208,105.122L24.207,104.944L24.2,103.001L24.188,102.043L24.197,101.922C24.204,101.889 24.214,101.868 24.22,101.841C24.24,101.787 24.271,101.731 24.311,101.688C24.391,101.598 24.513,101.542 24.642,101.538C24.77,101.534 24.897,101.582 24.985,101.671C25.074,101.761 25.124,101.889 25.131,102.032C25.139,102.187 25.142,102.354 25.148,102.514L25.163,103.001C25.187,103.627 25.21,104.253 25.249,104.879C25.25,104.901 25.252,104.923 25.253,104.944C25.294,104.296 25.318,103.648 25.344,103.001L25.359,102.514C25.363,102.351 25.371,102.193 25.372,102.025C25.375,101.878 25.336,101.72 25.249,101.586C25.229,101.554 25.205,101.524 25.18,101.495C25.045,101.345 24.843,101.259 24.641,101.257L24.62,101.257C24.424,101.259 24.226,101.337 24.087,101.481C24.036,101.533 23.996,101.59 23.963,101.653C23.948,101.681 23.935,101.71 23.923,101.74C23.908,101.79 23.89,101.846 23.881,101.893L23.869,102.014L23.867,102.029L23.866,102.051L23.866,102.059L23.865,102.089L23.862,102.272L23.859,102.514L23.852,103.001L23.845,104.767L23.072,104.77L22.118,104.777C22.091,104.778 22.064,104.778 22.037,104.778C22.174,102.15 22.42,97.431 22.43,97.315L22.431,97.305L22.431,97.295C22.424,97.195 22.298,96.985 22.154,96.777L26.067,96.779C26.017,96.848 25.967,96.917 25.919,96.988C25.879,97.046 25.841,97.105 25.805,97.166C25.786,97.196 25.77,97.229 25.753,97.26C25.734,97.29 25.722,97.332 25.709,97.373L25.709,97.38C25.711,98.014 25.723,98.646 25.736,99.278L25.764,100.225C25.771,100.541 25.786,100.856 25.798,101.172L25.836,102.117L25.882,103.063C25.91,103.694 25.954,104.323 25.988,104.953L25.997,105.118L26.162,105.115L27.567,105.097L28.971,105.066C29.439,105.05 29.907,105.038 30.375,105.017C30.843,104.998 31.311,104.973 31.779,104.944C31.311,104.914 30.843,104.89 30.375,104.872Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M23.699,97.644L23.684,97.615C23.678,97.603 23.513,97.294 23.182,97.294C22.851,97.294 22.686,97.603 22.679,97.615L22.665,97.644L22.665,98.646L23.699,98.646L23.699,97.644Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M23.427,98.379L22.937,98.379L22.937,97.714C22.97,97.665 23.056,97.562 23.182,97.562C23.308,97.562 23.393,97.665 23.427,97.714L23.427,98.379Z" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="21.733" y="95.556" width="0.638" height="0.952" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <rect x="22.644" y="95.556" width="0.785" height="0.952" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <path d="M23.864,92.838C23.864,92.838 23.526,93.108 23.51,93.441C23.495,93.726 23.063,93.442 23.281,93.173C23.499,92.903 23.864,92.838 23.864,92.838Z" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <rect x="23.067" y="93.983" width="0.857" height="1.305" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <rect x="23.701" y="95.556" width="0.786" height="0.952" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <path d="M25.393,94.357L25.393,94.711L25.121,94.683L25.121,95.288L24.197,95.288L24.197,93.983L25.121,93.983L25.121,94.368L25.393,94.357Z" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <path d="M25.545,95.556L25.545,96.507L24.759,96.508L24.759,95.556L25.545,95.556Z" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <rect x="25.818" y="95.556" width="0.622" height="0.951" style="fill:rgb(157,31,96);fill-rule:nonzero;"/>
+                                        <path d="M23.415,93.56C23.33,93.56 23.219,93.459 23.219,93.332C23.22,93.282 23.237,93.227 23.281,93.173C23.499,92.903 23.864,92.838 23.864,92.838C23.864,92.838 23.526,93.108 23.51,93.441C23.505,93.525 23.465,93.56 23.415,93.56Z" style="fill:rgb(179,123,145);fill-rule:nonzero;"/>
+                                        <rect x="24.197" y="93.983" width="0.924" height="1.305" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="23.067" y="93.983" width="0.857" height="1.305" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="21.733" y="95.556" width="0.638" height="0.952" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="22.644" y="95.556" width="0.785" height="0.952" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="23.701" y="95.556" width="0.786" height="0.952" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <path d="M25.545,95.556L25.545,96.507L24.759,96.508L24.759,95.556L25.545,95.556Z" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <rect x="25.818" y="95.556" width="0.622" height="0.951" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <path d="M26.193,94.637L29.621,95.13L25.393,94.711L25.121,94.683L24.978,94.669L24.874,94.659L24.895,94.494L24.887,94.377L24.992,94.373L25.121,94.368L25.393,94.357L31.084,94.129L26.172,94.491L31.786,94.865L26.193,94.637Z" style="fill:rgb(254,221,16);fill-rule:nonzero;"/>
+                                        <path d="M20.677,93.899C20.668,93.981 20.689,94.014 20.847,94.158C20.804,94.143 20.774,94.132 20.743,94.12C20.755,94.186 20.768,94.197 20.917,94.281C20.885,94.279 20.862,94.277 20.839,94.275C20.862,94.336 20.916,94.348 20.972,94.361C20.958,94.365 20.944,94.367 20.93,94.371C20.954,94.409 20.954,94.409 21.026,94.417C21.016,94.424 21.008,94.429 20.987,94.442C21.025,94.453 21.052,94.461 21.079,94.469C21.079,94.469 21.071,94.475 21.054,94.488C21.082,94.497 21.103,94.504 21.124,94.512C21.125,94.515 21.126,94.527 21.133,94.535C21.169,94.585 21.16,94.632 21.103,94.655C20.986,94.7 20.868,94.742 20.751,94.785C20.738,94.789 20.726,94.792 20.709,94.796C20.802,94.847 20.891,94.88 20.987,94.8C20.989,94.806 20.99,94.812 20.99,94.817C20.972,94.834 20.954,94.852 20.93,94.872C20.984,94.884 21.031,94.905 21.074,94.857C21.07,94.868 21.065,94.878 21.058,94.893C21.182,94.895 21.3,94.893 21.405,94.852C21.392,94.798 21.38,94.745 21.366,94.689C21.356,94.694 21.339,94.701 21.317,94.71C21.381,94.648 21.64,94.544 21.699,94.555C21.712,94.528 21.699,94.515 21.676,94.499C21.593,94.442 21.512,94.478 21.43,94.496C21.391,94.505 21.355,94.514 21.325,94.478C21.295,94.441 21.297,94.406 21.316,94.364C21.352,94.286 21.321,94.214 21.24,94.161C21.012,94.01 20.855,93.809 20.78,93.548C20.768,93.509 20.762,93.469 20.752,93.421C20.678,93.56 20.752,93.681 20.777,93.819C20.74,93.766 20.71,93.724 20.681,93.682C20.653,93.766 20.669,93.816 20.766,93.97C20.736,93.946 20.706,93.922 20.677,93.899Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M20.77,92.466C20.761,92.548 20.783,92.581 20.94,92.725C20.898,92.71 20.868,92.699 20.836,92.688C20.849,92.753 20.862,92.764 21.01,92.848C20.978,92.846 20.955,92.845 20.932,92.843C20.956,92.903 21.009,92.916 21.066,92.929C21.052,92.932 21.038,92.935 21.024,92.938C21.047,92.976 21.047,92.976 21.119,92.985C21.11,92.991 21.102,92.996 21.08,93.009C21.118,93.021 21.146,93.028 21.172,93.036C21.172,93.036 21.165,93.042 21.148,93.055C21.175,93.065 21.196,93.072 21.218,93.079C21.219,93.082 21.22,93.094 21.226,93.103C21.262,93.152 21.254,93.2 21.196,93.222C21.08,93.268 20.962,93.309 20.844,93.352C20.832,93.356 20.82,93.359 20.802,93.364C20.896,93.415 20.985,93.447 21.081,93.368C21.082,93.373 21.083,93.379 21.084,93.384C21.066,93.402 21.047,93.419 21.024,93.439C21.077,93.452 21.125,93.472 21.168,93.424C21.163,93.435 21.159,93.446 21.152,93.461C21.276,93.462 21.394,93.459 21.498,93.42C21.486,93.365 21.473,93.312 21.46,93.256C21.45,93.26 21.433,93.268 21.411,93.278C21.474,93.216 21.734,93.111 21.792,93.123C21.806,93.095 21.792,93.083 21.769,93.066C21.687,93.01 21.605,93.045 21.524,93.063C21.484,93.073 21.448,93.081 21.418,93.045C21.388,93.009 21.39,92.973 21.409,92.932C21.445,92.854 21.414,92.781 21.333,92.728C21.105,92.578 20.948,92.375 20.873,92.115C20.862,92.076 20.856,92.036 20.845,91.989C20.772,92.127 20.845,92.248 20.871,92.386C20.834,92.334 20.804,92.292 20.774,92.249C20.746,92.334 20.762,92.383 20.859,92.537C20.829,92.513 20.8,92.489 20.77,92.466Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M21.837,92.869C21.865,92.797 21.882,92.722 21.907,92.649C21.932,92.571 21.961,92.494 21.985,92.426C21.842,92.51 21.736,92.641 21.664,92.802C21.643,92.851 21.614,92.897 21.582,92.94C21.551,92.982 21.511,93.018 21.476,93.056C21.55,93.042 21.631,93.036 21.705,93.011C21.769,92.989 21.813,92.932 21.837,92.869Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M21.571,94.235C21.549,94.283 21.521,94.33 21.489,94.372C21.457,94.415 21.418,94.45 21.382,94.488C21.457,94.474 21.538,94.469 21.612,94.444C21.676,94.422 21.72,94.365 21.744,94.301C21.771,94.229 21.789,94.155 21.813,94.081C21.839,94.004 21.867,93.927 21.891,93.859C21.748,93.942 21.643,94.074 21.571,94.235Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M19.354,93.203C19.346,93.284 19.367,93.318 19.524,93.462C19.482,93.447 19.452,93.435 19.42,93.424C19.433,93.489 19.445,93.501 19.594,93.584C19.563,93.583 19.539,93.581 19.516,93.579C19.54,93.639 19.593,93.653 19.65,93.665C19.636,93.668 19.622,93.671 19.608,93.674C19.631,93.713 19.631,93.713 19.703,93.721C19.694,93.727 19.685,93.733 19.664,93.746C19.702,93.757 19.73,93.765 19.756,93.773C19.756,93.773 19.749,93.779 19.732,93.792C19.759,93.801 19.78,93.808 19.802,93.816C19.803,93.818 19.804,93.83 19.81,93.839C19.846,93.889 19.838,93.936 19.78,93.958C19.664,94.004 19.546,94.045 19.428,94.088C19.416,94.092 19.404,94.095 19.387,94.1C19.48,94.151 19.569,94.184 19.665,94.104C19.666,94.11 19.667,94.115 19.668,94.121C19.649,94.138 19.631,94.155 19.608,94.176C19.661,94.188 19.709,94.208 19.752,94.161C19.747,94.172 19.743,94.182 19.736,94.198C19.86,94.199 19.978,94.196 20.082,94.156C20.069,94.102 20.057,94.048 20.044,93.993C20.034,93.997 20.017,94.004 19.995,94.014C20.058,93.953 20.318,93.848 20.376,93.859C20.39,93.831 20.376,93.819 20.353,93.803C20.271,93.746 20.189,93.781 20.107,93.8C20.068,93.809 20.032,93.817 20.002,93.781C19.972,93.745 19.974,93.709 19.993,93.668C20.029,93.591 19.998,93.518 19.917,93.464C19.689,93.314 19.533,93.112 19.458,92.852C19.446,92.812 19.44,92.773 19.429,92.725C19.356,92.864 19.429,92.985 19.455,93.123C19.418,93.07 19.388,93.028 19.358,92.985C19.33,93.07 19.346,93.12 19.443,93.273C19.413,93.249 19.384,93.226 19.354,93.203Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                        <path d="M20.421,93.605C20.449,93.534 20.466,93.458 20.491,93.385C20.516,93.307 20.545,93.23 20.568,93.163C20.426,93.246 20.32,93.378 20.248,93.539C20.226,93.587 20.198,93.634 20.166,93.677C20.135,93.718 20.095,93.754 20.06,93.792C20.134,93.778 20.215,93.773 20.289,93.747C20.353,93.725 20.397,93.669 20.421,93.605Z" style="fill:rgb(145,0,69);fill-rule:nonzero;"/>
+                                    </g>
+                                    <g transform="matrix(1.36008,0,0,1.00909,-384.557,414.193)">
+                                        <path d="M470.826,2281L2009.49,2281L1613,2309.29L1244.9,2315.93L856,2312L470.826,2281Z" style="fill:rgb(146,25,71);"/>
+                                    </g>
+                                    <g transform="matrix(1.85565,0,0,1.85565,-485.535,-772.75)">
+                                        <g transform="matrix(96.552,0,0,96.552,1457.01,1778)">
+                                        </g>
+                                        <text x="470.826px" y="1778px" style="font-family:'Sanchez-Regular', 'Sanchez';font-size:96.552px;fill:rgb(145,0,69);stroke:rgb(145,0,69);stroke-width:2.12px;">GO<tspan x="615.268px " y="1778px ">D</tspan>&apos;S L<tspan x="856.359px 888.124px 960.924px 1040.1px 1109.62px 1185.6px 1253.86px 1330.33px 1393.96px " y="1778px 1778px 1778px 1778px 1778px 1778px 1778px 1778px 1778px ">IGHTHOUSE</tspan></text>
+                                    </g>
+                                    <g transform="matrix(0.850268,0,0,0.850268,-259.519,737.084)">
+                                        <g transform="matrix(87.5749,0,0,87.5749,2751.58,2221.57)">
+                                        </g>
+                                        <text x="921px" y="2221.58px" style="font-family:'Sanchez-Regular', 'Sanchez';font-size:87.575px;fill:rgb(145,0,69);">E<tspan x="977.749px 1027.14px " y="2221.58px 2221.58px ">ye</tspan>s t<tspan x="1178.56px 1232.07px 1280.32px " y="2221.58px 2221.58px 2221.58px ">hat</tspan> see...ea<tspan x="1616.96px 1653.48px " y="2221.58px 2221.58px ">rs</tspan> t<tspan x="1757.78px 1811.29px 1859.54px " y="2221.58px 2221.58px 2221.58px ">hat</tspan> h<tspan x="1974.18px 2021.2px 2071.82px " y="2221.58px 2221.58px 2221.58px ">ear</tspan> (Isaia<tspan x="2373.17px " y="2221.58px ">h</tspan> 32:3-4)</text>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+
+                      <h5 class="logo-title light-logo">{{ project_title }}</h5>
+                  </a>
+                  <div class="iq-menu-bt-sidebar ml-0">
+                      <i class="las la-bars wrapper-menu"></i>
+                  </div>
+              </div>
+              <div class="data-scrollbar" data-scroll="1">
+                  <nav class="iq-sidebar-menu">
+                      <ul id="iq-sidebar-toggle" class="iq-menu">
+                          <li class="{% if category == 'Dashboard' %}active{% endif %}">
+                              <a href="{% url 'project_management:dashboard' %}" class="svg-icon">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                  </svg>
+                                  <span class="ml-4">Dashboards</span>
+                              </a>
+                          </li>
+
+                          <li class="">
+                              <a href="#projects" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                  </svg>
+                                  <span class="ml-4">Projects</span>
+                                  <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                  <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                              </a>
+                              <ul id="projects" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                                  {% for department in member_departments %}
+                                      <li class="{% if category == department.department_name %}active{% endif %}">
+                                          <a href="{% url 'project_management:project' department.department_name %}">
+                                              <i class="las la-minus"></i>
+                                              <span>{{ department.department_name }}</span>
+                                          </a>
+                                      </li>
+                                  {% endfor %}
+                              </ul>
+                          </li>
+                          <li class="">
+                              <a href="../backend/page-task.html" class="svg-icon">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                  </svg>
+                                  <span class="ml-4">Task</span>
+                              </a>
+                          </li>
+                          <li class="">
+                              <a href="../backend/page-employee.html" class="svg-icon">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                                  </svg>
+                                  <span class="ml-4">Employees</span>
+                              </a>
+                          </li>
+                          <li class="">
+                              <a href="../backend/page-desk.html" class="svg-icon">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                  </svg>
+                                  <span class="ml-4">Desk</span>
+                              </a>
+                          </li>
+                          <li class="">
+                              <a href="../backend/page-calender.html" class="svg-icon">
+                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                                  </svg>
+                                  <span class="ml-4">Calender</span>
+                              </a>
+                          </li>
+                      </ul>
+                  </nav>
+                  <div id="sidebar-bottom" class="position-relative sidebar-bottom">
+                      <div class="card border-none mb-0 shadow-none">
+                          <div class="card-body p-0">
+                              <div class="sidebarbottom-content">
+                                  <h5 class="mb-3">Task Performed</h5>
+                                  <div id="circle-progress-6" class="sidebar-circle circle-progress circle-progress-primary mb-4" data-min-value="0" data-max-value="100" data-value="55" data-type="percent"></div>
+                                  <div class="custom-control custom-radio mb-1">
+                                      <input type="radio" id="customRadio6" name="customRadio-1" class="custom-control-input" checked="">
+                                      <label class="custom-control-label" for="customRadio6">Performed task</label>
+                                  </div>
+                                  <div class="custom-control custom-radio">
+                                      <input type="radio" id="customRadio7" name="customRadio-1" class="custom-control-input">
+                                      <label class="custom-control-label" for="customRadio7">Incomplete Task</label>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="pt-5 pb-2"></div>
+              </div>
+          </div>
+          <div class="iq-top-navbar">
+              <div class="iq-navbar-custom">
+                  <nav class="navbar navbar-expand-lg navbar-light p-0">
+                      <div class="iq-navbar-logo d-flex align-items-center justify-content-between">
+                          <i class="ri-menu-line wrapper-menu"></i>
+                          <a href="{% url 'project_management:dashboard' %}" class="header-logo">
+                              <h4 class="logo-title text-uppercase">{{ project_title }}</h4>
+
+                          </a>
+                      </div>
+                      <div class="navbar-breadcrumb">
+                          <h5>{{ category }}</h5>
+                      </div>
+                      <div class="d-flex align-items-center">
+                          <button class="navbar-toggler" type="button" data-toggle="collapse"
+                              data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                              aria-label="Toggle navigation">
+                              <i class="ri-menu-3-line"></i>
+                          </button>
+                          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                              <ul class="navbar-nav ml-auto navbar-list align-items-center">
+                                  <li>
+                                      <div class="iq-search-bar device-search">
+                                          <form action="#" class="searchbox">
+                                              <a class="search-link" href="#"><i class="ri-search-line"></i></a>
+                                              <input type="text" class="text search-input" placeholder="Search here...">
+                                          </form>
+                                      </div>
+                                  </li>
+                                  <li class="nav-item nav-icon search-content">
+                                      <a href="#" class="search-toggle rounded" id="dropdownSearch" data-toggle="dropdown"
+                                          aria-haspopup="true" aria-expanded="false">
+                                          <i class="ri-search-line"></i>
+                                      </a>
+                                      <div class="iq-search-bar iq-sub-dropdown dropdown-menu" aria-labelledby="dropdownSearch">
+                                          <form action="#" class="searchbox p-2">
+                                              <div class="form-group mb-0 position-relative">
+                                                  <input type="text" class="text search-input font-size-12"
+                                                      placeholder="type here to search...">
+                                                  <a href="#" class="search-link"><i class="las la-search"></i></a>
+                                              </div>
+                                          </form>
+                                      </div>
+                                  </li>
+                                  <li class="nav-item nav-icon nav-item-icon dropdown">
+                                      <a href="#" class="search-toggle dropdown-toggle" id="dropdownMenuButton2"
+                                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                              stroke-linejoin="round" class="feather feather-mail">
+                                              <path
+                                                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                              </path>
+                                              <polyline points="22,6 12,13 2,6"></polyline>
+                                          </svg>
+                                          <span class="bg-primary"></span>
+                                      </a>
+                                      <div class="iq-sub-dropdown dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                                          <div class="card shadow-none m-0">
+                                              <div class="card-body p-0 ">
+                                                  <div class="cust-title p-3">
+                                                      <div class="d-flex align-items-center justify-content-between">
+                                                          <h5 class="mb-0">All Messages</h5>
+                                                          <a class="badge badge-primary badge-card" href="#">3</a>
+                                                      </div>
+                                                  </div>
+                                                  <div class="px-3 pt-0 pb-0 sub-card">
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3 border-bottom">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/' %}01.jpg" alt="01">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Emma Watson</h6>
+                                                                      <small class="text-dark"><b>12 : 47 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3 border-bottom">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="02">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Ashlynn Franci</h6>
+                                                                      <small class="text-dark"><b>11 : 30 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/03.jpg' %}" alt="03">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Kianna Carder</h6>
+                                                                      <small class="text-dark"><b>11 : 21 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                  </div>
+                                                  <a class="right-ic btn btn-primary btn-block position-relative p-2" href="#"
+                                                      role="button">
+                                                      View All
+                                                  </a>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+                                  <li class="nav-item nav-icon nav-item-icon dropdown">
+                                      <a href="#" class="search-toggle dropdown-toggle" id="dropdownMenuButton"
+                                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                              stroke-linejoin="round" class="feather feather-bell">
+                                              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                          </svg>
+                                          <span class="bg-primary "></span>
+                                      </a>
+                                      <div class="iq-sub-dropdown dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                          <div class="card shadow-none m-0">
+                                              <div class="card-body p-0 ">
+                                                  <div class="cust-title p-3">
+                                                      <div class="d-flex align-items-center justify-content-between">
+                                                          <h5 class="mb-0">Notifications</h5>
+                                                          <a class="badge badge-primary badge-card" href="#">3</a>
+                                                      </div>
+                                                  </div>
+                                                  <div class="px-3 pt-0 pb-0 sub-card">
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3 border-bottom">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/01.jpg' %}" alt="01">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Emma Watson</h6>
+                                                                      <small class="text-dark"><b>12 : 47 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3 border-bottom">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="02">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Ashlynn Franci</h6>
+                                                                      <small class="text-dark"><b>11 : 30 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                      <a href="#" class="iq-sub-card">
+                                                          <div class="media align-items-center cust-card py-3">
+                                                              <div class="">
+                                                                  <img class="avatar-50 rounded-small"
+                                                                      src="{% static 'assets_project_management/images/user/03.jpg' %}" alt="03">
+                                                              </div>
+                                                              <div class="media-body ml-3">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <h6 class="mb-0">Kianna Carder</h6>
+                                                                      <small class="text-dark"><b>11 : 21 pm</b></small>
+                                                                  </div>
+                                                                  <small class="mb-0">Lorem ipsum dolor sit amet</small>
+                                                              </div>
+                                                          </div>
+                                                      </a>
+                                                  </div>
+                                                  <a class="right-ic btn btn-primary btn-block position-relative p-2" href="#"
+                                                      role="button">
+                                                      View All
+                                                  </a>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </li>
+                                  <li class="nav-item nav-icon dropdown caption-content">
+                                      <a href="#" class="search-toggle dropdown-toggle  d-flex align-items-center" id="dropdownMenuButton4"
+                                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <img src="{% static 'assets_project_management/images/user/1.jpg' %}" class="img-fluid rounded-circle" alt="user">
+                                          <div class="caption ml-3">
+                                              <h6 class="mb-0 line-height">Savannah Nguyen<i class="las la-angle-down ml-2"></i></h6>
+                                          </div>
+                                      </a>
+                                      <ul class="dropdown-menu dropdown-menu-right border-none" aria-labelledby="dropdownMenuButton">
+                                          <li class="dropdown-item d-flex svg-icon border-bottom mb-1">
+                                              <svg class="svg-icon mr-0 text-primary" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                              </svg>
+                                              <a href="#">Settings</a>
+                                          </li>
+                                          {% for department in member_departments %}
+                                              <li class="dropdown-item d-flex svg-icon">
+                                                  <svg class="svg-icon mr-0 text-primary" id="h-03-p" xmlns="http://www.w3.org/2000/svg" width="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                      <path fill-rule="evenodd" d="M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z"></path>
+                                                  </svg>
+
+                                                  <a href="{% url 'project_management:project-settings' department.department_name %}">{{ department.department_name }}</a>
+                                              </li>
+                                          {% endfor %}
+
+                                          <li class="dropdown-item d-flex svg-icon border-bottom border-top mt-3">
+                                              <svg class="svg-icon mr-0 text-primary" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                              </svg>
+                                              <a href="#">Other Settings</a>
+                                          </li>
+                                      </ul>
+                                  </li>
+                              </ul>
+                          </div>
+                      </div>
+                  </nav>
+              </div>
+          </div>
+
+            <div class="content-page">
+                {% block content %}
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="top-block d-flex align-items-center justify-content-between">
+                                            <h5>Investment</h5>
+                                            <span class="badge badge-primary">Monthly</span>
+                                        </div>
+                                        <h3>$<span class="counter">35000</span></h3>
+                                        <div class="d-flex align-items-center justify-content-between mt-1">
+                                            <p class="mb-0">Total Revenue</p>
+                                            <span class="text-primary">65%</span>
+                                        </div>
+                                        <div class="iq-progress-bar bg-primary-light mt-2">
+                                            <span class="bg-primary iq-progress progress-1" data-percent="65"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="top-block d-flex align-items-center justify-content-between">
+                                            <h5>Sales</h5>
+                                            <span class="badge badge-warning">Anual</span>
+                                        </div>
+                                        <h3>$<span class="counter">25100</span></h3>
+                                        <div class="d-flex align-items-center justify-content-between mt-1">
+                                            <p class="mb-0">Total Revenue</p>
+                                            <span class="text-warning">35%</span>
+                                        </div>
+                                        <div class="iq-progress-bar bg-warning-light mt-2">
+                                            <span class="bg-warning iq-progress progress-1" data-percent="35"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="top-block d-flex align-items-center justify-content-between">
+                                            <h5>Cost</h5>
+                                            <span class="badge badge-success">Today</span>
+                                        </div>
+                                        <h3>$<span class="counter">33000</span></h3>
+                                        <div class="d-flex align-items-center justify-content-between mt-1">
+                                            <p class="mb-0">Total Revenue</p>
+                                            <span class="text-success">85%</span>
+                                        </div>
+                                        <div class="iq-progress-bar bg-success-light mt-2">
+                                            <span class="bg-success iq-progress progress-1" data-percent="85"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="top-block d-flex align-items-center justify-content-between">
+                                            <h5>Profit</h5>
+                                            <span class="badge badge-info">Weekly</span>
+                                        </div>
+                                        <h3>$<span class="counter">2500</span></h3>
+                                        <div class="d-flex align-items-center justify-content-between mt-1">
+                                            <p class="mb-0">Total Revenue</p>
+                                            <span class="text-info">55%</span>
+                                        </div>
+                                        <div class="iq-progress-bar bg-info-light mt-2">
+                                            <span class="bg-info iq-progress progress-1" data-percent="55"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-8">
+                                <div class="card-transparent card-block card-stretch card-height">
+                                    <div class="card-body p-0">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between">
+                                                <div class="header-title">
+                                                    <h4 class="card-title">Overview Progress</h4>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-inline p-0 mb-0">
+                                                    <li class="mb-1">
+                                                        <div class="row">
+                                                            <div class="col-sm-3">
+                                                                <p class="mb-0">UX / UI Design</p>
+                                                            </div>
+                                                            <div class="col-sm-6">
+                                                                <div class="d-flex align-items-center justify-content-between">
+                                                                    <div class="iq-progress-bar bg-secondary-light">
+                                                                        <span class="bg-secondary iq-progress progress-1" data-percent="65"></span>
+                                                                    </div>
+                                                                    <span class="ml-3">65%</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-3">
+                                                                <div class="iq-media-group text-sm-right">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/05.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/06.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/07.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li class="mb-1">
+                                                        <div class="d-flex align-items-center justify-content-between row">
+                                                            <div class="col-sm-3">
+                                                                <p class="mb-0">Development</p>
+                                                            </div>
+                                                            <div class="col-sm-6">
+                                                                <div class="d-flex align-items-center justify-content-between">
+                                                                    <div class="iq-progress-bar bg-primary-light">
+                                                                        <span class="bg-primary iq-progress progress-1" data-percent="59"></span>
+                                                                    </div>
+                                                                    <span class="ml-3">59%</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-3">
+                                                                <div class="iq-media-group text-sm-right">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/08.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/09.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/04.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="d-flex align-items-center justify-content-between row">
+                                                            <div class="col-sm-3">
+                                                                <p class="mb-0">Testing</p>
+                                                            </div>
+                                                            <div class="col-sm-6">
+                                                                <div class="d-flex align-items-center justify-content-between">
+                                                                    <div class="iq-progress-bar bg-warning-light">
+                                                                        <span class="bg-warning iq-progress progress-1" data-percent="78"></span>
+                                                                    </div>
+                                                                    <span class="ml-3">78%</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-3">
+                                                                <div class="iq-media-group text-sm-right">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/01.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/03.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-sm-8">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-3">
+                                                                        <div id="circle-progress-21" class="circle-progress-01 circle-progress circle-progress-primary" data-min-value="0" data-max-value="100" data-value="25" data-type="percent"></div>
+                                                                    </div>
+                                                                    <div class="col-md-9">
+                                                                        <div class="mt-3 mt-md-0">
+                                                                            <h5 class="mb-1">Cloud Service Theme</h5>
+                                                                            <p class="mb-0">Exclusively for cloud-based/ Startup theme.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">
+                                                                <div class="iq-media-group">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/05.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/06.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                                <a class="btn btn-white text-primary link-shadow mt-2">High</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-sm-8">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-3">
+                                                                        <div id="circle-progress-22" class="circle-progress-01 circle-progress circle-progress-secondary" data-min-value="0" data-max-value="100" data-value="30" data-type="percent"></div>
+                                                                    </div>
+                                                                    <div class="col-md-9">
+                                                                        <div class="mt-3 mt-md-0">
+                                                                            <h5 class="mb-1">Automotive WordPress</h5>
+                                                                            <p class="mb-0">Dealership-based business WordPress theme.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">
+                                                                <div class="iq-media-group">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/07.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/04.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/08.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                                <a class="btn btn-white text-secondary link-shadow mt-2">Medium</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-sm-8">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-3">
+                                                                        <div id="circle-progress-23" class="circle-progress-01 circle-progress circle-progress-warning" data-min-value="0" data-max-value="100" data-value="15" data-type="percent"></div>
+                                                                    </div>
+                                                                    <div class="col-md-9">
+                                                                        <div class="mt-3 mt-md-0">
+                                                                            <h5 class="mb-1">Online Education</h5>
+                                                                            <p class="mb-0">Remote students and teachers dashboard.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">
+                                                                <div class="iq-media-group">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/01.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/03.jpg' %}" alt="">
+                                                                    </a>
+                                                                </div>
+                                                                <a class="btn btn-white text-warning link-shadow mt-2">Low</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="card mb-0">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-sm-8">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-3">
+                                                                        <div id="circle-progress-24" class="circle-progress-01 circle-progress circle-progress-success" data-min-value="0" data-max-value="100" data-value="40" data-type="percent"></div>
+                                                                    </div>
+                                                                    <div class="col-md-9">
+                                                                        <div class="mt-3 mt-md-0">
+                                                                            <h5 class="mb-1">Blog/Magazine Theme</h5>
+                                                                            <p class="mb-0">Launch visually appealing Blog theme.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">
+                                                                <div class="iq-media-group">
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/05.jpg' %}" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/' %}06.jpg" alt="">
+                                                                    </a>
+                                                                    <a href="#" class="iq-media">
+                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/' %}07.jpg" alt="">
+                                                                    </a>
+                                                                </div>
+                                                                <a class="btn btn-white text-success  link-shadow mt-2">High</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="card border-bottom pb-2 shadow-none">
+                                            <div class="card-body text-center inln-date flet-datepickr">
+                                                <input type="text" id="inline-date" class="date-input basicFlatpickr d-none" readonly="readonly">
+                                            </div>
+                                        </div>
+                                        <div class="card card-list">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <svg class="svg-icon text-secondary mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                    </svg>
+                                                    <div class="pl-3 border-left">
+                                                        <h5 class="mb-1">Direct Development</h5>
+                                                        <p class="mb-0">Unveling the design system</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card card-list">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <svg class="svg-icon text-primary mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                                                        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                                    </svg>
+                                                    <div class="pl-3 border-left">
+                                                        <h5 class="mb-1">action point assigned</h5>
+                                                        <p class="mb-0">Unveling the design system</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card card-list">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <svg class="svg-icon text-warning mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>
+                                                    </svg>
+                                                    <div class="pl-3 border-left">
+                                                        <h5 class="mb-1">Private Notes</h5>
+                                                        <p class="mb-0">Unveling the design system</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card card-list mb-0">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <svg class="svg-icon text-success mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                                    </svg>
+                                                    <div class="pl-3 border-left">
+                                                        <h5 class="mb-1">Support Request</h5>
+                                                        <p class="mb-0">Unveling the design system</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="card-transparent mb-0">
+                                    <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
+                                        <div class="header-title">
+                                            <h4 class="card-title">Current Projects</h4>
+                                        </div>
+                                        <div class="card-header-toolbar d-flex align-items-center">
+                                            <div id="top-project-slick-arrow" class="slick-aerrow-block">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-unstyled row top-projects mb-0">
+                                            <li class="col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Hotel Management App UI Kit</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                        <div class="iq-progress-bar bg-secondary-light mb-4">
+                                                            <span class="bg-secondary iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn bg-secondary-light">Design</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">General Improvement in pages</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                        <div class="iq-progress-bar bg-info-light mb-4">
+                                                            <span class="bg-info iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}05.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}06.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}07.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}08.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn bg-info-light">Testing</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Product list view changes</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                        <div class="iq-progress-bar bg-success-light mb-4">
+                                                            <span class="bg-success iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}05.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}06.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn bg-success-light">SEO</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Add Multiple theme options</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                        <div class="iq-progress-bar bg-warning-light mb-4">
+                                                            <span class="bg-warning iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn bg-warning-light">Development</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="col-lg-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-3">Admin Panel Customization</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                        <div class="iq-progress-bar bg-primary-light mb-4">
+                                                            <span class="bg-primary iq-progress progress-1" data-percent="65"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}01.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}02.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                                <a href="#" class="iq-media">
+                                                                    <img src="{% static 'assets_project_management/images/user/' %}04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                </a>
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn bg-primary-light">Content</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endblock content %}
+          </div>
+        </div>
+        <!-- Wrapper End-->
+
+    {% block modal %}
+
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-task-modal">
+            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bttom">
+                        <h3 class="modal-title" id="exampleModalCenterTitle">New Task</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText02" class="h5">Task Name</label>
+                                    <input type="text" class="form-control" id="exampleInputText02" placeholder="Enter task Name">
+                                    <a href="#" class="task-edit text-body"><i class="ri-edit-box-line"></i></a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Assigned to</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Memebers</option>
+                                        <option>Kianna Septimus</option>
+                                        <option>Jaxson Herwitz</option>
+                                        <option>Ryan Schleifer</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText05" class="h5">Due Dates*</label>
+                                    <input type="date" class="form-control" id="exampleInputText05" value="">
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Category</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Design</option>
+                                        <option>Android</option>
+                                        <option>IOS</option>
+                                        <option>Ui/Ux Design</option>
+                                        <option>Development</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText040" class="h5">Description</label>
+                                    <textarea class="form-control" id="exampleInputText040" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText005" class="h5">Checklist</label>
+                                    <input type="text" class="form-control" id="exampleInputText005" placeholder="Add List">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-0">
+                                    <label for="exampleInputText01" class="h5">Attachments</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="inputGroupFile003">
+                                        <label class="custom-file-label" for="inputGroupFile003">Upload media</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-4">
+                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-user-modal">
+            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bttom">
+                        <h3 class="modal-title" id="exampleModalCenterTitle02">New User</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3 custom-file-small">
+                                    <label for="exampleInputText01" class="h5">Upload Profile Picture</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="inputGroupFile02">
+                                        <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Full Name</label>
+                                    <input type="text" class="form-control" id="exampleInputText2" placeholder="Enter your full name">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText04" class="h5">Phone Number</label>
+                                    <input type="text" class="form-control" id="exampleInputText04" placeholder="Enter phone number">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText006" class="h5">Email</label>
+                                    <input type="text" class="form-control" id="exampleInputText006" placeholder="Enter your Email">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Type</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Type</option>
+                                        <option>Trainee</option>
+                                        <option>Employee</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Role</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Role</option>
+                                        <option>Designer</option>
+                                        <option>Developer</option>
+                                        <option>Manager</option>
+                                        <option>BDE</option>
+                                        <option>SEO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-2">
+                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-create-modal">
+            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bttom">
+                        <h3 class="modal-title" id="exampleModalCenterTitle03">New Task</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText03" class="h5">Task Name</label>
+                                    <input type="text" class="form-control" id="exampleInputText03" placeholder="Enter task Name">
+                                    <a href="#" class="task-edit text-body"><i class="ri-edit-box-line"></i></a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Assigned to</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Memebers</option>
+                                        <option>Kianna Septimus</option>
+                                        <option>Jaxson Herwitz</option>
+                                        <option>Ryan Schleifer</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText2" class="h5">Project Name</label>
+                                    <select name="type" class="selectpicker form-control" data-style="py-0">
+                                        <option>Enter your project Name</option>
+                                        <option>Ui/Ux Design</option>
+                                        <option>Dashboard Templates</option>
+                                        <option>Wordpress Themes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText40" class="h5">Description</label>
+                                    <textarea class="form-control" id="exampleInputText40" rows="2" placeholder="Textarea"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="exampleInputText8" class="h5">Checklist</label>
+                                    <input type="text" class="form-control" id="exampleInputText8" placeholder="Add List">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-0">
+                                    <label for="exampleInputText01" class="h5">Attachments</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="inputGroupFile01">
+                                        <label class="custom-file-label" for="inputGroupFile01">Upload media</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-4">
+                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock modal %}
+
+    {% block footer %}
+        <footer class="iq-footer">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item"><a href="../backend/privacy-policy.html">Privacy Policy</a></li>
+                            <li class="list-inline-item"><a href="../backend/terms-of-service.html">Terms of Use</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6 text-right">
+                        <span class="mr-1"><script>document.write(new Date().getFullYear())</script>©</span> <a href="#" class="">Webkit</a>.
+                    </div>
+                </div>
+            </div>
+        </footer>
+    {% endblock footer %}
+
+    <!-- Backend Bundle JavaScript -->
+    <script src="{% static 'assets_project_management/js/backend-bundle.min.js' %}"></script>
+    
+    <!-- Table Treeview JavaScript -->
+    <script src="{% static 'assets_project_management/js/table-treeview.js' %}"></script>
+    
+    <!-- Chart Custom JavaScript -->
+    <script src="{% static 'assets_project_management/js/customizer.js' %}"></script>
+    
+    <!-- Chart Custom JavaScript -->
+    <script async src="{% static 'assets_project_management/js/chart-custom.js' %}"></script>
+    <!-- Chart Custom JavaScript -->
+    <script async src="{% static 'assets_project_management/js/slider.js' %}"></script>
+
+    <!-- app JavaScript -->
+    <script src="{% static 'assets_project_management/js/app.js' %}"></script>
+    
+    <script src="{% static 'assets_project_management/vendor/moment.min.js' %}"></script>
+
+    {% block extra_js %}
+    {% endblock extra_js %}
+  </body>
+</html>

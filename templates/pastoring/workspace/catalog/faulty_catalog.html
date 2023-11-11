@@ -1,0 +1,196 @@
+
+{% extends 'pastoring/catalog/catalog.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+
+    <div class="modal fade" id="FaultyCatalogModalScrollable" tabindex="-1" aria-labelledby="FaultyCatalogModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="FaultyCatalogModalScrollableTitle">Edit Catalog</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="clear_suggestion_complaint_message_dialog_inputs()"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                <input type="text" class="form-control" name="sermon_title" id="sermon_title">
+                                <label for="sermon_title">Sermon Title</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="date">Date <span class="text-danger ri ri-error-warning-fill"></span></label>
+                                <input type="date" class="form-control" id="date" name="date">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="recommended_books_movies">Recommend Books/Movies</label>
+                                <input type="text" class="form-control" name="recommended_books_movies" id="recommended_books_movies">
+
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="new_song_received">New Song Received</label>
+                                <input type="text" class="form-control" name="new_song_received" id="new_song_received">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="testimonies">Testimonies</label>
+                                <textarea class="form-control" id="testimonies" name="testimonies" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="things_spoken_about">Things Spoken About  <span class="text-danger ri ri-error-warning-fill"></span></label>
+                                <textarea class="form-control" id="things_spoken_about" name="things_spoken_about" rows="15"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="clear_suggestion_complaint_message_dialog_inputs()">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="DeleteCatalogModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="DeleteCatalogModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DeleteCatalogModalScrollableTitle">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p><em>Are you sure you want to delete catalog: No. <span id="catalog_id_detail"></span>?</em></p>
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="delete_catalog('{% url 'pastoring:faulty-catalog' %}')">Yes</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-12" style="margin-top: 70px">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="header-title">
+                            <h5 class="card-title">Faulty Catalogs</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>S/N</th>
+                                        <th>Day</th>
+                                        <th>Date</th>
+                                        <th>Sermon Title</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for catalog in faulty_catalog %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>
+                                                {% if catalog.correct_date %}
+                                                    {{ catalog.correct_date|date:"l" }}
+                                                {% else %}
+                                                    {{ catalog.day|format_text }}
+                                                {% endif %}
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#FaultyCatalogModalScrollable" onclick="populate_edit_modal_box('{{ catalog.sermon_title }}', '{{ catalog.date|date:"%d %M %Y" }}', '{{ catalog.recommended_books_movies }}', '{{ catalog.new_songs_received }}', '{{ catalog.testimonies }}', '{{ catalog.things_spoken_about }}')">
+                                                    <span class="ri ri-tools-line text-danger" style="font-size: 20px;"></span>
+                                                </a>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DeleteCatalogModalScrollable" onclick="populate_delete_modal_box('{{ catalog.id }}')">
+                                                    <span class="ri ri-delete-bin-fill text-danger" style="font-size: 20px;"></span>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if catalog.correct_date %}
+                                                    {{ catalog.correct_date|date:"jS E, Y" }}
+                                                {% else %}
+                                                    {{ catalog.date|format_text }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ catalog.sermon_title|format_text }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <th>God</th>
+                                            <th>Every day</th>
+                                            <th>Every where</th>
+                                        </tr>
+                                        <tr>
+                                            <th>God</th>
+                                            <th>Every day</th>
+                                            <th>Every where</th>
+                                        </tr>
+                                        <tr>
+                                            <th>God</th>
+                                            <th>Every day</th>
+                                            <th>Every where</th>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <th>S/N</th>
+                                    <th>Day</th>
+                                    <th>Date</th>
+                                    <th>Sermon Title</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        const populate_edit_modal_box = (sermon_title, date, recommended_books_movies, new_songs_received, testimonies, things_spoken_about) => {
+            document.getElementById('sermon_title').value = sermon_title;
+            document.getElementById('date').value = date;
+            document.getElementById('recommended_books_movies').value = recommended_books_movies;
+            document.getElementById('new_song_received').value = new_songs_received;
+            document.getElementById('testimonies').value = testimonies;
+            document.getElementById('things_spoken_about').value = things_spoken_about;
+        }
+
+        const populate_delete_modal_box = pk => {
+            document.getElementById('catalog_id_detail').textContent = pk;
+        }
+
+        const delete_catalog = (url) => {
+            const catalog_id = document.getElementById('catalog_id_detail').textContent;
+            url = `${url}delete/${catalog_id}/`;
+
+            console.log(url)
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+        }
+    </script>
+{% endblock %}

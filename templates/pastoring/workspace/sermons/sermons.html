@@ -1,0 +1,234 @@
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="modal fade" id="DisplayUniqueSermonsSeriesModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="DisplayUniqueSermonsSeriesModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DisplayUniqueSermonsSeriesModalScrollableTitle">Sermons Series</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Series Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for series in unique_series_title %}
+                                <tr>
+                                    <td>{{ series }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td>None</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="EditSermonsModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="EditSermonsModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="EditSermonsModalScrollableTitle">Edit Sermons</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div hidden>
+                                <input type="text" name="pk" id="pk">
+                            </div>
+
+                            <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                <input type="text" class="form-control" name="sermon_title" id="sermon_title">
+                                <label for="sermon_title">Sermons Title</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="sermon_series_title">Series Title</label>
+                                <input type="text" class="form-control" name="sermon_series_title" id="sermon_series_title">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="sermon_date">Date</label>
+                                <input type="date" class="form-control" id="sermon_date" name="sermon_date">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select name="sermon_category" id="sermon_category" class="form-select mb-3 shadow-none">
+                                    <option value="audio_series">Audio Sermon Series</option>
+                                    <option value="audio_single">Audio Single Sermons</option>
+                                    <option value="sermon_videos">Sermon Videos</option>
+                                    <option value="fars">FARS Serminar</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="sermon_download_link">Download Link</label>
+                                <input type="url" class="form-control" name="sermon_download_link" id="sermon_download_link">
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+                 <div class="card border-bottom border-4 border-0 border-success">
+                    <div class="card-body">
+                       <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                             <span>Total Number of Sermons</span>
+                          </div>
+                          <div>
+                             <span class="counter" style="visibility: visible;">{{ total_sermons }}</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+                 <div class="card border-bottom border-4 border-0 border-success">
+                    <div class="card-body">
+                       <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                              <span>No of Series</span>
+
+                              {% if no_of_series_title > 0 %}
+                                  <span><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayUniqueSermonsSeriesModalScrollable">...See all</a></span>
+                              {% endif %}
+                          </div>
+                          <div>
+                              <span class="counter" style="visibility: visible;">{{ no_of_series_title }}</span>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">SERMONS </h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Series Title</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Download Link</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sermon in sermons %}
+                                        <tr>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditSermonsModalScrollable" onclick="populate_sermon_modal('{{ sermon.pk }}', '{{ sermon.title }}', '{{ sermon.series_title }}', '{{ sermon.formatted_date }}', '{{ sermon.category }}', '{{ sermon.download_link }}')">{{ sermon.title|truncatewords:"7"}}</a></td>
+                                            <td>{{ sermon.series_title }}</td>
+                                            <td>{{ sermon.date|date:"jS E, Y" }}</td>
+                                            <td>{{ sermon.category }}</td>
+                                            <td>{{ sermon.download_link }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <th colspan="4"><b>No Sermons</b></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Series Title</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Download Link</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-6"><a href="{% url 'pastoring:add-sermons' %}">
+                 <div class="card bg-success">
+                    <div class="card-body">
+                       <div>
+                          <div class="text-white">
+                                <h2 class="counter text-white" style="visibility: visible; color: white; text-align: center">Add</h2>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+            </a></div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+        const populate_sermon_modal = (pk, title, series_title, date, category, download_link) => {
+            const pk_input = document.getElementById('pk');
+            const title_input = document.getElementById('sermon_title');
+            const series_title_input = document.getElementById('sermon_series_title');
+            const date_input = document.getElementById('sermon_date');
+            const category_input = document.getElementById('sermon_category');
+            const download_link_input = document.getElementById('sermon_download_link');
+
+            pk_input.value = pk;
+            title_input.value = title;
+            series_title_input.value = series_title;
+            console.log(date);
+            date_input.value = date;
+            category_input.value = category;
+            download_link_input.value = download_link;
+        }
+    </script>
+{% endblock javascript %}

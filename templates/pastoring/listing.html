@@ -1,0 +1,55 @@
+{% extends 'pastoring/index.html' %}
+
+{#          UNUSED TEMPLATE      #}
+
+{% block content %}
+    <div class="container-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="datatable" class="table table-striped" data-toggle="data-table">
+                                {% if category == 'Church Work' %}
+                                    <thead>
+                                        <tr>Name</tr>
+                                    </thead>
+                                {% elif category == 'Evangelism' %}
+                                {% elif category == 'Prophetic Vision' %}
+                                {% elif category == 'Bible Reading' %}
+                                {% elif category == 'Prayer Marathon' %}
+                                {% endif %}
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Last Active</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for person in sheep %}
+                                        <tr>
+                                            <td><a href="{% url 'pastoring:sheep-summary' user.username person.username %}">{{ person.get_full_name }}</a></td>
+                                            <td>{{ person.gender }}</td>
+                                            <td>{{ person.last_active_date|date:"l d F Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Last Active</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

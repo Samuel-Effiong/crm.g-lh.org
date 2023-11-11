@@ -1,0 +1,193 @@
+
+{% extends 'dashboard/table/table-data.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block welcome_text %}
+  <div class="col-md-12">
+      <div class="flex-wrap d-flex justify-content-between align-items-center">
+          <div>
+              <h1>I Too I Am A Warrior!</h1>
+              <p>By Wise counsels shall a war be wage!</p>
+          </div>
+      </div>
+  </div>
+{% endblock welcome_text %}
+
+{% block content %}
+    {% if mode == 'Personal' %}
+        <div class="conatiner-fluid content-inner mt-n5 py-0">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Suggestions</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Is Anonymous</th>
+                                            <th>Level of Urgency</th>
+                                            <th>Message Seen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for message in suggestions %}
+                                        <tr>
+                                            <td>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', '{{ message.message }}')">
+                                                    {{ message.title|truncatewords:"7" }}
+                                                </a>
+                                            </td>
+                                            <td>{% if message.is_anonymous %}<i class="ri ri-spy-fill"></i>{% else %} <i class="ri ri-eye-fill"></i> {% endif %}</td>
+                                            <td>{{ message.level_of_urgency }}</td>
+                                            <td>{% if message.message_seen %}<i class="ri ri-check-double-fill"></i>{% else %} <i class="ri ri-error-warning-line"></i>{% endif %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Is Anonymous</th>
+                                            <th>Level of Urgency</th>
+                                            <th>Message Seen</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Complaints</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="datatable" class="table table-hover" data-toggle="data-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Is Anonymous</th>
+                                        <th>Level of Urgency</th>
+                                        <th>Message Seen</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for message in complaints %}
+                                        <tr>
+                                            <td>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', '{{ message.message }}')">
+                                                    {{ message.title }}
+                                                </a>
+                                            </td>
+                                            <td>{% if message.is_anonymous %}<i class="ri ri-spy-fill"></i>{% else %} <i class="ri ri-eye-fill"></i> {% endif %}</td>
+                                            <td>{{ message.level_of_urgency }}</td>
+                                            <td>{% if message.message_seen %}<i class="ri ri-check-double-fill"></i>{% else %} <i class="ri ri-error-warning-line"></i>{% endif %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Is Anonymous</th>
+                                        <th>Level of Urgency</th>
+                                        <th>Message Seen</th>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="DisplaySuggestionComplaintScrollable" tabindex="-1" aria-labelledby="DisplaySuggestionComplaintScrollableTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title birthday_intro" id="DisplaySuggestionComplaintScrollableTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h6>Receiver:</h6>
+                                <span id="displaySuggestionComplaintReceiver"></span>
+                            </div>
+                            <div class="col-lg-6">
+                                <h6>Date Sent:</h6>
+                                <span id="displaySuggestionComplaintDateSent"></span>
+                            </div>
+
+                            <div class="mt-5">
+                                <h6>Message</h6>
+                                <p id="displaySuggestionComplaintMessage"></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+          </div>
+
+    {% else %}
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="{% static 'assets/js/sub_main.js' %}"></script>
+    <script>
+        const populate_suggestion_complaint_dialog_box = (title, receiver, date_sent, message) => {
+            document.getElementById("DisplaySuggestionComplaintScrollableTitle").textContent = title
+            document.getElementById("displaySuggestionComplaintReceiver").textContent = receiver;
+            document.getElementById("displaySuggestionComplaintDateSent").textContent = date_sent;
+            document.getElementById("displaySuggestionComplaintMessage").textContent = message;
+        }
+    </script>
+{% endblock javascript %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

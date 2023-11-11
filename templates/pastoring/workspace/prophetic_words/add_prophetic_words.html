@@ -1,0 +1,60 @@
+{% extends 'pastoring/workspace/prophetic_words/prophetic_words.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row">
+            <div class="col-lg-12" style="margin-top: 70px">
+                {% block upload_notification %}
+                    {{ block.super }}
+                {% endblock upload_notification %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" class="row">
+                            {% csrf_token %}
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_prophetic_word_date">Date</label>
+                                <input type="date" class="form-control" id="add_prophetic_word_date" name="add_prophetic_word_date">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_prophetic_word_title">Title</label>
+                                <input type="text" class="form-control" id="add_prophetic_word_title" name="add_prophetic_word_title">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label" for="add_prophetic_word_speaker">Speaker</label>
+                                <input type="text" class="form-control" id="add_prophetic_word_speaker" name="add_prophetic_word_speaker">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label class="form-label">Category</label>
+                                <select name="add_prophetic_word_category" id="add_prophetic_word_category" class="form-select mb-3 shadow-none">
+                                    <option value="church">Words for the Church</option>
+                                    <option value="nigeria">Words for Nigeria</option>
+                                    <option value="season">Words for the Season</option>
+                                    <option value="general">General Words</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="add_prophetic_word_message">Message</label>
+                                <textarea class="form-control" id="add_propehtic_word_message" name="add_prophetic_word_message" rows="30"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary text-center">Submit</button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+
+{% endblock javascript %}
