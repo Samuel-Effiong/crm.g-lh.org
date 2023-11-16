@@ -46,9 +46,9 @@
                         </div>
                         <div class="card-body">
                            <div class="border-bottom text-center pb-3">
-                               {% if sheep.profile_pic %}
-                                   <a href="{{ sheep.profile_pic.url }}" alt="sheep profile image">
-                                       <img src="{{ sheep.profile_pic.url }}" alt="" class="theme-color-default-img img-fluid rounded-pill avatar-120">
+                               {% if sheep.get_image_url %}
+                                   <a href="{{ sheep.get_image_url }}" alt="sheep profile image">
+                                       <img src="{{ sheep.get_image_url }}" alt="" class="theme-color-default-img img-fluid rounded-pill avatar-120">
                                    </a>
                                {% else %}
                                      <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">

@@ -255,6 +255,13 @@ class CustomUser(AbstractUser):
         verbose_name = "User"
         verbose_name_plural = "Users"
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=('first_name', 'last_name'),
+                name="full_name_constraints"
+            )
+        ]
+
     @admin.display(ordering='date_of_birth', description="Age")
     def get_user_age(self):
         if self.date_of_birth:
@@ -306,6 +313,14 @@ class CustomUser(AbstractUser):
                 return True
         return False
 
+    def get_skillset(self) -> list:
+        return [skill for skill in self.skills.split(',') if skill]
+
+    def get_image_url(self) -> str | None:
+        if self.profile_pic:
+            return self.profile_pic.url
+        return None
+
     def to_dict(self):
         data = {
             'first_name': self.first_name,
@@ -350,6 +365,7 @@ class Permission(models.Model):
 
     def __str__(self):
         return str(self.name)
+
 
 
 @register_snippet

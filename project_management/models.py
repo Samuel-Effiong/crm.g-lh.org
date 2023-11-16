@@ -21,7 +21,7 @@ class Utility:
 class DepartmentMemberManager(models.Manager):
     def get_department_members(self, department):
         """Get all the members that belogns to a specific department"""
-        members = self.get_queryset().filter(department_name__department_name=department)
+        members = self.get_queryset().filter(department_name=department)
         return members
 
 
@@ -30,28 +30,53 @@ class DepartmentMember(models.Model):
     """A user that is a member of a department
 
     FIXME: There is an implied bug that allows a users to be added twice to the
-    FIXME: be aadded twice to the same Department
+    FIXME: same Department
 
     """
     member_name = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
+    experience_score = models.IntegerField(default=0)
 
     objects = DepartmentMemberManager()
 
     class Meta:
         verbose_name_plural = 'Department Members'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('member_name', 'department_name'),
+                name="members_constraints"
+            )
+        ]
 
     def __str__(self) -> str:
-        return self.member_name.get_full_name()
+        return f"{self.member_name.get_full_name()} - {self.department_name}"
 
-    def get_member_image_url(self) -> str:
-        return self.member_name.profile_pic.url
+    def get_member_image_url(self) -> str | None:
+        return self.member_name.get_image_url()
+
+    def get_active_projects(self):
+        active_projects = DepartmentProject.objects.get_active_projects(
+            department=self.department_name, member=self
+        )
+        return active_projects
+
+    def get_inactive_projects(self):
+        inactive_projects = DepartmentProject.objects.get_inactive_projects(
+            department=self.department_name, member=self
+        )
+        return inactive_projects
+
+    def get_completed_projects(self):
+        completed_projects = DepartmentProject.objects.get_completed_projects(
+            department=self.department_name, member=self
+        )
+        return completed_projects
 
 
 class DepartmentCategoryManager(models.Manager):
     def get_department_categories(self, department):
         """"Get all the category that belongs to a specific department"""
-        categories = self.get_queryset().filter(department_name__department_name=department)
+        categories = self.get_queryset().filter(department_name=department)
         return categories
 
 
@@ -80,6 +105,10 @@ class DepartmentManager(models.Manager):
         """Get all the department a specific user is in"""
         departments = self.get_queryset().filter(member_names__member_name=user)
         return set(departments)
+
+    def department_leaders(self):
+        leaders = [department.leader.name for department in self.get_queryset()]
+        return leaders
 
 
 class Department(models.Model):
@@ -124,18 +153,27 @@ class Department(models.Model):
             return no_of_categories
         return 0
 
+    def department_leaders(self):
+        leaders = Department.objects.department_leaders()
+        return leaders
+
+    def is_leader(self, user) -> bool:
+        return self.leader.name == user
+
 
 class ProjectTarget(models.Model):
     Choices = (
         ('Not Started', 'Not Started'),
-        ('Pending', 'Pending'),
-        ('Completed', 'Completed')
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+        ('Pending Approval', 'Pending Approval')
     )
 
     target_name = models.CharField(max_length=1000)
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
-    state = models.CharField(max_length=15, choices=Choices, default='Not Started')
+    state = models.CharField(max_length=25, choices=Choices, default='Not Started')
     date = models.DateField(blank=True, null=True)
+    is_approved = models.BooleanField(default=True)
 
     def __str__(self):
         return self.target_name
@@ -146,6 +184,42 @@ class ProjectTarget(models.Model):
     @admin.display(description="Department")
     def get_target_department(self):
         return self.project.department.department_name
+
+
+class DepartmentProjectManager(models.Manager):
+    def get_active_projects(self, department: Department, member: DepartmentMember = None):
+        """If member is None it returns all the active projects in a particular department
+        else if returns the active project that the user is part of in the department
+        """
+
+        department_project = self.get_queryset().filter(department=department, status='In Progress')
+
+        if member is None:
+            return department_project
+        else:
+            return department_project.filter(project_members=member)
+
+    def get_completed_projects(self, department: Department, member: DepartmentMember = None):
+        """If member is None it returns all the completed projects in a particular department
+        else if returns the completed project that the user is part of in the department
+        """
+        department_project = self.get_queryset().filter(department=department, status='Completed')
+
+        if member is None:
+            return department_project
+        else:
+            return department_project.filter(project_members=member)
+
+    def get_inactive_projects(self, department: Department, member: DepartmentMember = None):
+        """If member is None it returns all the inactive projects in a particular department
+        else if returns the inactive project that the user is part of in the department
+        """
+        department_project = self.get_queryset().filter(department=department, status='Not Started')
+
+        if member is None:
+            return department_project
+        else:
+            return department_project.filter(project_members=member)
 
 
 class DepartmentProject(models.Model):
@@ -174,7 +248,9 @@ class DepartmentProject(models.Model):
     target = models.ManyToManyField(ProjectTarget, blank=True)
 
     start_date = models.DateField(default=timezone.now)
-    due_date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
+
+    objects = DepartmentProjectManager()
 
     def __str__(self):
         return self.project_name
@@ -192,6 +268,19 @@ class DepartmentProject(models.Model):
     @admin.display(description='No of Targets')
     def get_no_of_target(self):
         target = self.target.all()
-
         return len(target)
+
+    def get_complete_percentage(self):
+        targets = self.target.all()
+
+        # get targets that are completed
+        completed_target = [target for target in targets if target.state == 'Completed' and target.is_approved]
+        try:
+            complete_percentage = (len(completed_target) / len(targets)) * 100
+        except ZeroDivisionError:
+            complete_percentage = 0
+
+        return complete_percentage
+
+
 

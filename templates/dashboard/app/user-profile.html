@@ -12,8 +12,8 @@
                      <div class="d-flex flex-wrap align-items-center justify-content-between">
                         <div class="d-flex flex-wrap align-items-center">
                            <div class="profile-img position-relative me-3 mb-3 mb-lg-0 profile-logo profile-logo1">
-                              {% if user.profile_pic %}
-                                  <img src="{{ user.profile_pic.url }}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
+                              {% if user.get_image_url %}
+                                  <img src="{{ user.get_image_url }}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
                               {% else %}
                                   <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
                                   <img src="{% static 'assets/images/avatars/avtar_1.png' %}" alt="User-Profile" id="preview" class="theme-color-purple-img img-fluid rounded-pill avatar-100">
@@ -99,7 +99,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="#" onclick="birthday_pop_box('{{ celeb.get_full_name }}', '{{ celeb.username }}', '{{ celeb.about }}', '{{ celeb.gender }}', '{{ user.username }}', {% if celeb.profile_pic %}'{{ celeb.profile_pic.url }}'{% else %}'{% static 'assets/images/avatars/01.png' %}'{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+                                    <a href="#" onclick="birthday_pop_box('{{ celeb.get_full_name }}', '{{ celeb.username }}', '{{ celeb.about }}', '{{ celeb.gender }}', '{{ user.username }}', {% if celeb.get_image_url %}'{{ celeb.get_image_url }}'{% else %}'{% static 'assets/images/avatars/01.png' %}'{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
                                         <h6 id="celebrant" class="mb-1" style="color: #3a57e8">
                                             {{ celeb.get_full_name }}
                                         </h6>
@@ -662,8 +662,8 @@
                      <div class="card-body">
                         <div class="text-center">
                            <div class="user-profile">
-                               {% if user.profile_pic %}
-                                   <img src="{{ user.profile_pic.url }}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
+                               {% if user.get_image_url %}
+                                   <img src="{{ user.get_image_url }}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
                                {% else %}
                                    <img src="{% static 'assets/images/avatars/01.png' %}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
                                {% endif %}

@@ -1,12 +1,12 @@
-		<div class="tdl-holder">
-			<h2>Targets</h2>
-			<div class="tdl-content">
-				<ul>
-                    {% for target in object.target.all %}
-                        <li><label><input type="checkbox"><i></i><span class="project_targets">{{ target.target_name }}</span><a href='#'>–</a></label></li>
-                    {% endfor %}
+<div class="tdl-holder">
+    <h2>Targets</h2>
+    <div class="tdl-content">
+        <ul>
+            {% for target in object.target.all %}
+                <li><label><input type="checkbox"><i></i><span class="project_targets">{{ target.target_name }}</span><a href='#'>–</a></label></li>
+            {% endfor %}
 
-				</ul>
-			</div>
-			<input type="text" class="tdl-new" placeholder="Write new Target and hit 'Enter'...">
-		</div>
+        </ul>
+    </div>
+    <input type="text" class="tdl-new" placeholder="Write new Target and hit 'Enter'...">
+</div>

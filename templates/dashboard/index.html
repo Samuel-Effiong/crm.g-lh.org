@@ -452,8 +452,8 @@
                 </li>
                 <li class="nav-item dropdown">
                   <a class="py-0 nav-link d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      {% if user.profile_pic %}
-                          <img src="{{ user.profile_pic.url }}" alt="Profile pic" class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded" id="displayProfilePic1">
+                      {% if user.get_image_url %}
+                          <img src="{{ user.get_image_url }}" alt="Profile pic" class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded" id="displayProfilePic1">
                       {% else %}
                           <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded" id="displayProfilePic1">
                           <img src="{% static 'assets/images/avatars/avtar_1.png' %}" alt="User-Profile" class="theme-color-purple-img img-fluid avatar avatar-50 avatar-rounded" id="displayProfilePic1">

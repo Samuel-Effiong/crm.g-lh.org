@@ -4,6 +4,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'custom/to_do/to_do.css' %}">
+    <link rel="stylesheet" href="{% static 'custom/autocomplete/autocomplete.css' %}">
 {% endblock extra_css %}
 
 {% block content %}
@@ -25,7 +26,12 @@
                   <div class="card-body">
                      <div class="d-flex align-items-center mb-3">
                         <div class="profile-img position-relative">
-                           <img src="{{ department.leader.name.profile_pic.url }}" class="img-fluid rounded avatar-110" alt="profile-image">
+                            {% if department.leader.name.get_image_url %}
+                                <img src="{{ department.leader.name.get_image_url }}" class="img-fluid rounded avatar-110" alt="{{ member.member_name.about }}">
+                           {% else %}
+                               <img src="" class="avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
+                           {% endif %}
+
                         </div>
                         <div class="ml-3">
                            <h4 class="mb-2">{{ department.leader.name.get_full_name }}</h4>
@@ -40,7 +46,11 @@
                               {% if department.leader.name.username != member.member_name.username %}
                                   <li class="mb-3">
                                       <div class="d-flex justify-content-evenly">
-                                          <img src="{{ member.member_name.profile_pic.url }}" class="img-fluid rounded avatar-40" alt="image" />
+                                          {% if member.get_member_image_url %}
+                                              <img src="{{ member.get_member_image_url }}" class="avatar-40 img-fluid rounded" alt="{{ member.member_name.about }}">
+                                          {% else %}
+                                              <img src="" class="avatar-40 img-fluid rounded" alt="{{ member.member_name.about }}">
+                                          {% endif %}
                                           <p class="mb-0 ml-4">
                                               {{ member.member_name.get_full_name }}
 
@@ -53,6 +63,10 @@
                              {% endif %}
                          {% endfor %}
                      </ul>
+
+                      <div class="d-flex justify-content-center mt-3">
+                          <button type="button" class="btn btn-primary p-2" data-target="#add-member" data-toggle="modal">Add Member</button>
+                      </div>
                   </div>
                </div>
             </div>
@@ -67,20 +81,22 @@
                             <a class="nav-link" data-toggle="pill" href="#profile2" role="tab" aria-selected="false">Members</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-toggle="pill" href="#profile3" role="tab" aria-selected="false">Education</a>
+                            <a class="nav-link" data-toggle="pill" href="#profile3" role="tab" aria-selected="false">Projects Timeline</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="pill" href="#profile4" role="tab" aria-selected="false">Experience</a>
-                        </li>
-                        <li class="nav-item">
-                            <a id="view-btn" class="nav-link" data-toggle="pill" href="#profile5" role="tab" aria-selected="true">About</a>
-                        </li>
+{#                        <li class="nav-item">#}
+{#                            <a class="nav-link" data-toggle="pill" href="#profile4" role="tab" aria-selected="false">Experience</a>#}
+{#                        </li>#}
+{#                        <li class="nav-item">#}
+{#                            <a id="view-btn" class="nav-link" data-toggle="pill" href="#profile5" role="tab" aria-selected="true">About</a>#}
+{#                        </li>#}
                     </ul>
                      <div class="profile-content tab-content">
                         
                         <div id="profile1" class="tab-pane fade active show">
-                           <p>
+                           <p class="d-flex justify-content-between">
                                Active Categories in {{ department.department_name }}
+                               <button type="button" class="btn btn-primary p-2" data-target="#add-category" data-toggle="modal">Add Category</button>
+
                            </p>
                            <div class="row">
                               <div class="col-12">
@@ -88,12 +104,20 @@
                                       {% for category in department_categories %}
                                           <li class="mb-4 col-12">
                                               <div class="shadow-bottom p-4 shadow-showcase">
-                                                  <h4 class="mb-3">{{ category.category_name }}</h4>
+                                                  <div class="d-flex justify-content-between mb-3">
+                                                      <h4>{{ category.category_name }}</h4>
+                                                      <button type="button" class="btn btn-outline-danger" data-target="#remove-category" data-toggle="modal" onclick="document.getElementById('removed_category').value = '{{ category.pk }}'; document.getElementById('removed_category_name').textContent = '{{ category.category_name|safe }}'">
+                                                          <i class="ri-alert-fill"></i>
+                                                      </button>
+                                                  </div>
                                                   <p class="text-justify">{{ category.category_objective }}</p>
                                               </div>
                                           </li>
                                       {% endfor %}
                                  </ul>
+                                <div class="mt-3 col-12 align-center d-flex justify-content-between">
+                                    <button type="button" class="btn btn-primary p-2" data-target="#add-category" data-toggle="modal">Add Category</button>
+                                </div>
                               </div>
                            </div>
                         </div>
@@ -113,8 +137,12 @@
                                                  <div class="card card-block card-stretch">
                                                     <div class="card-body p-3">
                                                        <div class="row py-2">
-                                                           <div class="col-12 text-center">
-                                                               <img src="{{ member.member_name.profile_pic.url }}" class="align-self-start mr-3 avatar-110 img-fluid rounded" alt="#">
+                                                           <div class="col-12 text-center mb-3">
+                                                               {% if member.get_member_image_url %}
+                                                                   <img src="{{ member.get_member_image_url }}" class="align-self-start mr-3 avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
+                                                               {% else %}
+                                                                   <img src="" class="align-self-start mr-3 avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
+                                                               {% endif %}
                                                            </div>
                                                            <div class="col-12 text-center">
                                                                <p>{{ member.member_name.about }}</p>
@@ -125,7 +153,7 @@
 
                                                 <div class="card card-block card-stretch">
                                                     <div class="card-body p-3">
-                                                       <div class="row align-items-center text-center py-2">
+                                                       <div class="row align-items-center text-center py-2 d-flex justify-content-center">
                                                           <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-lg-0">
                                                              <div class="profile-icon icon m-auto rounded bg-warning">
                                                                 <svg class="svg-icon" width="22" height="22" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -134,8 +162,11 @@
                                                                       fill="#AB7007" />
                                                                 </svg>
                                                              </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-warning">15+</h5>
-                                                             <p class="mb-0">Awards</p>
+                                                              <div class="d-flex justify-content-center">
+                                                                  <h5 class="mb-2 mt-3 icon-text-warning">{{ member.experience_score }}</h5>
+                                                                  <a class="search-link" href="#" title="Edit" data-target="#experience-score" data-toggle="modal" onclick="document.getElementById('experience_id').value = {{ member.pk }}; document.getElementById('experience_score').value = {{ member.experience_score }}"><i class="ri-pencil-fill"></i></a>
+                                                              </div>
+                                                             <p class="mb-0">Experience</p>
                                                           </div>
                                                           <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-lg-0">
                                                              <div class="profile-icon icon m-auto rounded bg-info">
@@ -145,8 +176,8 @@
                                                                       fill="#0170B7" />
                                                                 </svg>
                                                              </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-info">35+</h5>
-                                                             <p class="mb-0">Certificate</p>
+                                                             <h5 class="mb-2 mt-3 icon-text-info">{{ member.get_active_projects|length }}</h5>
+                                                             <p class="mb-0">Active Project</p>
                                                           </div>
                                                           <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-sm-0">
                                                              <div class="profile-icon icon m-auto rounded bg-danger">
@@ -156,22 +187,119 @@
                                                                       fill="#6A1615" />
                                                                 </svg>
                                                              </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-danger">04+</h5>
-                                                             <p class="mb-0">Experience</p>
-                                                          </div>
-                                                          <div class="profile-info col-xl-3 col-sm-6">
-                                                             <div class="profile-icon icon m-auto rounded bg-success">
-                                                                <svg class="svg-icon" width="22" height="22" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                   <path
-                                                                      d="M9.10495 33.9964C8.29026 33.1817 8.71495 33.4114 6.74995 32.8855C5.85838 32.6464 5.07463 32.1871 4.36588 31.6367L0.112441 42.0655C-0.299122 43.0752 0.469629 44.1721 1.559 44.1308L6.4987 43.9424L9.8962 47.5311C10.6462 48.3224 11.9624 48.0758 12.374 47.0661L17.2537 35.1017C16.2375 35.668 15.1096 35.9999 13.9434 35.9999C12.1153 35.9999 10.3978 35.2883 9.10495 33.9964V33.9964ZM35.8875 42.0655L31.634 31.6367C30.9253 32.188 30.1415 32.6464 29.25 32.8855C27.2746 33.4142 27.7078 33.1836 26.895 33.9964C25.6021 35.2883 23.8837 35.9999 22.0556 35.9999C20.8893 35.9999 19.7615 35.6671 18.7453 35.1017L23.625 47.0661C24.0365 48.0758 25.3537 48.3224 26.1028 47.5311L29.5012 43.9424L34.4409 44.1308C35.5303 44.1721 36.299 43.0742 35.8875 42.0655V42.0655ZM24.6562 31.8749C26.0887 30.4171 26.2528 30.5427 28.2928 29.9867C29.595 29.6314 30.6131 28.5955 30.9618 27.2699C31.6631 24.6074 31.4812 24.9289 33.3946 22.9808C34.3481 22.0105 34.7203 20.5958 34.3715 19.2702C33.6712 16.6096 33.6703 16.9808 34.3715 14.3174C34.7203 12.9917 34.3481 11.5771 33.3946 10.6067C31.4812 8.65862 31.6631 8.97925 30.9618 6.31768C30.6131 4.99206 29.595 3.95612 28.2928 3.60081C25.679 2.88737 25.994 3.07393 24.0787 1.12487C23.1253 0.154558 21.735 -0.225129 20.4328 0.130183C17.82 0.842683 18.1846 0.843621 15.5671 0.130183C14.2649 -0.225129 12.8746 0.153621 11.9212 1.12487C10.0078 3.073 10.3228 2.88737 7.70807 3.60081C6.40588 3.95612 5.38776 4.99206 5.03901 6.31768C4.33869 8.97925 4.51963 8.65862 2.60619 10.6067C1.65275 11.5771 1.27963 12.9917 1.62932 14.3174C2.32963 16.9761 2.33057 16.6049 1.62932 19.2692C1.28057 20.5949 1.65275 22.0096 2.60619 22.9808C4.51963 24.9289 4.33776 24.6074 5.03901 27.2699C5.38776 28.5955 6.40588 29.6314 7.70807 29.9867C9.8062 30.5586 9.96276 30.4686 11.3437 31.8749C12.584 33.1377 14.5162 33.3636 16.0068 32.4205C16.6029 32.0421 17.2944 31.8411 18.0004 31.8411C18.7065 31.8411 19.3979 32.0421 19.994 32.4205C21.4837 33.3636 23.4159 33.1377 24.6562 31.8749ZM9.15557 16.4961C9.15557 11.5246 13.1156 7.49425 18 7.49425C22.8843 7.49425 26.8443 11.5246 26.8443 16.4961C26.8443 21.4677 22.8843 25.498 18 25.498C13.1156 25.498 9.15557 21.4677 9.15557 16.4961V16.4961Z"
-                                                                      fill="#194D45" />
-                                                                </svg>
-                                                             </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-success">90+</h5>
-                                                             <p class="mb-0">Participated</p>
+                                                             <h5 class="mb-2 mt-3 icon-text-danger">{{ member.get_completed_projects|length }}</h5>
+                                                             <p class="mb-0">Completed</p>
                                                           </div>
                                                        </div>
                                                     </div>
+                                                </div>
+
+                                                <div class="card card-block card-stretch">
+                                                  <div class="card-body">
+                                                     <ul class="nav nav-tabs" id="myTab-two" role="tablist">
+                                                        <li class="nav-item">
+                                                           <a class="nav-link" id="not-started-tab-{{ member.pk }}" data-toggle="tab" href="#not-started-{{ member.pk }}" role="tab" aria-controls="not-started-{{ member.pk }}" aria-selected="false">Not Started</a>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                           <a class="nav-link active" id="active-tab-{{ member.pk }}" data-toggle="tab" href="#active-{{ member.pk }}" role="tab" aria-controls="active-{{ member.pk }}" aria-selected="true">Active</a>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                           <a class="nav-link" id="completed-tab-{{ member.pk }}" data-toggle="tab" href="#completed-{{ member.pk }}" role="tab" aria-controls="completed-{{ member.pk }}" aria-selected="false">Completed</a>
+                                                        </li>
+                                                     </ul>
+                                                     <div class="tab-content" id="myTabContent-1">
+                                                        <div class="tab-pane fade" id="not-started-{{ member.pk }}" role="tabpanel" aria-labelledby="not-started-tab-{{ member.pk }}">
+                                                            <div class="table-responsive">
+                                                                <table id="datatable" class="table data-table table-hover">
+                                                                   <thead>
+                                                                      <tr>
+                                                                          <th>Name</th>
+                                                                          <th>Priority</th>
+                                                                          <th>Start Date</th>
+                                                                      </tr>
+                                                                   </thead>
+                                                                   <tbody>
+                                                                      {% for project in member.get_inactive_projects %}
+                                                                          <tr>
+                                                                              <td>{{ project.project_name }}</td>
+                                                                              <td>{{ project.project_priority }}</td>
+                                                                              <td>{{ project.start_date }}</td>
+                                                                          </tr>
+
+                                                                      {% endfor %}
+                                                                   </tbody>
+                                                                   <tfoot>
+                                                                      <tr>
+                                                                         <th>Name</th>
+                                                                         <th>Priority</th>
+                                                                         <th>Status</th>
+                                                                      </tr>
+                                                                   </tfoot>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade active show" id="active-{{ member.pk }}" role="tabpanel" aria-labelledby="active-tab-{{ member.pk }}">
+                                                           <div class="table-responsive">
+                                                               <table id="datatable" class="table data-table table-hover">
+                                                                   <thead>
+                                                                      <tr>
+                                                                          <th>Name</th>
+                                                                          <th>Priority</th>
+                                                                          <th>Due date</th>
+                                                                      </tr>
+                                                                   </thead>
+                                                                   <tbody>
+                                                                      {% for project in member.get_active_projects %}
+                                                                          <tr>
+                                                                              <td>{{ project.project_name }}</td>
+                                                                              <td>{{ project.project_priority }}</td>
+                                                                              <td>{{ project.due_date }}</td>
+                                                                          </tr>
+
+                                                                      {% endfor %}
+                                                                   </tbody>
+                                                                   <tfoot>
+                                                                      <tr>
+                                                                         <th>Name</th>
+                                                                         <th>Priority</th>
+                                                                         <th>Due date</th>
+                                                                      </tr>
+                                                                   </tfoot>
+                                                                </table>
+                                                           </div>
+                                                        </div>
+                                                        <div class="tab-pane fade" id="completed-{{ member.pk }}" role="tabpanel" aria-labelledby="completed-tab-{{ member.pk }}">
+                                                           <div class="table-responsive">
+                                                               <table id="datatable" class="table data-table table-hover">
+                                                                   <thead>
+                                                                      <tr>
+                                                                          <th>Name</th>
+                                                                          <th>Priority</th>
+                                                                          <th>Project Leader</th>
+                                                                      </tr>
+                                                                   </thead>
+                                                                   <tbody>
+                                                                      {% for project in member.get_completed_projects %}
+                                                                          <tr>
+                                                                              <td>{{ project.project_name }}</td>
+                                                                              <td>{{ project.project_priority }}</td>
+                                                                              <td>{{ project.project_leader.member_name }}</td>
+                                                                          </tr>
+
+                                                                      {% endfor %}
+                                                                   </tbody>
+                                                                   <tfoot>
+                                                                      <tr>
+                                                                         <th>Name</th>
+                                                                         <th>Priority</th>
+                                                                         <th>Project leader</th>
+                                                                      </tr>
+                                                                   </tfoot>
+                                                                </table>
+                                                           </div>
+                                                        </div>
+                                                     </div>
+                                                  </div>
                                                 </div>
 
                                                 <div class="row">
@@ -187,19 +315,19 @@
                                                                 <li>
                                                                    <div class="d-flex align-items-center justify-content-between mb-2">
                                                                       <p class="mb-0 font-size-16 mr-3">English</p>
-                                                                      <h6>78%</h6>
+                                                                      <h6>100%</h6>
                                                                    </div>
                                                                 </li>
                                                                 <li>
                                                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                      <p class="mb-0">German</p>
+                                                                      <p class="mb-0">Ibibio</p>
                                                                       <h6>55%</h6>
                                                                    </div>
                                                                 </li>
                                                                 <li>
                                                                    <div class="d-flex align-items-center justify-content-between">
-                                                                      <p class="mb-0">Spanish</p>
-                                                                      <h6>50%</h6>
+                                                                      <p class="mb-0">Oron</p>
+                                                                      <h6>40%</h6>
                                                                    </div>
                                                                 </li>
                                                              </ul>
@@ -210,28 +338,34 @@
                                                        <div class="card card-block card-stretch mb-0">
                                                           <div class="card-header px-3">
                                                              <div class="header-title">
-                                                                <h4 class="card-title">Social</h4>
+                                                                <h4 class="card-title">Skills</h4>
                                                              </div>
                                                           </div>
                                                           <div class="card-body p-3">
-                                                             <ul class="list-inline p-0 m-0">
-                                                                <li class="mb-2 d-flex">
-                                                                   <span><i class="lab la-facebook-f icon-text-primary font-size-20 mr-3"></i></span>
-                                                                   <p class="mb-0 line-height">fb.me/nataliedawson</p>
-                                                                </li>
-                                                                <li class="mb-2 d-flex">
-                                                                   <span><i class="lab la-twitter icon-text-info font-size-20 mr-3"></i></span>
-                                                                   <p class="mb-0 line-height">@nataliedawson</p>
-                                                                </li>
-                                                                <li class=" d-flex">
-                                                                   <span><i class="lab la-instagram  icon-text-danger font-size-20 mr-3"></i></span>
-                                                                   <p class="mb-0 line-height">@natalietweets</p>
-                                                                </li>
+                                                              <ul class="list-inline p-0 m-0">
+                                                                  {% for skill in member.member_name.get_skillset %}
+                                                                      <li class="mb-2 d-flex">
+                                                                          <span><i class="lab la-archway icon-text-primary font-size-20 mr-3"></i></span>
+                                                                          <p class="mb-0 line-height">{{ skill.title }}</p>
+                                                                      </li>
+                                                                  {% empty %}
+                                                                      <li class="mb-2 d-flex">
+                                                                          <h6 class="text-danger"><i>No skills</i></h6>
+                                                                      </li>
+                                                                  {% endfor %}
                                                              </ul>
                                                           </div>
                                                        </div>
                                                     </div>
                                                  </div>
+
+                                                {% if not member.member_name.username == department.leader.name.username %}
+                                                    <div class="row mt-3">
+                                                        <div class="col-12 d-flex justify-content-center">
+                                                            <button type="button" class="btn btn-danger p-2" data-target="#remove-member" data-toggle="modal" onclick="document.getElementById('removed_member').value = '{{ member.pk }}'; document.getElementById('member_name').textContent = '{{ member.member_name.get_full_name|safe }}'">Remove Member</button>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
 
                                             </div>
                                        {% endfor %}
@@ -241,156 +375,111 @@
                         </div>
                         <div id="profile3" class="tab-pane fade">
                            <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
-                              <ul class="list-inline p-0 m-0 w-100">
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                          <h6 class="mb-2">October, 2018</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">PhD of Science in computer Science</h6>
-                                                <p class="mb-0 font-size-14">South Kellergrove University</p>
-                                             </div>
-                                          </div>   
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                          <h6 class="mb-2">June, 2017</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Master of Science in Computer Science</h6>
-                                                <p class="mb-0 font-size-14">Milchuer College</p>
-                                             </div>
-                                          </div> 
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                       <h6 class="mb-2">August, 2014</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Bachelor of Science in Computer Science</h6>
-                                                <p class="mb-0 font-size-14">Beechtown Universityy</p>
-                                             </div>
-                                          </div> 
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                          <h6 class="mb-2">June, 2010</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media pb-0 align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Senior High School</h6>
-                                                <p class="mb-0 font-size-14">South Kellergrove High</p>
-                                             </div>
-                                          </div>                                    
-                                       </div>
-                                    </div>
-                                 </li>
+                               <ul class="list-inline p-0 m-0 w-100">
+                                   {% for project in department_projects %}
+                                       <li>
+                                           <div class="row align-items-top">
+                                               <div class="col-md-3">
+                                                   <h6 class="mb-2">{{ project.start_date|date:"jS E, Y"}}</h6>
+                                               </div>
+                                               <div class="col-md-9">
+                                                   <div class="media profile-media align-items-top">
+                                                       <div class="profile-dots {% if project.status == 'Not Started' %}bg-danger{% elif project.status == 'In Progress' %}bg-warning{% elif project.status == 'Completed' %}bg-success{% endif %} mt-1" {% if project.status == 'Completed' %}title="Status: Completed, Due date:{{ project.due_date|date:"jS E, Y" }}"{% else %}title="Status: {{ project.status }}"{% endif %}></div>
+                                                       <div class="ml-4">
+                                                           <h6 class=" mb-1">{{ project.project_name}}</h6>
+                                                           <p class="mb-0 font-size-14">Category: {{ project.department_category }}</p>
+                                                           <p class="mb-0 font-size-14">Leader: {{ project.project_leader.member_name.get_full_name }}</p>
+                                                       </div>
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       </li>
+                                   {% endfor %}
                               </ul>
                            </div>
                         </div>
-                        <div id="profile4" class="tab-pane fade">
-                           <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
-                              <ul class="list-inline p-0 m-0 w-100">
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                          <h6 class="mb-2">2020 - present</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Software Engineer at Mathica Labs</h6>
-                                                <p class="mb-0 font-size-14">Total : 02 + years of experience</p>
-                                             </div>
-                                          </div>   
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                          <h6 class="mb-2">2018 - 2019</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Junior Software Engineer at Zimcore Solutions</h6>
-                                                <p class="mb-0 font-size-14">Total : 1.5 + years of experience</p>
-                                             </div>
-                                          </div> 
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-md-3">
-                                       <h6 class="mb-2">2017 - 2018</h6>
-                                       </div>
-                                       <div class="col-md-9">
-                                          <div class="media profile-media align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Junior Software Engineer at Skycare Ptv. Ltd</h6>
-                                                <p class="mb-0 font-size-14">Total : 0.5 + years of experience</p>
-                                             </div>
-                                          </div> 
-                                       </div>
-                                    </div>
-                                 </li>
-                                 <li>
-                                    <div class="row align-items-top">
-                                       <div class="col-3">
-                                          <h6 class="mb-2">06 Months</h6>
-                                       </div>
-                                       <div class="col-9">
-                                          <div class="media profile-media pb-0 align-items-top">
-                                             <div class="profile-dots border-primary mt-1"></div>
-                                             <div class="ml-4">
-                                                <h6 class=" mb-1">Junior Software Engineer at Infosys Solutions</h6>
-                                                <p class="mb-0 font-size-14">Total : Freshers</p>
-                                             </div>
-                                          </div>                                    
-                                       </div>
-                                    </div>
-                                 </li>
-                              </ul>
-                           </div>
-                        </div>
-                        <div id="profile5" class="tab-pane fade">
-                           <p>I'm Web Developer from California. I code and design websites worldwide. Mauris variustellus vitae 
-                              tristique sagittis. Sed aliquet, est nec auctor aliquet, orci ex vestibulum ex, non pharetra lacus
-                              erat ac nulla.</p>
-                           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu 
-                              orci, nisi. Magnis elementum vitae eu, dui et. Tempus etiam feugiat sem augue sed sed. Tristique 
-                              feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus 
-                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>
-                           <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu.
-                              Tristique feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus 
-                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>
-                        </div>
+{#                        <div id="profile4" class="tab-pane fade">#}
+{#                           <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">#}
+{#                              <ul class="list-inline p-0 m-0 w-100">#}
+{#                                 <li>#}
+{#                                    <div class="row align-items-top">#}
+{#                                       <div class="col-md-3">#}
+{#                                          <h6 class="mb-2">2020 - present</h6>#}
+{#                                       </div>#}
+{#                                       <div class="col-md-9">#}
+{#                                          <div class="media profile-media align-items-top">#}
+{#                                             <div class="profile-dots border-primary mt-1"></div>#}
+{#                                             <div class="ml-4">#}
+{#                                                <h6 class=" mb-1">Software Engineer at Mathica Labs</h6>#}
+{#                                                <p class="mb-0 font-size-14">Total : 02 + years of experience</p>#}
+{#                                             </div>#}
+{#                                          </div>   #}
+{#                                       </div>#}
+{#                                    </div>#}
+{#                                 </li>#}
+{#                                 <li>#}
+{#                                    <div class="row align-items-top">#}
+{#                                       <div class="col-md-3">#}
+{#                                          <h6 class="mb-2">2018 - 2019</h6>#}
+{#                                       </div>#}
+{#                                       <div class="col-md-9">#}
+{#                                          <div class="media profile-media align-items-top">#}
+{#                                             <div class="profile-dots border-primary mt-1"></div>#}
+{#                                             <div class="ml-4">#}
+{#                                                <h6 class=" mb-1">Junior Software Engineer at Zimcore Solutions</h6>#}
+{#                                                <p class="mb-0 font-size-14">Total : 1.5 + years of experience</p>#}
+{#                                             </div>#}
+{#                                          </div> #}
+{#                                       </div>#}
+{#                                    </div>#}
+{#                                 </li>#}
+{#                                 <li>#}
+{#                                    <div class="row align-items-top">#}
+{#                                       <div class="col-md-3">#}
+{#                                       <h6 class="mb-2">2017 - 2018</h6>#}
+{#                                       </div>#}
+{#                                       <div class="col-md-9">#}
+{#                                          <div class="media profile-media align-items-top">#}
+{#                                             <div class="profile-dots border-primary mt-1"></div>#}
+{#                                             <div class="ml-4">#}
+{#                                                <h6 class=" mb-1">Junior Software Engineer at Skycare Ptv. Ltd</h6>#}
+{#                                                <p class="mb-0 font-size-14">Total : 0.5 + years of experience</p>#}
+{#                                             </div>#}
+{#                                          </div> #}
+{#                                       </div>#}
+{#                                    </div>#}
+{#                                 </li>#}
+{#                                 <li>#}
+{#                                    <div class="row align-items-top">#}
+{#                                       <div class="col-3">#}
+{#                                          <h6 class="mb-2">06 Months</h6>#}
+{#                                       </div>#}
+{#                                       <div class="col-9">#}
+{#                                          <div class="media profile-media pb-0 align-items-top">#}
+{#                                             <div class="profile-dots border-primary mt-1"></div>#}
+{#                                             <div class="ml-4">#}
+{#                                                <h6 class=" mb-1">Junior Software Engineer at Infosys Solutions</h6>#}
+{#                                                <p class="mb-0 font-size-14">Total : Freshers</p>#}
+{#                                             </div>#}
+{#                                          </div>                                    #}
+{#                                       </div>#}
+{#                                    </div>#}
+{#                                 </li>#}
+{#                              </ul>#}
+{#                           </div>#}
+{#                        </div>#}
+{#                        <div id="profile5" class="tab-pane fade">#}
+{#                           <p>I'm Web Developer from California. I code and design websites worldwide. Mauris variustellus vitae #}
+{#                              tristique sagittis. Sed aliquet, est nec auctor aliquet, orci ex vestibulum ex, non pharetra lacus#}
+{#                              erat ac nulla.</p>#}
+{#                           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu #}
+{#                              orci, nisi. Magnis elementum vitae eu, dui et. Tempus etiam feugiat sem augue sed sed. Tristique #}
+{#                              feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus #}
+{#                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>#}
+{#                           <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu.#}
+{#                              Tristique feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus #}
+{#                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>#}
+{#                        </div>#}
                      </div>
                   </div>
                </div>
@@ -401,10 +490,180 @@
     <!-- Wrapper End-->
 
 {% block modal %}
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add-category">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_category_title">Add Category</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department %}?settings=category" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="category_name" class="h5">Category Name</label>
+                                    <input type="text" class="form-control" name="category_name" id="category_name" placeholder="Enter Category name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="category_objective" class="h5">Objective</label>
+                                    <textarea class="form-control" name="category_objective" id="category_objective" cols="20" rows="10"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add-member">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_member_title">Add Member</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department %}?settings=member" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                {% include 'custom_html/autocomplete.html' %}
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-member">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department %}?settings=remove_member" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+
+                            <div class="col-lg-12 mb-3" style="display: none">
+                                <input type="text" id="removed_member" name="removed_member">
+                            </div>
+
+                            <div class="col-lg-12 mb-3">
+                                <h6><i>
+                                    Are you sure you want to remove
+                                    <span id="member_name" class="text-danger font-size-20"></span>
+                                    from {{ department }}?. <span class="text-danger">It cannot be restored.</span>
+                                </i></h6>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>
+                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-category">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department %}?settings=remove_category" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12 mb-3" style="display: none">
+                                <input type="text" id="removed_category" name="removed_category">
+                            </div>
+
+                            <div class="col-lg-12 mb-3">
+                                <h6><i>
+                                    Are you sure you want to remove
+                                    <span id="removed_category_name" class="text-danger font-size-20"></span>
+                                    from {{ department }} Category?. <span class="text-danger">It cannot be restored.</span>
+                                </i></h6>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>
+                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="experience-score">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_remove_member_title">Evaluation Score</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department %}?settings=experience_score" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12 mb-3" style="display: none">
+                                <input type="text" id="experience_id" name="experience_id">
+                            </div>
+
+                            <div class="form-group col-12">
+                               <label for="experience_score">Experience Score</label>
+                               <input type="number" max="100" min="0" class="form-control" name="experience_score" id="experience_score">
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Update</button>
+                                    <div class="btn btn-danger" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock modal %}
 
 {% block extra_js %}
     <script src="{% static 'custom/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'custom/to_do/to_do.js' %}"></script>
+    <script>
+        let searchIndex = {{ family_members|jsonify }};
+    </script>
+    <script src="{% static 'custom/autocomplete/auto_complete.js' %}"></script>
     {#    <script src="{% static 'custom/custom.js' %}"></script>#}
 {% endblock extra_js %}

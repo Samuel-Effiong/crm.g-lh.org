@@ -1,4 +1,5 @@
 import os
+import json
 import string
 
 from datetime import datetime, time
@@ -6,6 +7,7 @@ from datetime import datetime, time
 from django import template
 from django.conf import settings
 from django.template.defaultfilters import stringfilter
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -87,3 +89,30 @@ def special_dictionary_formatter(dict_, key, inner_key=None):
 def add_1000(value: int) -> int:
     """Add 1000 to the value to be able to create unique ids that do not clash"""
     return value + 1000
+
+
+@register.filter(is_safe=True)
+def jsonify(json_object):
+    """
+    Output the json encoding of its argument.
+    This will escape all the HTML/XML special characters with their unicode
+    escapes, so it is safe to be output anywhere except for inside a tag
+    attribute.
+    If the output needs to be put in an attribute, entitize the output of this
+    filter.
+    """
+
+    json_str = json.dumps(json_object)
+
+    # Escape all the XML/HTML special characters.
+    escapes = ["<", ">", "&"]
+    for c in escapes:
+        json_str = json_str.replace(c, r"\u%04x" % ord(c))
+
+    # now it's safe to use mark_safe
+    return mark_safe(json_str)
+
+
+@register.filter()
+def length(value) -> int:
+    return len(value)

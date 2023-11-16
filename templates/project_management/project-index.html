@@ -53,7 +53,7 @@
                         <div class="card card-block card-stretch card-height">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div id="circle-progress-{{ forloop.counter }}" class="circle-progress-01 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="25" data-type="percent"></div>
+                                    <div id="circle-progress-{{ forloop.counter }}" class="circle-progress-01 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="{{ project.get_complete_percentage }}" data-type="percent"></div>
                                     <i title="{{ project.department_category }}" class="ri-star-fill m-0 {% if project.project_priority == 'High' %}text-danger{% elif project.project_priority == 'Medium' %}text-warning{% else  %}text-green{% endif %}"></i>
                                 </div>
                                 <h5 class="mb-1"><a href="{% url 'project_management:project-detail' category project.id %}">{{ project.project_name}}</a></h5>

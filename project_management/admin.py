@@ -22,7 +22,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(models.DepartmentProject)
 class DepartmentProjectAdmin(admin.ModelAdmin):
-    list_display = ('project_name', 'department', 'department_category', 'get_no_of_workers', 'project_priority', 'status', 'get_no_of_target')
+    list_display = ('project_name', 'department', 'department_category',
+                    'get_no_of_workers', 'project_priority', 'status',
+                    'get_no_of_target')
 
 
 @admin.register(models.ProjectTarget)

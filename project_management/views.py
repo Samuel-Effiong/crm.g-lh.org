@@ -46,6 +46,7 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         context['project_title'] = project_title
 
         context['member_departments'] = Department.objects.get_member_departments(user)
+        context['department_leaders'] = Department.objects.department_leaders()
 
         return context
 
@@ -72,11 +73,16 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
         context['title'] = title
         context['project_title'] = project_title
         context['user'] = user
-        context['member_departments'] = Department.objects.get_member_departments(user)
 
-        context['department_projects'] = DepartmentProject.objects.filter(department__department_name=category)
-        context['department_categories'] = DepartmentCategory.objects.get_department_categories(category)
-        context['department_members'] = DepartmentMember.objects.get_department_members(category)
+        department = Department.objects.get(department_name=category)
+
+        context['department'] = department
+        context['member_departments'] = Department.objects.get_member_departments(user)
+        context['department_leaders'] = Department.objects.department_leaders()
+
+        context['department_projects'] = DepartmentProject.objects.filter(department=department)
+        context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
+        context['department_members'] = DepartmentMember.objects.get_department_members(department)
 
         return context
 
@@ -118,7 +124,7 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
                 target_id = request.GET['target_id']
                 state = request.GET['state']
 
-                if state in ['Not Started', 'Pending', 'Completed']:
+                if state in ['Not Started', 'In Progress', 'Completed', 'Pending Approval']:
 
                     target = ProjectTarget.objects.get(id=target_id)
                     target.state = state
@@ -144,9 +150,16 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         context['user'] = user
         context['now'] = timezone.now()
 
+        department = Department.objects.get(department_name=category)
+
+        context['department'] = department
         context['member_departments'] = Department.objects.get_member_departments(user)
-        context['department_categories'] = DepartmentCategory.objects.get_department_categories(category)
-        context['department_members'] = DepartmentMember.objects.get_department_members(category)
+        context['department_leaders'] = Department.objects.department_leaders()
+
+        context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
+        context['department_members'] = DepartmentMember.objects.get_department_members(department)
+
+        context['is_department_leader'] = department.is_leader(user)
 
         return context
 
@@ -175,11 +188,6 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
 
         department_project.project_members.clear()
         department_project.project_members.add(*[DepartmentMember.objects.get(id=pk) for pk in project_members])
-
-        # department_project.target.clear()
-        # ProjectTarget.objects.filter(project=department_project).delete()
-
-        # department_project.target.all().delete()
 
         # In updating the targets list, do not delete those that is already
         # in the database that the department leader decides to keep, instead remove
@@ -223,12 +231,93 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
         context['project_title'] = project_title
         context['user'] = user
 
-        context['department'] = Department.objects.get(department_name=category)
-        context['member_departments'] = Department.objects.get_member_departments(user)
+        department = Department.objects.get(department_name=category)
 
-        context['department_projects'] = DepartmentProject.objects.filter(department__department_name=category)
-        context['department_categories'] = DepartmentCategory.objects.get_department_categories(category)
-        context['department_members'] = DepartmentMember.objects.get_department_members(category)
+        context['department'] = department
+        context['member_departments'] = Department.objects.get_member_departments(user)
+        context['department_leaders'] = Department.objects.department_leaders()
+
+        context['department_projects'] = DepartmentProject.objects.filter(department=department).order_by('-start_date')
+        context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
+        context['department_members'] = DepartmentMember.objects.get_department_members(department)
+
+        # family_members not in the department
+        context['family_members'] = [
+            brethren.get_full_name() for brethren in get_user_model().objects.exclude(
+                username__in=[member.member_name.username for member in context['department_members']]
+            )
+        ]
 
         return context
 
+    def post(self, request, *args, **kwargs):
+        settings = request.GET.get('settings', None)
+        department = kwargs['department']
+        department = Department.objects.get(department_name=department)
+
+        if settings is not None:
+            if settings == 'category':
+                category_name = request.POST.get('category_name', None).strip()
+                category_objective = request.POST.get('category_objective').strip()
+
+                if category_name:
+                    category = DepartmentCategory(category_name=category_name,
+                                                  category_objective=category_objective,
+                                                  department_name=department
+                                                  )
+                    category.save()
+                    department.department_categories.add(category)
+
+            elif settings == 'member':
+                family_members = request.POST.get('family_members', None).strip()
+
+                if family_members:
+                    family_members_list = [member for member in family_members.split(',') if member]
+
+                    # add family member to department list
+                    department_member = []
+
+                    for fam in family_members_list:
+                        # retrieve the user object of the fam using their names
+                        first_name, last_name = fam.title().split()
+                        fam_user = get_user_model().objects.get(first_name=first_name, last_name=last_name)
+
+                        # Join the member to the department member table
+                        new_department_member = DepartmentMember(member_name=fam_user, department_name=department)
+                        new_department_member.save()
+
+                        # add user to the department itself table
+                        department.member_names.add(new_department_member)
+
+            elif settings == 'remove_member':
+                removed_member = request.POST.get('removed_member', None).strip()
+
+                if removed_member:
+                    department_member = DepartmentMember.objects.get(id=removed_member)
+                    department.member_names.remove(department_member)
+
+                    department_member.delete()
+
+            elif settings == 'remove_category':
+                removed_category = request.POST.get('removed_category', None).strip()
+
+                if removed_category:
+                    department_category = DepartmentCategory.objects.get(id=removed_category)
+                    department.department_categories.remove(department_category)
+
+                    department_category.delete()
+
+            elif settings == 'experience_score':
+                department_member = request.POST.get('experience_id', None)
+
+                if department_member:
+                    department_member = DepartmentMember.objects.get(id=department_member)
+
+                    try:
+                        new_experience_score = int(request.POST.get('experience_score', None))
+                    except (TypeError, ValueError) as e:
+                        pass
+                    else:
+                        department_member.experience_score = new_experience_score
+                        department_member.save()
+        return HttpResponseRedirect(reverse_lazy('project_management:project-settings', args=[department]))

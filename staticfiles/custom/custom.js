@@ -2,7 +2,6 @@
 "use strict"
 
 const __save_project = (url) => {
-    console.log(url);
     const project_name = document.getElementById('project_name').value;
     const project_description = document.getElementById('project_description').value;
     const project_category = document.getElementById('project_category').value;
@@ -39,8 +38,6 @@ const __save_project = (url) => {
     formData.append('project_targets', project_targets);
     formData.append('X-CSRFToken', csrf_token);
 
-    console.log(url)
-
     fetch(url, {
         method: 'POST',
         credentials: 'same-origin',
@@ -63,69 +60,84 @@ const __save_project = (url) => {
 
 
 const __toggle_target = (element, url, pk) => {
-    let currentState = element.getAttribute('data-state');
+    let currentState = element.value;
     console.log('currentState', currentState);
-    console.log('element', element);
 
-    url = `${url}change_target_status&target_id=${pk}`;
-    // url = `${url}&state=${ currentState === 'Pending' ? 'Completed' : currentState === 'Pending' ? 'Pending' : 'Not Started'}`;
+    url = `${url}change_target_status&target_id=${pk}&state=${currentState}`;
+    console.log(url);
 
+    const status_badge = document.querySelector(`#pk${pk} .status`);
 
-    if (currentState === 'Pending') {
-    //     Indeterminate == Pending
-        element.setAttribute('data-state', 'Completed');
-        element.indeterminate = false;
-        element.checked = true;
+    if (currentState === 'Completed') {
 
-        url = `${url}&state=Completed`;
+        const completion_modal = document.querySelector('#confirm_completion #completion_detail');
+        const show_modal_button = document.getElementById(`show_modal${pk}`);
+        const project_target_id = document.querySelector('#confirm_completion #project_target_id');
 
-    } else if (currentState === 'Not Started') {
-    //     unchecked == Not Started
-        element.setAttribute('data-state', 'Pending');
-        element.indeterminate = true;
-        element.checked = false;
+        url = `${url}change_target_status&target_id=${pk}&state=Pending Approval`;
 
-        url = `${url}&state=Pending`;
+        completion_modal.textContent = url;
+        project_target_id.textContent = pk;
+        show_modal_button.click();
+
+        return;
     }
-    else if (currentState === 'Completed') {
-    //     checked == Completed
-        element.setAttribute('date-state', 'Not Started');
-        element.indeterminate = false;
-        element.checked = false;
 
-        url = `${url}&state=Not Started`;
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data['confirm']) {
+                if (currentState === 'Completed') {
+                    console.log('Darn it Escaped');
+                }
 
-    }
-    console.log('url', url);
+                const status_badge = document.querySelector(`#pk${pk} .status`);
+                console.log(status_badge);
+                console.log(currentState)
 
-    // fetch(url, {
-    //     method: 'GET',
-    //     credentials: 'same-origin',
-    //     headers: {
-    //         'Accept': 'application/json',
-    //     }
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data['confirm']) {
-    //             const status_badge = document.querySelector(`#pk${pk} .status`);
-    //             currentState = element.getAttribute('date-state');
-    //
-    //             if (currentState === 'Completed') {
-    //
-    //                 status_badge.textContent = 'Completed';
-    //                 status_badge.className = 'badge badge-success badge-pill status';
-    //             }
-    //             else if (currentState === 'Pending') {
-    //
-    //                 status_badge.textContent = 'Pending';
-    //                 status_badge.className = 'badge badge-warning badge-pill status';
-    //             }
-    //             else if (currentState === 'Not Started') {
-    //
-    //                 status_badge.textContent = 'Not Started';
-    //                 status_badge.className = 'badge badge-danger badge-pill status';
-    //             }
-    //         }
-    //     })
+                if (currentState === 'In Progress') {
+
+                    status_badge.textContent = 'In Progress';
+                    status_badge.className = 'badge badge-warning badge-pill status';
+                }
+                else if (currentState === 'Not Started') {
+
+                    status_badge.textContent = 'Not Started';
+                    status_badge.className = 'badge badge-danger badge-pill status';
+                }
+            }
+        })
+}
+
+
+const send_approval_notification = () => {
+    const target_id = document.querySelector('#confirm_completion #project_target_id').textContent;
+    const completion_detail = document.querySelector('#confirm_completion #completion_detail').textContent;
+
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data['confirm']) {
+                const pending_status_button = document.querySelector(`#pending_status_button${target_id}`);
+                const completed_status_button = document.querySelector(`#completed_status_button${target_id}`);
+                const target_status_select_box = document.querySelector(`#target_status_select_box${target_id}`);
+
+                pending_status_button.style.display = 'inline';
+                completed_status_button.style.display = 'none';
+
+                target_status_select_box.disabled = true;
+            }
+        })
 }
