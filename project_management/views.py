@@ -12,6 +12,8 @@ from django.http import HttpResponseRedirect, JsonResponse
 from .models import (Department, DepartmentMember, DepartmentCategory,
                      DepartmentProject, ProjectTarget)
 
+from home.models import Notification
+
 
 title = 'GLH-FAM'
 project_title = 'GLH-PROJ'
@@ -83,6 +85,7 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
         context['department_projects'] = DepartmentProject.objects.filter(department=department)
         context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
         context['department_members'] = DepartmentMember.objects.get_department_members(department)
+        context['is_department_leader'] = department.is_leader(user)
 
         return context
 

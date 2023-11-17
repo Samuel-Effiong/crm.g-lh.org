@@ -58,14 +58,15 @@
                               <li id="pk{{ target.pk }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                   <span class="d-flex justify-content-between">
                                       <div class="mr-2" style="margin-left: -10px">
-                                          <select id="target_status_select_box{{ target.pk }}" class="form-control form-control-sm triStateSelectBox" onchange="toggle_target(this, '{{ target.pk }}')">
+                                          <select id="target_status_select_box{{ target.pk }}" {% if target.state == 'Completed' or target.state == 'Pending Approval' %}disabled{% endif %} class="form-control form-control-sm triStateSelectBox" onchange="toggle_target(this, '{{ target.pk }}')">
                                               <option value="Not Started" {% if target.state == 'Not Started' %}selected{% endif %}><small>Not Started</small></option>
                                               <option value="In Progress" {% if target.state == 'In Progress' %}selected{% endif %}><small>In Progress</small></option>
-                                              <option value="Completed" {% if target.state == 'Completed' or target.state == 'Pending Approval' %}selected disabled{% endif %}><small>Completed</small></option>
+                                              <option value="Completed" {% if target.state == 'Completed' or target.state == 'Pending Approval' %}selected{% endif %}><small>Completed</small></option>
                                           </select>
                                       </div>
                                       {{ target.target_name }}
 
+{#                                      Hidden Button to click it through Javascript #}
                                       <button type="button" id="show_modal{{ target.pk }}" style="display: none" class="btn btn-primary p-2" data-target="#confirm_completion" data-toggle="modal"><small>Add Member</small></button>
 
                                       {% if target.state == 'Completed' %}
@@ -73,24 +74,38 @@
                                       {% endif %}
                                   </span>
 
-
                                   {% if target.state == 'Completed' %}
                                       <span id="completed_status_button{{ target.pk }}" class="badge badge-success badge-pill status">Completed</span>
                                   {% elif target.state == 'Pending Approval' %}
-                                      <button type="button" id="pending_status_button{{ target.pk }}" class="badge btn-outline-danger badge-pill">
-                                          <small>...pending</small>
-                                      </button>
-                                  {% elif target.state == 'Pending' %}
-                                      <span class="badge badge-warning badge-pill status">Pending</span>
+
+                                      <div>
+                                          <span id="completed_status_button{{ target.pk }}" style="display: none" class="badge badge-success badge-pill status">Completed</span>
+
+                                          {% if is_department_leader %}
+                                              <button type="button" id="leader_approval_button{{ target.pk }}" class="badge btn-primary badge-pill" onclick="target_approved_by_leader(this, '{{ target.pk }}')">
+                                                  <small>Approve</small>
+                                              </button>
+                                          {% endif %}
+
+                                          <button type="button" id="pending_status_button{{ target.pk }}" class="badge btn-outline-danger badge-pill">
+                                              <small>...pending</small>
+                                          </button>
+                                      </div>
+
+                                  {% elif target.state == 'In Progress' %}
+                                      <span class="badge badge-warning badge-pill status">In Progress</span>
                                   {% else %}
                                       <span class="badge badge-danger badge-pill status">Not Started</span>
                                   {% endif %}
+
+                                  <button style="display:none" id="outlier_pending_status_button{{ target.pk }}" class="badge btn-outline-danger badge-pill">
+                                      <small>...pending</small>
+                                  </button>
                               </li>
                           {% empty %}
                               <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">No Target</li>
                           {% endfor %}
                       </ul>
-
                   </div>
                </div>
                <div class="card">
@@ -159,6 +174,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="header-title">
@@ -166,7 +182,6 @@
                             </div>
                         </div>
                         <div class="card-body">
-
                             <div class="form-group mb-3 col-12">
                                 <label for="project_members">Team Members</label>
                                 <select id="project_members" class="selectpicker form-control form-control-lg" data-style="py-0" multiple required>
@@ -206,6 +221,8 @@
 {% endblock content %}
 
 {% block modal %}
+
+{#    CONFIRMATION COMPLETETION MODAL #}
     <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="confirm_completion">
         <div class="modal-dialog  modal-dialog-centered">
             <div class="modal-content">
@@ -246,13 +263,19 @@
     <script>
 
         let url = "{% url 'project_management:project-detail' category object.pk %}";
+
         const save_project = () => {
             __save_project(url);
         }
 
         const toggle_target = (element, pk) => {
-            url = `{% url 'project_management:project-detail' category object.pk %}?`;
+            url = `${url}?`;
             __toggle_target(element, url, pk);
+        }
+
+        const target_approved_by_leader = (element, target_id) => {
+            url = `${url}?change_target_status&target_id=${target_id}&state=Completed`;
+            _target_approved_by_leader(element, url, target_id);
         }
 
     </script>

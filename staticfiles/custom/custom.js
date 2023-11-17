@@ -1,6 +1,9 @@
 
 "use strict"
 
+
+// PROJECT MANAGEMENT
+
 const __save_project = (url) => {
     const project_name = document.getElementById('project_name').value;
     const project_description = document.getElementById('project_description').value;
@@ -63,9 +66,6 @@ const __toggle_target = (element, url, pk) => {
     let currentState = element.value;
     console.log('currentState', currentState);
 
-    url = `${url}change_target_status&target_id=${pk}&state=${currentState}`;
-    console.log(url);
-
     const status_badge = document.querySelector(`#pk${pk} .status`);
 
     if (currentState === 'Completed') {
@@ -82,6 +82,8 @@ const __toggle_target = (element, url, pk) => {
 
         return;
     }
+
+    url = `${url}change_target_status&target_id=${pk}&state=${currentState}`;
 
     fetch(url, {
         method: 'GET',
@@ -102,12 +104,11 @@ const __toggle_target = (element, url, pk) => {
                 console.log(currentState)
 
                 if (currentState === 'In Progress') {
-
                     status_badge.textContent = 'In Progress';
                     status_badge.className = 'badge badge-warning badge-pill status';
                 }
-                else if (currentState === 'Not Started') {
 
+                else if (currentState === 'Not Started') {
                     status_badge.textContent = 'Not Started';
                     status_badge.className = 'badge badge-danger badge-pill status';
                 }
@@ -116,9 +117,15 @@ const __toggle_target = (element, url, pk) => {
 }
 
 
+// PROJECT DETAIL
 const send_approval_notification = () => {
     const target_id = document.querySelector('#confirm_completion #project_target_id').textContent;
-    const completion_detail = document.querySelector('#confirm_completion #completion_detail').textContent;
+    const completion_detail = document.querySelector('#confirm_completion #completion_detail');
+
+    const url = completion_detail.textContent;
+    completion_detail.textContent = "";
+
+    console.log('completion detail\n\n', url);
 
     fetch(url, {
         method: 'GET',
@@ -130,14 +137,47 @@ const send_approval_notification = () => {
         .then(response => response.json())
         .then(data => {
             if (data['confirm']) {
-                const pending_status_button = document.querySelector(`#pending_status_button${target_id}`);
+
+                const outlier_pending_status_button = document.querySelector(`#outlier_pending_status_button${target_id}`);
                 const completed_status_button = document.querySelector(`#completed_status_button${target_id}`);
                 const target_status_select_box = document.querySelector(`#target_status_select_box${target_id}`);
 
-                pending_status_button.style.display = 'inline';
-                completed_status_button.style.display = 'none';
+                console.log(outlier_pending_status_button);
+                console.log(completed_status_button);
+                console.log(target_status_select_box);
+
+                const status_span = document.querySelector(`#pk${target_id} .status`)
+
+                outlier_pending_status_button.style.display = 'block';
+                status_span.style.display = 'none'
+                // completed_status_button.display = 'none';
 
                 target_status_select_box.disabled = true;
             }
         })
 }
+
+
+const _target_approved_by_leader = (element, url, target_id) => {
+    const pending_status_button = document.querySelector(`#pending_status_button${target_id}`);
+    const leader_approval_button = document.querySelector(`#leader_approval_button${target_id}`);
+    const completed_status_button = document.querySelector(`#completed_status_button${target_id}`);
+
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data['confirm']) {
+                completed_status_button.style.display = 'block';
+                leader_approval_button.style.display = 'none';
+                pending_status_button.style.display = 'none';
+            }
+        })
+}
+
+// END OF PROJECT MANAGEMENT

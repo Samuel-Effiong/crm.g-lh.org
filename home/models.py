@@ -146,6 +146,7 @@ NOTIFICATION_MODE_CHOICES = (
     ('Birthday', 'Birthday'),
     ('Suggestion/Complaint', 'Suggestion/Complaint'),
     ('Shepherd Report', 'Shepherd Report'),
+    ('Target Approval', 'Target Approval'),
 )
 
 SENSITIVITY_PERIOD = (
@@ -156,6 +157,7 @@ SENSITIVITY_PERIOD = (
 EXPOSURE_LEVEL_CHOICES = (
     ('general', 'general'),
     ('pastoral', 'pastoral'),
+    ('project_management', 'project_management'),
     ('all', 'all')
 )
 
@@ -168,7 +170,7 @@ class Notification(models.Model):
     mode = models.CharField(max_length=50, choices=NOTIFICATION_MODE_CHOICES)
     exposure_level = models.CharField(default='general', max_length=50, choices=EXPOSURE_LEVEL_CHOICES)
 
-    # if target is None, then it means that the notification is addressing
+    # if activator is None, then it means that the notification is addressing
     # multiple people at once
     activator = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True,
                                   related_name='activator')

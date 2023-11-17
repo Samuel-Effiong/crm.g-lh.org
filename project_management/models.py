@@ -173,7 +173,6 @@ class ProjectTarget(models.Model):
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
     state = models.CharField(max_length=25, choices=Choices, default='Not Started')
     date = models.DateField(blank=True, null=True)
-    is_approved = models.BooleanField(default=True)
 
     def __str__(self):
         return self.target_name
@@ -260,27 +259,39 @@ class DepartmentProject(models.Model):
         ordering = ('due_date', )
 
     @admin.display(description="No of Workers")
-    def get_no_of_workers(self):
+    def get_no_of_workers(self) -> int:
         project_members = self.project_members.all()
 
         return len(project_members)
 
     @admin.display(description='No of Targets')
-    def get_no_of_target(self):
+    def get_no_of_target(self) -> int:
         target = self.target.all()
         return len(target)
 
-    def get_complete_percentage(self):
+    def get_complete_percentage(self) -> int:
         targets = self.target.all()
 
         # get targets that are completed
         completed_target = [target for target in targets if target.state == 'Completed' and target.is_approved]
         try:
-            complete_percentage = (len(completed_target) / len(targets)) * 100
+            complete_percentage = int((len(completed_target) / len(targets)) * 100)
         except ZeroDivisionError:
             complete_percentage = 0
 
         return complete_percentage
+
+    def any_pending_target_approval(self) -> bool:
+        targets = self.target.all()
+
+        pending_approval = False
+
+        for target in targets:
+            if target.state == 'Pending Approval':
+                pending_approval = True
+                break
+
+        return pending_approval
 
 
 

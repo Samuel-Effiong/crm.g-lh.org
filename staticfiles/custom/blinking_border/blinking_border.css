@@ -1,0 +1,27 @@
+
+/*************************/
+/****** .shadow-box ******/
+/*************************/
+.shadow-box {
+  background: aliceblue;
+  -webkit-box-shadow: 0px 0px 40px 0px rgba(255,0,0,1);
+  -moz-box-shadow: 0px 0px 40px 0px rgba(255,0,0,1);
+  box-shadow: 0px 0px 40px 0px rgba(255,0,0,1);
+   animation:shadow-fade 2000ms infinite;
+  -webkit-animation:shadow-fade 2000ms infinite;
+}
+
+@keyframes shadow-fade {
+    from { box-shadow: 0px 0px 40px 0px rgba(255,0,0,1);
+      -webkit-box-shadow: 0px 0px 40px 0px rgba(255,0,0,1);
+    }
+    50% { box-shadow: 0px 0px 40px 0px rgba(255,0,0,0);
+  -webkit-box-shadow: 0px 0px 40px 0px rgba(255,0,0,0);
+  }
+    to { box-shadow: 0px 0px 40px 0px rgba(255,0,0,1); }
+}
+@-webkit-keyframes shadow-fade {
+    from { border-color: purple; }
+    50% { border-color: aliceblue; }
+    to { border-color: purple; }
+}
