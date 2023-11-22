@@ -24,6 +24,9 @@ from users.models import (Catalog, Shepherd, SubShepherd, CustomUser,
 from users.my_models.users import GENOTYPE_CHOICES, BLOOD_GROUP_CHOICES
 from users.my_models.utilities import convert_image_to_webp
 
+from project_management.models import DepartmentMember
+
+
 developers = "God's Lighthouse Developers Team (GDevT)"
 title = 'GLH-FAM'
 
@@ -51,15 +54,6 @@ def sort_function(series):
 class Home(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'dashboard/index.html'
-
-    # def setup(self, request, *args, **kwargs):
-    #     super().setup(request, *args, **kwargs)
-    #
-    #     # update the last_active time on the user instance
-    #     user = request.user
-    #
-    #     user.last_active_date = timezone.now()
-    #     user.save()
 
     def get(self, request, *args, **kwargs):
         if 'mode' in kwargs:
@@ -142,6 +136,8 @@ class Home(LoginRequiredMixin, TemplateView):
             context['week_three'] = week_three
             context['week_four'] = week_four
 
+        # Check if user is in a department
+        context['is_in_a_department'] = DepartmentMember.objects.is_in_a_department(context['user'])
         return context
 
 

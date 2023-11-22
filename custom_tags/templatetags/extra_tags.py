@@ -116,3 +116,8 @@ def jsonify(json_object):
 @register.filter()
 def length(value) -> int:
     return len(value)
+
+
+@register.filter()
+def concatenate(value, arg) -> str:
+    return f"{value} {arg}"

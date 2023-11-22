@@ -18,16 +18,16 @@
                                 <div class="dropdown status-dropdown mr-3">
                                     <div class="dropdown-toggle" id="dropdownMenuButton03" data-toggle="dropdown">
                                         <div class="btn bg-body">
-                                            <span class="h6">Status :</span>
-                                            <span id="filter-by-status"> All</span>
+                                            <span class="h6">Status : </span>
+                                            <span id="filter-by-status"> {{ filter_by_status }}</span>
                                             <i class="ri-arrow-down-s-line ml-2 mr-0"></i>
                                         </div>
                                     </div>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton03">
-                                        <a class="dropdown-item" href="#"><i class="ri-mic-line mr-2"></i>In Progress</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-attachment-line mr-2"></i>Completed</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line mr-2"></i>Not Started</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line mr-2"></i>All</a>
+                                        <a class="dropdown-item" onclick="select_status_filter(this)"><i class="ri-mic-line mr-2"></i>In Progress</a>
+                                        <a class="dropdown-item" onclick="select_status_filter(this)"><i class="ri-attachment-line mr-2"></i>Completed</a>
+                                        <a class="dropdown-item" onclick="select_status_filter(this)"><i class="ri-file-copy-line mr-2"></i>Not Started</a>
+                                        <a class="dropdown-item" onclick="select_status_filter(this)"><i class="ri-file-copy-line mr-2"></i>All</a>
                                     </div>
                                 </div>
 
@@ -35,16 +35,20 @@
                                     <div class="dropdown-toggle" id="dropdownMenuButton03" data-toggle="dropdown">
                                         <div class="btn bg-body">
                                             <span class="h6">Priority :</span>
-                                            <span id="filter-by-priority"> All</span>
+                                            <span id="filter-by-priority"> {{ filter_by_priority }}</span>
                                             <i class="ri-arrow-down-s-line ml-2 mr-0"></i>
                                         </div>
                                     </div>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton03">
-                                        <a class="dropdown-item" href="#"><i class="ri-mic-line mr-2"></i>High</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-attachment-line mr-2"></i>Medium</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line mr-2"></i>Low</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line mr-2"></i>All</a>
+                                        <a class="dropdown-item" onclick="select_priority_filter(this)"><i class="ri-mic-line mr-2"></i>High</a>
+                                        <a class="dropdown-item" onclick="select_priority_filter(this)"><i class="ri-attachment-line mr-2"></i>Medium</a>
+                                        <a class="dropdown-item" onclick="select_priority_filter(this)"><i class="ri-file-copy-line mr-2"></i>Low</a>
+                                        <a class="dropdown-item" onclick="select_priority_filter(this)"><i class="ri-file-copy-line mr-1"></i>All</a>
                                     </div>
+                                </div>
+
+                                <div class="border-right">
+                                    <button type="button" class="btn btn-primary mr-3" onclick="filter_by_priority_and_status()">Filter</button>
                                 </div>
 
                                 <div class="list-grid-toggle d-flex align-items-center mr-3">
@@ -112,7 +116,7 @@
                                 <div class="row">
                                     <div class="col-sm-8">
                                         <div class="d-flex align-items-center">
-                                            <div id="circle-progress-{{ forloop.counter|add_1000 }}" class="circle-progress-02 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="25" data-type="percent"></div>
+                                            <div id="circle-progress-{{ forloop.counter|add_1000 }}" class="circle-progress-02 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="{{ project.get_complete_percentage }}" data-type="percent"></div>
                                             <div class="ml-3">
                                                 <h5 class="mb-1">{{ project.project_name}}</h5>
                                                 <p class="mb-0">{{ project.project_description }}</p>
@@ -214,4 +218,5 @@
 
 
 {% block extra_js %}
+    <script src="{% static 'custom/custom.js' %}"></script>
 {% endblock extra_js %}

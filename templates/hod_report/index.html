@@ -77,9 +77,7 @@
                 {% endif %}
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                  {% if user.get_image_url %}
-                    <img class="img-md rounded-circle" src="{{ user.get_image_url }}" alt="Profile image">
-                  {% endif %}
+                <img class="img-md rounded-circle" src="{{ user.get_image_url }}" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">{{ user.get_full_name }}</p>
                 <p class="fw-light text-muted mb-0">{{ user.email }}</p>
               </div>

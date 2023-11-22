@@ -10,6 +10,8 @@ const __save_project = (url) => {
     const project_category = document.getElementById('project_category').value;
     const project_start_date = document.getElementById('project_start_date').value;
     const project_due_date = document.getElementById('project_due_date').value;
+    const project_priority = document.getElementById('project_priority').value;
+    const project_leader = document.getElementById('project_leader').value;
 
     let project_members = document.getElementById('project_members');
     let members_options = project_members.options;
@@ -37,6 +39,8 @@ const __save_project = (url) => {
     formData.append('project_category', project_category);
     formData.append('project_start_date', project_start_date);
     formData.append('project_due_date', project_due_date);
+    formData.append('project_priority', project_priority);
+    formData.append('project_leader', project_leader);
     formData.append('project_members', project_members);
     formData.append('project_targets', project_targets);
     formData.append('X-CSRFToken', csrf_token);
@@ -161,6 +165,7 @@ const send_approval_notification = () => {
 const _target_approved_by_leader = (element, url, target_id) => {
     const pending_status_button = document.querySelector(`#pending_status_button${target_id}`);
     const leader_approval_button = document.querySelector(`#leader_approval_button${target_id}`);
+    const leader_rejection_button = document.querySelector(`#leader_rejection_button${target_id}`);
     const completed_status_button = document.querySelector(`#completed_status_button${target_id}`);
 
     fetch(url, {
@@ -175,9 +180,67 @@ const _target_approved_by_leader = (element, url, target_id) => {
             if (data['confirm']) {
                 completed_status_button.style.display = 'block';
                 leader_approval_button.style.display = 'none';
+                leader_rejection_button.style.display = 'none'
                 pending_status_button.style.display = 'none';
             }
         })
+}
+
+
+const _target_rejected_by_leader = (element, url, target_id) => {
+    const pending_status_button = document.querySelector(`#pending_status_button${target_id}`);
+    const leader_approval_button = document.querySelector(`#leader_approval_button${target_id}`);
+    const leader_rejection_button = document.querySelector(`#leader_rejection_button${target_id}`);
+    const completed_status_button = document.querySelector(`#completed_status_button${target_id}`);
+    const outlier_not_started = document.querySelector(`#outlier_not_started${target_id}`);
+    const target_status_select_box = document.querySelector(`#target_status_select_box${target_id}`);
+
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data['confirm']) {
+                completed_status_button.style.display = 'none';
+                leader_approval_button.style.display = 'none';
+                leader_rejection_button.style.display = 'none'
+                pending_status_button.style.display = 'none';
+
+                target_status_select_box.disabled = false;
+                target_status_select_box.value = "Not Started";
+
+                outlier_not_started.style.display = 'block';
+            }
+        })
+}
+
+
+const select_status_filter = (element) => {
+    const status_display = document.getElementById('filter-by-status');
+    const status = element.textContent;
+
+    status_display.textContent = ` ${status}`;
+}
+
+
+const select_priority_filter = (element) => {
+
+    const priority_display = document.getElementById('filter-by-priority');
+    const priority = element.textContent;
+
+    priority_display.textContent = ` ${priority}`;
+}
+
+
+const filter_by_priority_and_status = () => {
+    const priority = document.getElementById('filter-by-priority').textContent;
+    const status = document.getElementById('filter-by-status').textContent;
+
+    window.location.href = `?filter&status=${status.trim()}&priority=${priority.trim()}`;
 }
 
 // END OF PROJECT MANAGEMENT

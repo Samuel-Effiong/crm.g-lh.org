@@ -1,4 +1,7 @@
 <div class="form-group" id="autocomplete">
-    <input type="text" id="searchBox" name="family_members" class="search-field" placeholder="Type Name" autoFocus />
+    {% if variable %}
+        <label for="searchBox">{{ variable }}</label>
+    {% endif %}
+    <input type="text" id="searchBox" name="family_members" class="search-field {% if variable %}form-control{% endif %}" placeholder="Type Name" autoFocus />
     <ul id="searchResults" class="term-list hidden"></ul>
 </div>

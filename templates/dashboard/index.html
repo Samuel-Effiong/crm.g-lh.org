@@ -270,7 +270,9 @@
                                     <span class="item-name">Pastor</span>
                                 </a>
                             </li>
+                        {% endif %}
 
+                        {% if user.is_superuser or is_in_a_department %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'project_management:dashboard' %}" target="_blank">
                                     <i class="icon">
@@ -291,7 +293,6 @@
                                     <span class="item-name">Projects</span>
                                 </a>
                             </li>
-
                         {% endif %}
 
 {#                        {% if user.permission.is_sub_shepherd %}#}

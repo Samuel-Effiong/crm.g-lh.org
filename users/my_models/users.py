@@ -181,6 +181,20 @@ class CustomUserManager(BaseUserManager):
 
         return items_list
 
+    def get_user_from_full_name(self, full_name):
+        full_name = full_name.title().split()
+        full_name = [valid for valid in full_name if valid]
+
+        if len(full_name) == 2:
+            first_name, last_name = full_name
+            return self.get_queryset().get(first_name=first_name, last_name=last_name)
+
+        elif len(full_name) == 3:
+            first_name, middle_name, last_name = full_name
+            raise NotImplementedError(
+                "This feature has not yet been implemented. Contact the developer"
+            )
+
 
 class CustomUser(AbstractUser):
 
@@ -319,7 +333,7 @@ class CustomUser(AbstractUser):
     def get_image_url(self) -> str | None:
         if self.profile_pic:
             return self.profile_pic.url
-        return None
+        return ""
 
     def to_dict(self):
         data = {

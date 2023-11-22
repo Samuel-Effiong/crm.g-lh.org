@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 import numpy as np
 import pandas as pd
@@ -20,18 +21,20 @@ class Utility:
 
 class DepartmentMemberManager(models.Manager):
     def get_department_members(self, department):
-        """Get all the members that belogns to a specific department"""
+        """Get all the members that belongs to a specific department"""
         members = self.get_queryset().filter(department_name=department)
         return members
+
+    def is_in_a_department(self, user):
+        """Check if user is a member of any department"""
+        member = self.get_queryset().filter(member_name=user)
+
+        return len(member) > 0
 
 
 # Create your models here.
 class DepartmentMember(models.Model):
     """A user that is a member of a department
-
-    FIXME: There is an implied bug that allows a users to be added twice to the
-    FIXME: same Department
-
     """
     member_name = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
@@ -106,8 +109,8 @@ class DepartmentManager(models.Manager):
         departments = self.get_queryset().filter(member_names__member_name=user)
         return set(departments)
 
-    def department_leaders(self):
-        leaders = [department.leader.name for department in self.get_queryset()]
+    def department_leaders(self) -> list[DepartmentMember]:
+        leaders = [department.leader for department in self.get_queryset()]
         return leaders
 
 
@@ -117,13 +120,15 @@ class Department(models.Model):
         ('Extraction', 'Extraction Team'),
         ('Website', 'Website Team'),
         ('Archive', 'Archive'),
+        ('GRT', 'GRT'),
     )
 
     member_names = models.ManyToManyField(DepartmentMember, blank=True)
     department_categories = models.ManyToManyField(DepartmentCategory, blank=True)
-    department_name = models.CharField(max_length=255, unique=True, choices=CHOICES)
-    leader = models.ForeignKey(Shepherd, on_delete=models.CASCADE)
-    sub_leader = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, blank=True, null=True, related_name='+')
+    department_name = models.CharField(_('Department (Short Name)'), max_length=255, unique=True)
+    department_long_name = models.CharField(_('Department (Long Name)'), max_length=1000, null=True, blank=True)
+    leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
     department_objectives = models.TextField()
 
@@ -153,12 +158,28 @@ class Department(models.Model):
             return no_of_categories
         return 0
 
-    def department_leaders(self):
+    def department_leaders(self) -> list[DepartmentMember]:
         leaders = Department.objects.department_leaders()
         return leaders
 
-    def is_leader(self, user) -> bool:
-        return self.leader.name == user
+    def is_leader(self, member: DepartmentMember) -> bool:
+        return self.leader == member
+
+    def member_activity_in_a_department(self):
+        members = self.member_names.all()
+        member_completed_project = []
+
+        for member in members:
+            completed_project = DepartmentProject.objects.get_completed_projects(self, member)
+            member_completed_project.append(len(completed_project))
+
+        return members, member_completed_project
+
+
+class ProjectTargetManager(models.Manager):
+    def all_department_pending_target(self, department: Department):
+        pending_target = self.get_queryset().filter(project__department=department, state='Pending Approval')
+        return pending_target
 
 
 class ProjectTarget(models.Model):
@@ -173,6 +194,8 @@ class ProjectTarget(models.Model):
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
     state = models.CharField(max_length=25, choices=Choices, default='Not Started')
     date = models.DateField(blank=True, null=True)
+
+    objects = ProjectTargetManager()
 
     def __str__(self):
         return self.target_name
@@ -220,6 +243,37 @@ class DepartmentProjectManager(models.Manager):
         else:
             return department_project.filter(project_members=member)
 
+    def get_department_projects_status_statistic(self, department: Department):
+        active_project = len(self.get_active_projects(department))
+        completed_project = len(self.get_completed_projects(department))
+        inactive_project = len(self.get_inactive_projects(department))
+
+        total = active_project + completed_project + inactive_project
+
+        if total > 0:
+            active_percentage = round((active_project / total) * 100, 2)
+            completed_percentage = round((completed_project / total) * 100, 2)
+            inactive_percentage = round((inactive_project / total) * 100, 2)
+        else:
+            active_percentage, completed_percentage, inactive_percentage = 0, 0, 0
+
+        result = {
+            'active': {
+                'freq': active_project,
+                'percent': active_percentage
+            },
+            'completed': {
+                'freq': completed_project,
+                'percent': completed_percentage
+            },
+            'inactive': {
+                'freq': inactive_project,
+                'percent': inactive_percentage
+            }
+        }
+        
+        return result
+
 
 class DepartmentProject(models.Model):
     PRIORITY_CHOICES = (
@@ -241,7 +295,7 @@ class DepartmentProject(models.Model):
     project_members = models.ManyToManyField(DepartmentMember, blank=True)
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
-    project_priority = models.CharField(max_length=50, blank=True, null=True, choices=PRIORITY_CHOICES)
+    project_priority = models.CharField(max_length=50, default='Low', choices=PRIORITY_CHOICES)
     status = models.CharField(max_length=50, blank=True, null=True, choices=STATUS_CHOICES)
 
     target = models.ManyToManyField(ProjectTarget, blank=True)
@@ -251,7 +305,7 @@ class DepartmentProject(models.Model):
 
     objects = DepartmentProjectManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.project_name
 
     class Meta:
@@ -273,7 +327,7 @@ class DepartmentProject(models.Model):
         targets = self.target.all()
 
         # get targets that are completed
-        completed_target = [target for target in targets if target.state == 'Completed' and target.is_approved]
+        completed_target = [target for target in targets if target.state == 'Completed']
         try:
             complete_percentage = int((len(completed_target) / len(targets)) * 100)
         except ZeroDivisionError:
@@ -292,6 +346,43 @@ class DepartmentProject(models.Model):
                 break
 
         return pending_approval
+
+    def update_current_status_of_project_target(self) -> None:
+        """Check if all the target is completed in the project and mark the
+        project as done"""
+
+        targets = self.target.all()
+        is_completed = False
+        is_in_progress = False
+        is_not_started = False
+
+        for target in targets:
+            if target.state == 'Completed':
+                is_completed = True
+
+                is_in_progress = False
+                is_not_started = False
+
+            elif target.state == 'In Progress':
+                is_in_progress = True
+
+                is_completed = False
+                is_not_started = False
+
+            elif target.state == 'Not Started':
+                is_not_started = True
+
+                is_completed = False
+                is_in_progress = False
+
+        if is_completed:
+            self.status = 'Completed'
+        elif is_in_progress:
+            self.status = 'In Progress'
+        else:
+            self.status = 'Not Started'
+
+        self.save()
 
 
 

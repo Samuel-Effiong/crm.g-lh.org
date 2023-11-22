@@ -6,7 +6,7 @@ from . import models
 # Register your models here.
 @admin.register(models.Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('department_name', 'leader', 'sub_leader', 'get_no_of_members', 'get_no_of_categories')
+    list_display = ('department_name', 'department_long_name', 'leader', 'sub_leader', 'get_no_of_members', 'get_no_of_categories')
 
 
 @admin.register(models.DepartmentMember)

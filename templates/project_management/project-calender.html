@@ -1,0 +1,48 @@
+{% extends 'project_management/index.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <!-- Fullcalender CSS -->
+        <link rel='stylesheet' href="{% static 'assets/vendor/fullcalendar/core/main.css' %}" />
+        <link rel='stylesheet' href="{% static 'assets/vendor/fullcalendar/daygrid/main.css' %}" />
+        <link rel='stylesheet' href="{% static 'assets/vendor/fullcalendar/timegrid/main.css' %}" />
+        <link rel='stylesheet' href="{% static 'assets/vendor/fullcalendar/list/main.css' %}" />
+{% endblock extra_css %}
+
+{% block content %}
+     <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between breadcrumb-content">
+                            <h5>Calender</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card card-block card-stretch card-height">
+                    <div class="card-body">
+                        <div id="calendar1" class="calendar-s"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page end  -->
+    </div>
+{% endblock content %}
+
+{% block modal %}
+{% endblock modal %}
+
+{% block extra_js %}
+     <!-- Fullcalender Javascript -->
+    <script src="{% static 'assets/vendor/fullcalendar/core/main.js' %}"></script>
+    <script src="{% static 'assets/vendor/fullcalendar/daygrid/main.js' %}" ></script>
+    <script src="{% static 'assets/vendor/fullcalendar/timegrid/main.js' %}"></script>
+    <script src="{% static 'assets/vendor/fullcalendar/list/main.js' %}"></script>
+    <script src="{% static 'assets/vendor/fullcalendar/interaction/main.js' %}"></script>
+{#        <script src="{% static %}"'assets/vendor/moment.min.js'></script>#}
+    <script src="{% static 'assets/js/plugins/calender.js' %}"></script>
+{% endblock extra_js %}

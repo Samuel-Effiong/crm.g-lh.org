@@ -26,15 +26,15 @@
                   <div class="card-body">
                      <div class="d-flex align-items-center mb-3">
                         <div class="profile-img position-relative">
-                            {% if department.leader.name.get_image_url %}
-                                <img src="{{ department.leader.name.get_image_url }}" class="img-fluid rounded avatar-110" alt="{{ member.member_name.about }}">
+                            {% if department.leader.get_member_image_url %}
+                                <img src="{{ department.leader.get_member_image_url }}" class="img-fluid rounded avatar-110" alt="{{ member.member_name.about }}">
                            {% else %}
                                <img src="" class="avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
                            {% endif %}
 
                         </div>
                         <div class="ml-3">
-                           <h4 class="mb-2">{{ department.leader.name.get_full_name }}</h4>
+                           <h4 class="mb-2">{{ department.leader.member_name.get_full_name }}</h4>
                            <button type="button" class="btn btn-primary font-size-14">Leader</button>
                         </div>
                      </div>
@@ -43,7 +43,8 @@
                       <h5 class="mt-2 mb-3">Current Members</h5>
                       <ul class="list-inline p-0 m-0">
                           {% for member in department_members %}
-                              {% if department.leader.name.username != member.member_name.username %}
+                              {% if department.leader != member %}
+{#                                  IF MEMBER IS NOT A LEADER         #}
                                   <li class="mb-3">
                                       <div class="d-flex justify-content-evenly">
                                           {% if member.get_member_image_url %}
@@ -54,7 +55,7 @@
                                           <p class="mb-0 ml-4">
                                               {{ member.member_name.get_full_name }}
 
-                                              {% if department.sub_leader.username == member.member_name.username %}
+                                              {% if department.sub_leader == member %}
                                                   <span href="#" class="text-primary ml-2">Sub Leader</span>
                                               {% endif %}
                                           </p>
@@ -359,7 +360,9 @@
                                                     </div>
                                                  </div>
 
-                                                {% if not member.member_name.username == department.leader.name.username %}
+                                                {% if not member == department.leader %}
+{#                                                    IF MEMBER IS NOT A DEPARTMENT LEADER     #}
+{#                                                    To prevent a leader from been removed    #}
                                                     <div class="row mt-3">
                                                         <div class="col-12 d-flex justify-content-center">
                                                             <button type="button" class="btn btn-danger p-2" data-target="#remove-member" data-toggle="modal" onclick="document.getElementById('removed_member').value = '{{ member.pk }}'; document.getElementById('member_name').textContent = '{{ member.member_name.get_full_name|safe }}'">Remove Member</button>
@@ -536,7 +539,7 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
-                                {% include 'custom_html/autocomplete.html' %}
+                                {% include 'custom_html/autocomplete.html' with variable='' %}
                             </div>
 
                             <div class="col-lg-12">
