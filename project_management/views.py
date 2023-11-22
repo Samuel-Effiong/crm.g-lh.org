@@ -39,11 +39,21 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
             if department_dashboard:
                 return super().get(request, *args, **kwargs)
             else:
+                # check if any department has been created
+                # if the user is a superuser redirect to the admin setting
+                # page else direct a normal user to contact the admin
+
                 # Get the department the user in and select the first
                 if request.user.is_superuser:
                     member_department = Department.objects.first()
+
+                    if not member_department:
+                        return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
                 else:
                     member_department = Department.objects.get_member_departments(request.user)[0]
+
+                    if not member_department:
+                        return HttpResponseRedirect("Please contact the admin to add a department")
 
                 department_dashboard = member_department.department_name
                 return HttpResponseRedirect(reverse_lazy('project_management:department_dashboard', args=[department_dashboard]))

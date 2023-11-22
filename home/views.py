@@ -95,7 +95,6 @@ class Home(LoginRequiredMixin, TemplateView):
                 Notification.objects.get(id=notification_id).delete()
 
                 return JsonResponse({})
-
         else:
             return super().get(request, *args, **kwargs)
 
