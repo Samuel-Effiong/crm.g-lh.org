@@ -12,7 +12,7 @@ urlpatterns = [
     path('project/<str:department>/', views.DepartmentProjectListView.as_view(), name='project'),
     path('project/<str:department>/<int:pk>/', views.DepartmentProjectDetailView.as_view(), name='project-detail'),
 
-    path('project/calender/<str:department>/<int:pk>/', views.DepartmentProjectCalenderView.as_view(), name='project-calender'),
+    path('project/calender/<str:department>/', views.DepartmentProjectCalenderView.as_view(), name='project-calender'),
 
     path('project/settings/admin', views.ProjectManagementAdminSettingView.as_view(), name='project-admin-settings'),
     path('project/settings/<str:department>/', views.ProjectManagementSettingView.as_view(), name='project-settings'),

@@ -195,7 +195,7 @@
                                           <label>Leader:</label>
                                           <select class="form-control" name="department_leader" required>
                                               {% for member in potential_leaders %}
-                                                  <option value="{{ member.pk }}">{{ member.get_full_name }}</option>
+                                                  <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
                                               {% endfor %}
                                           </select>
                                       </div>
@@ -204,7 +204,7 @@
                                          <label for="">Sub Leader:</label>
                                          <select name="department_sub_leader" class="form-control">
                                              {% for member in potential_leaders %}
-                                                 <option value="{{ member.pk }}">{{ member.get_full_name }}</option>
+                                                 <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
                                              {% empty %}
                                                  <option value="" disabled>Can't be empty</option>
                                              {% endfor %}
@@ -299,7 +299,7 @@
                                 <label for="department_member_name">Member Name</label>
                                 <select id="department_member_name" name="new_member_name" class="form-control form-control-sm mb-3">
                                     {% for member in potential_leaders %}
-                                        <option value="{{ member.pk }}">{{ member.get_full_name }}</option>
+                                        <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
                                     {% endfor %}
                                 </select>
                              </div>

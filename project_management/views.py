@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden
 
 from .models import (Department, DepartmentMember, DepartmentCategory,
                      DepartmentProject, ProjectTarget)
@@ -50,15 +50,17 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
                     if not member_department:
                         return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
                 else:
-                    member_department = Department.objects.get_member_departments(request.user)[0]
+                    member_department = Department.objects.get_member_departments(request.user)
 
                     if not member_department:
-                        return HttpResponseRedirect("Please contact the admin to add a department")
+                        return HttpResponseForbidden("Please Join A Department before you can access this page.")
+                    else:
+                        member_department = member_department[0]
 
                 department_dashboard = member_department.department_name
                 return HttpResponseRedirect(reverse_lazy('project_management:department_dashboard', args=[department_dashboard]))
 
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -108,7 +110,7 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
                 or self.request.user.level == 'chief_shep'
                 or is_member(self.request.user)):
             return super().get(request, *args, **kwargs)
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -225,7 +227,7 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
                     return JsonResponse({'confirm': False}, safe=False)
 
             return super().get(request, *args, **kwargs)
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -334,7 +336,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                 or is_member(self.request.user)):
 
             return super().get(request, *args, **kwargs)
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -363,7 +365,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
 
         # family_members not in the department
         context['family_members'] = [
-            brethren.get_full_name() for brethren in get_user_model().objects.exclude(
+            f"{brethren.get_full_name()} @{brethren.username}" for brethren in get_user_model().objects.exclude(
                 username__in=[member.member_name.username for member in context['department_members']]
             )
         ]
@@ -392,22 +394,16 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                 family_members = request.POST.get('family_members', None).strip()
 
                 if family_members:
-                    family_members_list = [member for member in family_members.split(',') if member]
+                    family_member_list = [member for member in family_members.split(',') if member]
 
-                    # add family member to department list
-                    department_member = []
-
-                    for fam in family_members_list:
-                        # retrieve the user object of the fam using their names
-                        first_name, last_name = fam.title().split()
-                        fam_user = get_user_model().objects.get(first_name=first_name, last_name=last_name)
-
-                        # Join the member to the department member table
-                        new_department_member = DepartmentMember(member_name=fam_user, department_name=department)
-                        new_department_member.save()
-
-                        # add user to the department itself table
-                        department.member_names.add(new_department_member)
+                    new_members = [
+                        DepartmentMember.objects.create(
+                            member_name=get_user_model().objects.get_user_from_full_name(name),
+                            department_name=department
+                        )
+                        for name in family_member_list if name
+                    ]
+                    department.member_names.add(*new_members)
 
             elif settings == 'remove_member':
                 removed_member = request.POST.get('removed_member', None).strip()
@@ -550,7 +546,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
                 return JsonResponse({'confirm': True})
 
             return super().get(request, *args, **kwargs)
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -566,7 +562,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
         context['member_departments'] = Department.objects.all()
 
         context['family_members'] = [
-            brethren.get_full_name() for brethren in context['potential_leaders']
+            f"{brethren.get_full_name()} @{brethren.username}" for brethren in context['potential_leaders']
         ]
 
         return context
@@ -675,10 +671,9 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
         return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
 
 
-class DepartmentProjectCalenderView(LoginRequiredMixin, DetailView):
+class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/project-calender.html'
-    model = DepartmentProject
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
@@ -687,4 +682,25 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, DetailView):
                 or is_member(self.request.user)):
 
             return super().get(request, *args, **kwargs)
-        return HttpResponseRedirect("You are not Authorized to come here...please Go Back!")
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        category = self.kwargs['department']
+
+        context['category'] = category
+        context['project_title'] = project_title
+        context['user'] = user
+
+        department = Department.objects.get(department_name=category)
+        context['department'] = department
+
+        if user.is_superuser:
+            context['member_departments'] = Department.objects.all()
+        else:
+            context['member_departments'] = Department.objects.get_member_departments(user)
+
+            return context
+

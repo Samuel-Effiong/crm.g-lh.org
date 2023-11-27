@@ -107,7 +107,7 @@ class DepartmentManager(models.Manager):
     def get_member_departments(self, user):
         """Get all the department a specific user is in"""
         departments = self.get_queryset().filter(member_names__member_name=user)
-        return set(departments)
+        return list(set(departments))
 
     def department_leaders(self) -> list[DepartmentMember]:
         leaders = [department.leader for department in self.get_queryset()]
@@ -174,6 +174,12 @@ class Department(models.Model):
             member_completed_project.append(len(completed_project))
 
         return members, member_completed_project
+
+    def get_department_project_events(self):
+        all_department_projects = DepartmentProject.objects.filter(department=self)
+
+        events = [department_project.to_event() for department_project in all_department_projects]
+        return events
 
 
 class ProjectTargetManager(models.Manager):
@@ -288,7 +294,7 @@ class DepartmentProject(models.Model):
         ('Not Started', 'Not Started')
     )
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    project_name = models.CharField(max_length=1000)
+    project_name = models.CharField(max_length=1000, unique=True)
     project_description = models.TextField()
 
     department_category = models.ForeignKey(DepartmentCategory, on_delete=models.CASCADE)
@@ -302,6 +308,10 @@ class DepartmentProject(models.Model):
 
     start_date = models.DateField(default=timezone.now)
     due_date = models.DateField(null=True, blank=True)
+
+    # Choose colour that will be associated to the project
+    project_background_color = models.CharField(null=True, blank=True)
+    project_text_color = models.CharField(null=True, blank=True)
 
     objects = DepartmentProjectManager()
 
@@ -384,5 +394,30 @@ class DepartmentProject(models.Model):
 
         self.save()
 
+    def to_event(self):
+        group_id = self.department_category
+        title = self.project_name
+        start = self.start_date.isoformat()
+        end = self.due_date.isoformat()
+        background_color = self.project_background_color
+        text_color = self.project_text_color
+
+        event = {
+            'groupId': group_id, 'title': title,
+            'start': start, 'end': end,
+            'backgroundColor': background_color,
+            'textColor': text_color,
+            'borderColor': text_color
+        }
+
+        return event
 
 
+class PendingDepartmentRequest(models.Model):
+    applicant = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    target_department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+    reasons = models.TextField()
+
+    def __str__(self):
+        return f"{self.applicant.get_full_name} applied to {self.target_department}"

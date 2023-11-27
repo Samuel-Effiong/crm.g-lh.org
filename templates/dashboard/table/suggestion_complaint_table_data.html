@@ -40,7 +40,7 @@
                                     {% for message in suggestions %}
                                         <tr>
                                             <td>
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', '{{ message.message }}')">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', `{{ message.message }}`)">
                                                     {{ message.title|truncatewords:"7" }}
                                                 </a>
                                             </td>
@@ -86,7 +86,7 @@
                                     {% for message in complaints %}
                                         <tr>
                                             <td>
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', '{{ message.message }}')">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#DisplaySuggestionComplaintScrollable" onclick="populate_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.receiver }}', '{{ message.date_sent }}', `{{ message.message }}`)">
                                                     {{ message.title }}
                                                 </a>
                                             </td>

@@ -148,7 +148,7 @@
                               <ul id="calender" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
                                       <li>
-                                          <a href="{% url 'project_management:project-calender' department.department_name department.pk %}">
+                                          <a href="{% url 'project_management:project-calender' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
                                           </a>

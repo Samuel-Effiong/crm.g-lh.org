@@ -99,7 +99,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="#" onclick="birthday_pop_box('{{ celeb.get_full_name }}', '{{ celeb.username }}', '{{ celeb.about }}', '{{ celeb.gender }}', '{{ user.username }}', {% if celeb.get_image_url %}'{{ celeb.get_image_url }}'{% else %}'{% static 'assets/images/avatars/01.png' %}'{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+                                    <a href="#" onclick="birthday_pop_box(`{{ celeb.get_full_name }}`, `{{ celeb.username }}`, '{{ celeb.about }}', `{{ celeb.gender }}`, `{{ user.username }}`, {% if celeb.get_image_url %}`{{ celeb.get_image_url }}`{% else %}`{% static 'assets/images/avatars/01.png' %}`{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
                                         <h6 id="celebrant" class="mb-1" style="color: #3a57e8">
                                             {{ celeb.get_full_name }}
                                         </h6>
