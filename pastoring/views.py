@@ -1,8 +1,10 @@
 from typing import Any, Dict
 
+import os
 import numpy as np
 import pandas as pd
 from datetime import datetime
+
 
 from django import http
 from django.urls import reverse_lazy
@@ -256,6 +258,7 @@ class ProfileDetailView(LoginRequiredMixin, TemplateView):
         return context
 
 
+# FIXME: Not in use
 class DetailView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'pastoring/detail.html'
@@ -481,8 +484,7 @@ class ShepherdReportView(LoginRequiredMixin, TemplateView):
         return context
 
 
-######################################  WORKSPACE SECTION  ##############################################
-
+# #####################################  WORKSPACE SECTION  ##############################################
 class CatalogView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'pastoring/workspace/catalog/catalog.html'
@@ -514,11 +516,40 @@ class CatalogView(LoginRequiredMixin, TemplateView):
         context['total_catalog'] = Catalog.catalog_manager.total_number_of_catalog()
         context['no_of_faulty_catalog'], context['breakdown'] = Catalog.catalog_manager.retrieve_faulty_catalog()
 
-        # retrieve top 3 recent catalog
-        recent_catalog = Catalog.objects.order_by('-date')[:3]
-        context['recent_catalog'] = recent_catalog
+        # retrieve only the catalog that has the correct date formatting
+        catalogs = Catalog.objects.order_by('-correct_date')
+        catalogs = [catalog for catalog in catalogs if catalog.correct_date]
+        context['properly_formatted_catalogs'] = catalogs
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        catalog_pk = request.POST['pk']
+        catalog_title = request.POST['catalog_title']
+
+        catalog_date = request.POST['catalog_date']
+        catalog_date = datetime.fromisoformat(catalog_date)
+
+        catalog_recommended_book_movies = request.POST['catalog_recommended_book_movies']
+        catalog_new_songs_received = request.POST['catalog_new_songs_received']
+        catalog_testimonies = request.POST['catalog_testimonies']
+        catalog_things_spoken_about = request.POST['catalog_things_spoken_about']
+        catalog_meta_information = request.POST['catalog_meta_information']
+
+        catalog = Catalog.objects.get(id=catalog_pk)
+        catalog.sermon_title = catalog_title
+        catalog.correct_date = catalog_date
+        catalog.recommended_books_movies = catalog_recommended_book_movies
+        catalog.new_songs_received = catalog_new_songs_received
+        catalog.testimonies = catalog_testimonies
+        catalog.things_spoken_about = catalog_things_spoken_about
+        catalog.meta_information = catalog_meta_information
+
+        catalog.save()
+
+        return HttpResponseRedirect(reverse_lazy('pastoring:catalog'))
 
 
 class AddCatalogView(LoginRequiredMixin, TemplateView):
@@ -564,13 +595,15 @@ class AddCatalogView(LoginRequiredMixin, TemplateView):
         things_spoken_about = request.POST['add_catalog_things_spoken_about']
         meta_information = request.POST['add_catalog_meta_information']
 
-        catalog = Catalog(day=date.day, correct_date=date, sermon_title=title,
-                          things_spoken_about=things_spoken_about, 
-                          testimonies=testimonies, 
-                          new_song_received=new_song_received,
-                          recommended_books_movies=recommended_books_movies,
-                          meta_information=meta_information
-                          )
+        catalog = Catalog(
+            day=date.day, correct_date=date,
+            sermon_title=title,
+            things_spoken_about=things_spoken_about,
+            testimonies=testimonies,
+            new_songs_received=new_song_received,
+            recommended_books_movies=recommended_books_movies,
+            meta_information=meta_information
+        )
         catalog.save()
 
         return self.render_to_response(context)
@@ -762,7 +795,7 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
             return super().get(request, *args, **kwargs)
         
         return HttpResponseForbidden("You are not a Shepherd...please go back")
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -797,6 +830,7 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
         speaker = request.POST['prophetic_word_speaker']
         category = request.POST['prophetic_word_category']
         message = request.POST['prophetic_word_message']
+        ai_generated_kewywords = request.POST['prophetic_ai_generated_keywords']
 
         prophetic_word = PropheticWord.objects.get(id=int(pk))
         prophetic_word.title = title
@@ -804,6 +838,7 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
         prophetic_word.speaker = speaker
         prophetic_word.category = category
         prophetic_word.message = message
+        prophetic_word.ai_generated_keywords = ai_generated_kewywords
         prophetic_word.save()
 
         return HttpResponseRedirect(reverse_lazy('pastoring:prophetic_words'))
@@ -812,6 +847,7 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
 class AddPropheticWordsView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'pastoring/workspace/prophetic_words/add_prophetic_words.html'
+
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
@@ -847,6 +883,8 @@ class AddPropheticWordsView(LoginRequiredMixin, TemplateView):
         speaker = request.POST['add_prophetic_word_speaker']
         category = request.POST['add_prophetic_word_category']
         message = request.POST['add_prophetic_word_message']
+        
+
 
         prophetic_word = PropheticWord(title=title, date=date, speaker=speaker,
                                        category=category, message=message)

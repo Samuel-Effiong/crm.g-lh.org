@@ -7,6 +7,71 @@
 {% endblock %}
 
 {% block content %}
+    <div class="modal fade" id="EditCatalogModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="EditCatalogModalScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="EditTestimonyModalScrollableTitle">Edit Catalog</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div hidden>
+                                <input type="text" name="pk" id="pk">
+                            </div>
+
+                            <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                <input type="text" class="form-control" name="catalog_title" id="catalog_title">
+                                <label for="catalog_title">Title</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_date">Date</label>
+                                <input type="date" class="form-control h6" id="catalog_date" name="catalog_date">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_recommended_book_movies">Recommended Books and Movies</label>
+                                <input type="text" class="form-control h6" name="catalog_recommended_book_movies" id="catalog_recommended_book_movies">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_new_songs_received">New Songs Received</label>
+                                <input type="text" class="form-control h6" name="catalog_new_songs_received" id="catalog_new_songs_received">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_testimonies">Testimonies</label>
+                                <textarea class="form-control h6" name="catalog_testimonies" id="catalog_testimonies" rows="5" ></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_things_spoken_about">Things Spoken About</label>
+                                <textarea class="form-control h6" name="catalog_things_spoken_about" id="catalog_things_spoken_about" rows="10"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label h6" for="catalog_meta_information">Meta Information</label>
+                                <textarea class="form-control h6" name="catalog_meta_information" id="catalog_meta_information" rows="5"></textarea>
+                            </div>
+
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <div class="conatiner-fluid content-inner mt-n5 py-0">
         <div class="row">
             <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
@@ -55,28 +120,31 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
                         <div class="header-title">
-                            <h4 class="card-title">Recent Catalog Addition </h4><a href="#">...See all</a>
+                            <h4 class="card-title">Catalogs</h4>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table id="datatable" data-toggle="data-table" class="table table-hover">
                                 <thead>
                                 <tr>
                                     <th>Day</th>
                                     <th>Date</th>
                                     <th>Sermon Title</th>
+                                    <th style="display: none">Messages</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {% for catalog in recent_catalog %}
+                                    {% for catalog in properly_formatted_catalogs %}
                                         <tr>
                                             <td>
-                                                {% if catalog.correct_date %}
-                                                    {{ catalog.correct_date|date:"l" }}
-                                                {% else %}
-                                                    {{ catalog.day|format_text }}
-                                                {% endif %}
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#EditCatalogModalScrollable" onclick="populate_catalog_modal('{{ catalog.pk }}', `{{ catalog.sermon_title }}`, '{{ catalog.formatted_date }}', `{{ catalog.recommended_books_movies }}`, `{{ catalog.new_songs_received }}`, `{{ catalog.testimonies }}`, `{{ catalog.things_spoken_about }}`, `{{ catalog.meta_information }}`)">
+                                                    {% if catalog.correct_date %}
+                                                        {{ catalog.correct_date|date:"l" }}
+                                                    {% else %}
+                                                        {{ catalog.day|format_text }}
+                                                    {% endif %}
+                                                </a>
                                             </td>
                                             <td>
                                                 {% if catalog.correct_date %}
@@ -86,22 +154,26 @@
                                                 {% endif %}
                                             </td>
                                             <td>{{ catalog.sermon_title|format_text }}</td>
+                                            <td style="display: none">{{ catalog.things_spoken_about }}</td>
                                         </tr>
                                     {% empty %}
                                         <tr>
                                             <th>God</th>
                                             <th>Every day</th>
                                             <th>Every where</th>
+                                            <th>Every time</th>
                                         </tr>
                                         <tr>
                                             <th>God</th>
                                             <th>Every day</th>
                                             <th>Every where</th>
+                                            <th>Every time</th>
                                         </tr>
                                         <tr>
                                             <th>God</th>
                                             <th>Every day</th>
                                             <th>Every where</th>
+                                            <th>Every time</th>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -110,6 +182,7 @@
                                     <th>Day</th>
                                     <th>Date</th>
                                     <th>Sermon Title</th>
+                                    <th style="display: none">Messages</th>
                                 </tr>
                                 </tfoot>
                             </table>
@@ -136,4 +209,29 @@
 {% endblock content %}
 
 {% block javascript %}
+    <script>
+
+        const populate_catalog_modal = (pk, title, date, recommended_books_movies,
+            new_songs_received, testimonies, things_spoken_about, meta_information) => {
+
+            const pk_input = document.getElementById('pk');
+            const title_input = document.getElementById('catalog_title');
+            const date_input  = document.getElementById('catalog_date');
+            const recommended_books_movies_input = document.getElementById('catalog_recommended_book_movies');
+            const new_songs_received_input = document.getElementById('catalog_new_songs_received');
+
+            pk_input.value = pk;
+            title_input.value = title;
+            date_input.value = date;
+            recommended_books_movies_input.value = recommended_books_movies;
+            new_songs_received_input.value = new_songs_received;
+
+            tinymce.get('catalog_testimonies').setContent(testimonies);
+            tinymce.get('catalog_things_spoken_about').setContent(things_spoken_about);
+
+            if (meta_information !== 'None') {
+                tinymce.get('catalog_meta_information').setContent(meta_information);
+            }
+        }
+    </script>
 {% endblock javascript %}

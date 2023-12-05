@@ -24,6 +24,7 @@ urlpatterns = [
 
     #####################  WORKSPACE  ################################
     path('catalog/', CatalogView.as_view(), name='catalog'),
+    # path('catalog/detail/, Catalo'),
     path('catalog/add/', AddCatalogView.as_view(), name='add-catalog'),
 
     path('catalog/faulty/', FaultyCatalogView.as_view(), name='faulty-catalog'),

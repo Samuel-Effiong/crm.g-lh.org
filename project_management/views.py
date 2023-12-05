@@ -1,16 +1,22 @@
 from typing import Any, Dict
 from datetime import datetime
 
+from django.db import models
+
 from django.views.generic import TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.utils import timezone
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden
+from django.http import (HttpResponseRedirect, JsonResponse,
+                         HttpResponseForbidden, HttpResponse)
 
-from .models import (Department, DepartmentMember, DepartmentCategory,
-                     DepartmentProject, ProjectTarget)
+from .models import (
+    Department, DepartmentMember, DepartmentCategory,
+    DepartmentProject, ProjectTarget, DepartmentTable,
+    CustomField, FieldValue
+)
 from users.models import Shepherd, SubShepherd
 
 from home.models import Notification
@@ -97,7 +103,59 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         members, complete_project = department.member_activity_in_a_department()
         context['member_activity_in_a_department'] = zip(members, complete_project)
 
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
         return context
+
+    def post(self, request, *args, **kwargs):
+
+        department = kwargs['department']
+        department = Department.objects.get(department_name=department)
+
+        table_name = request.POST['table_name'].title().split()
+        table_name = "".join(table_name)
+
+        table_name_plural = request.POST['table_name_plural']
+        table_description = request.POST['table_description']
+
+        # Define the DepartmentTable
+        department_table = DepartmentTable.objects.create(
+            table_name=table_name,
+            table_name_plural=table_name_plural,
+            table_description=table_description,
+            department_name=department
+        )
+
+        field_id = request.POST['field_id']
+        field_id = list(set(field_id.split()))
+
+        fields = []
+
+        foreign_keys = ['department_member', 'family_member']
+
+        for id in field_id:
+            field_name = f"field_name_{id}"
+            if field_name in request.POST:
+                field_type = request.POST[f'field_type_{id}']
+                field_name = request.POST[field_name]
+
+                field = CustomField.objects.create(
+                    name=field_name, 
+                    field_type=field_type,
+                    table=department_table
+                )
+
+                fields.append(field)
+        
+        # Add fields to the department table
+        department_table.fields.add(*fields)
+
+        # add department table to the department
+        department.custom_tables.add(department_table)
+
+        return HttpResponseRedirect(reverse_lazy('project_management:department_dashboard', args=[kwargs['department']]))
+
+        pass
 
 
 class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
@@ -124,6 +182,8 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
         context['user'] = user
 
         department = Department.objects.get(department_name=category)
+
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         context['department'] = department
         try:
@@ -242,6 +302,7 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         context['now'] = timezone.now()
 
         department = Department.objects.get(department_name=category)
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         context['department'] = department
 
@@ -277,6 +338,9 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         project_priority = request.POST['project_priority']
         project_leader = request.POST['project_leader']
 
+        project_background_color = request.POST['project_background_color']
+        project_text_color = request.POST['project_text_color']
+
         project_members = request.POST['project_members']
         project_members = project_members.split('~')
 
@@ -291,6 +355,8 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         department_project.due_date = project_due_date
 
         department_project.project_priority = project_priority
+        department_project.project_background_color = project_background_color
+        department_project.project_text_color = project_text_color
         department_project.project_leader = DepartmentMember.objects.get(id=project_leader)
 
         department_project.project_members.clear()
@@ -349,6 +415,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
         context['user'] = user
 
         department = Department.objects.get(department_name=category)
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         context['department'] = department
 
@@ -458,7 +525,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
 
                 if new_value:
                     if admin_mode == 'update_department_long_name':
-                        new_value = new_value.replace("'", "")
+                        new_value = new_value.replace("'", "’")
                         department.department_long_name = new_value
                     elif admin_mode == 'update_department_name':
                         department.department_name = new_value
@@ -565,6 +632,8 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
             f"{brethren.get_full_name()} @{brethren.username}" for brethren in context['potential_leaders']
         ]
 
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -575,7 +644,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
             department = Department.objects.get(department_name=department_name)
 
         if admin_mode == 'add_department':
-            department_long_name = request.POST['long_name'].replace("'", "")
+            department_long_name = request.POST['long_name'].replace("'", "’")
             department_short_name = request.POST['short_name']
             department_objective = request.POST['department_objective']
 
@@ -690,6 +759,8 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         category = self.kwargs['department']
 
+        context['hack__calender'] = 'Calendar'
+
         context['category'] = category
         context['project_title'] = project_title
         context['user'] = user
@@ -702,5 +773,41 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
         else:
             context['member_departments'] = Department.objects.get_member_departments(user)
 
-            return context
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
+        return context
+
+
+class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
+    login_url = reverse_lazy('users-login')
+    template_name = ""
+    model = DepartmentTable
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_staff and (
+                self.request.user.level == 'core_shep'
+                or self.request.user.level == 'chief_shep'
+                or is_member(self.request.user)):
+            return super().get(request, *args, **kwargs)
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+    
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        category = kwargs['department']
+
+        context['category'] = category
+        context['title'] = title
+        context['project_title'] = project_title
+        context['user'] = user
+
+        department = Department.objects.get(departmnet_name=category)
+        department['department'] = department
+
+        if user.is_superuser:
+            context['member_departments'] = Department.objects.all()
+        else:
+            context['member_departments'] = Department.objects.get_member_departments(user)
+
+        context['department_leaders'] = Department.objects.department_leaders()

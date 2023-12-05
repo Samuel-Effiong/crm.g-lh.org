@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="crm.glh.org" type="Python.DjangoServer" factoryName="Django server">
-    <module name="crm.g-lh.org" />
+    <module name="crm_g_lh_org" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -8,7 +8,6 @@
       <env name="DJANGO_SETTINGS_MODULE" value="assessment.settings" />
     </envs>
     <option name="SDK_HOME" value="C:\Users\Senai\AppData\Local\Programs\Python\Python312\python.exe" />
-    <option name="SDK_NAME" value="Python 3.12" />
     <option name="WORKING_DIRECTORY" value="" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

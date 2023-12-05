@@ -20,6 +20,7 @@
       <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-time-picker/dist/tui-time-picker.css' %}">
 
       {% block extra_css %}
+          <link rel="stylesheet" href="{% static 'custom/dynamic_table/dynamic_table.css' %}">
       {% endblock extra_css %}
 
   </head>
@@ -127,7 +128,7 @@
                               </a>
                               <ul id="projects" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
-                                      <li class="{% if not hack__ %}{% if category == department.department_name %}active{% endif %}{% endif %}">
+                                      <li class="{% if not hack__ or not hack__calendar %}{% if category == department.department_name %}active{% endif %}{% endif %}">
                                           <a href="{% url 'project_management:project' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
@@ -147,7 +148,7 @@
                               </a>
                               <ul id="calender" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
-                                      <li>
+                                      <li class="{% if hack__calendar %}{% if category == department.department_name %}active{% endif %}{% endif %}">
                                           <a href="{% url 'project_management:project-calender' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
@@ -164,15 +165,15 @@
                           <div class="card-body p-0">
                               <div class="sidebarbottom-content">
                                   <h5 class="mb-3">Personal Project</h5>
-                                  <div id="circle-progress-6" class="sidebar-circle circle-progress circle-progress-primary mb-4" data-min-value="0" data-max-value="100" data-value="55" data-type="percent"></div>
+                                  <div id="circle-progress-6" class="sidebar-circle circle-progress circle-progress-primary mb-4" data-min-value="0" data-max-value="100" data-value="{{ member_percentage }}" data-type="percent"></div>
                                   <div class="custom-control custom-radio mb-1">
                                       <input type="radio" id="customRadio6" name="customRadio-1" class="custom-control-input" checked="">
                                       <label class="custom-control-label" for="customRadio6">Performed task</label>
                                   </div>
-                                  <div class="custom-control custom-radio">
-                                      <input type="radio" id="customRadio7" name="customRadio-1" class="custom-control-input">
-                                      <label class="custom-control-label" for="customRadio7">Incomplete Task</label>
-                                  </div>
+{#                                  <div class="custom-control custom-radio">#}
+{#                                      <input type="radio" id="customRadio7" name="customRadio-1" class="custom-control-input">#}
+{#                                      <label class="custom-control-label" for="customRadio7">Incomplete Task</label>#}
+{#                                  </div>#}
                               </div>
                           </div>
                       </div>
@@ -464,114 +465,52 @@
                                                     </div>
                                                 </div>
                                             </div>
-{#                                            <div class="col-lg-12">#}
-{#                                                <div class="card">#}
-{#                                                    <div class="card-body">#}
-{#                                                        <div class="row">#}
-{#                                                            <div class="col-sm-8">#}
-{#                                                                <div class="row align-items-center">#}
-{#                                                                    <div class="col-md-3">#}
-{#                                                                        <div id="circle-progress-22" class="circle-progress-01 circle-progress circle-progress-secondary" data-min-value="0" data-max-value="100" data-value="30" data-type="percent"></div>#}
-{#                                                                    </div>#}
-{#                                                                    <div class="col-md-9">#}
-{#                                                                        <div class="mt-3 mt-md-0">#}
-{#                                                                            <h5 class="mb-1">Automotive WordPress</h5>#}
-{#                                                                            <p class="mb-0">Dealership-based business WordPress theme.</p>#}
-{#                                                                        </div>#}
-{#                                                                    </div>#}
-{#                                                                </div>#}
-{#                                                            </div>#}
-{#                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">#}
-{#                                                                <div class="iq-media-group">#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/07.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/04.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/08.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                </div>#}
-{#                                                                <a class="btn btn-white text-secondary link-shadow mt-2">Medium</a>#}
-{#                                                            </div>#}
-{#                                                        </div>#}
-{#                                                    </div>#}
-{#                                                </div>#}
-{#                                            </div>#}
-{#                                            <div class="col-lg-12">#}
-{#                                                <div class="card">#}
-{#                                                    <div class="card-body">#}
-{#                                                        <div class="row">#}
-{#                                                            <div class="col-sm-8">#}
-{#                                                                <div class="row align-items-center">#}
-{#                                                                    <div class="col-md-3">#}
-{#                                                                        <div id="circle-progress-23" class="circle-progress-01 circle-progress circle-progress-warning" data-min-value="0" data-max-value="100" data-value="15" data-type="percent"></div>#}
-{#                                                                    </div>#}
-{#                                                                    <div class="col-md-9">#}
-{#                                                                        <div class="mt-3 mt-md-0">#}
-{#                                                                            <h5 class="mb-1">Online Education</h5>#}
-{#                                                                            <p class="mb-0">Remote students and teachers dashboard.</p>#}
-{#                                                                        </div>#}
-{#                                                                    </div>#}
-{#                                                                </div>#}
-{#                                                            </div>#}
-{#                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">#}
-{#                                                                <div class="iq-media-group">#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/01.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/02.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/03.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                </div>#}
-{#                                                                <a class="btn btn-white text-warning link-shadow mt-2">Low</a>#}
-{#                                                            </div>#}
-{#                                                        </div>#}
-{#                                                    </div>#}
-{#                                                </div>#}
-{#                                            </div>#}
-{#                                            <div class="col-lg-12">#}
-{#                                                <div class="card mb-0">#}
-{#                                                    <div class="card-body">#}
-{#                                                        <div class="row">#}
-{#                                                            <div class="col-sm-8">#}
-{#                                                                <div class="row align-items-center">#}
-{#                                                                    <div class="col-md-3">#}
-{#                                                                        <div id="circle-progress-24" class="circle-progress-01 circle-progress circle-progress-success" data-min-value="0" data-max-value="100" data-value="40" data-type="percent"></div>#}
-{#                                                                    </div>#}
-{#                                                                    <div class="col-md-9">#}
-{#                                                                        <div class="mt-3 mt-md-0">#}
-{#                                                                            <h5 class="mb-1">Blog/Magazine Theme</h5>#}
-{#                                                                            <p class="mb-0">Launch visually appealing Blog theme.</p>#}
-{#                                                                        </div>#}
-{#                                                                    </div>#}
-{#                                                                </div>#}
-{#                                                            </div>#}
-{#                                                            <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">#}
-{#                                                                <div class="iq-media-group">#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/05.jpg' %}" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/' %}06.jpg" alt="">#}
-{#                                                                    </a>#}
-{#                                                                    <a href="#" class="iq-media">#}
-{#                                                                        <img class="img-fluid avatar-40 rounded-circle" src="{% static 'assets_project_management/images/user/' %}07.jpg" alt="">#}
-{#                                                                    </a>#}
-{#                                                                </div>#}
-{#                                                                <a class="btn btn-white text-success  link-shadow mt-2">High</a>#}
-{#                                                            </div>#}
-{#                                                        </div>#}
-{#                                                    </div>#}
-{#                                                </div>#}
-{#                                            </div>#}
+                                            <div class="col-lg-12">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <div class="mb-3">
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <h4>Database</h4>
+                                                                        <a class="h2">
+                                                                            <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-12">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th scope="col">#</th>
+                                                                            <th scope="col">Table Name</th>
+                                                                            <th scope="col">Count</th>
+                                                                            <th scope="col">Created on</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for table in department.custom_tables.all %}
+                                                                            <tr>
+                                                                                <th scope="row">{{ forloop.counter }}.</th>
+                                                                                <td>{{ table.table_name_plural }}</td>
+                                                                                <td>{{ table.value_counts }}</td>
+                                                                                <td>{{ table.date|date:"jS E, Y" }}</td>
+                                                                            </tr>
+
+                                                                        {% empty %}
+                                                                            <tr>
+                                                                                <th colspan="4">No Table</th>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                 </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -623,216 +562,43 @@
 
     {% block modal %}
 
-        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-task-modal">
-            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new_table">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
-                    <div class="modal-header d-block text-center pb-3 border-bttom">
-                        <h3 class="modal-title" id="exampleModalCenterTitle">New Task</h3>
+                    <div class="modal-header d-block text-center pb-3 border-bottom">
+                        <h3 class="modal-title" id="exampleModalCenterTitle03">New Table</h3>
                     </div>
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText02" class="h5">Task Name</label>
-                                    <input type="text" class="form-control" id="exampleInputText02" placeholder="Enter task Name">
-                                    <a href="#" class="task-edit text-body"><i class="ri-edit-box-line"></i></a>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Assigned to</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Memebers</option>
-                                        <option>Kianna Septimus</option>
-                                        <option>Jaxson Herwitz</option>
-                                        <option>Ryan Schleifer</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText05" class="h5">Due Dates*</label>
-                                    <input type="date" class="form-control" id="exampleInputText05" value="">
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Category</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Design</option>
-                                        <option>Android</option>
-                                        <option>IOS</option>
-                                        <option>Ui/Ux Design</option>
-                                        <option>Development</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText040" class="h5">Description</label>
-                                    <textarea class="form-control" id="exampleInputText040" rows="2"></textarea>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText005" class="h5">Checklist</label>
-                                    <input type="text" class="form-control" id="exampleInputText005" placeholder="Add List">
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-0">
-                                    <label for="exampleInputText01" class="h5">Attachments</label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="inputGroupFile003">
-                                        <label class="custom-file-label" for="inputGroupFile003">Upload media</label>
+                                <form method="post" novalidate>
+                                    {% csrf_token %}
+                                    <div class="form-group mb-3">
+                                        <label for="table_name">Table Name</label>
+                                        <input type="text" name="table_name" class="form-control" autocomplete="off" required/>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-4">
-                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
-                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-user-modal">
-            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header d-block text-center pb-3 border-bttom">
-                        <h3 class="modal-title" id="exampleModalCenterTitle02">New User</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3 custom-file-small">
-                                    <label for="exampleInputText01" class="h5">Upload Profile Picture</label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="inputGroupFile02">
-                                        <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                                    <div class="form-group mb-3">
+                                        <label for="table_name_plural">Table Name (Plural)</label>
+                                        <input type="text" name="table_name_plural" class="form-control" autocomplete="off" required/>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Full Name</label>
-                                    <input type="text" class="form-control" id="exampleInputText2" placeholder="Enter your full name">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText04" class="h5">Phone Number</label>
-                                    <input type="text" class="form-control" id="exampleInputText04" placeholder="Enter phone number">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText006" class="h5">Email</label>
-                                    <input type="text" class="form-control" id="exampleInputText006" placeholder="Enter your Email">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Type</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Type</option>
-                                        <option>Trainee</option>
-                                        <option>Employee</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Role</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Role</option>
-                                        <option>Designer</option>
-                                        <option>Developer</option>
-                                        <option>Manager</option>
-                                        <option>BDE</option>
-                                        <option>SEO</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-2">
-                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
-                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new-create-modal">
-            <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header d-block text-center pb-3 border-bttom">
-                        <h3 class="modal-title" id="exampleModalCenterTitle03">New Task</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText03" class="h5">Task Name</label>
-                                    <input type="text" class="form-control" id="exampleInputText03" placeholder="Enter task Name">
-                                    <a href="#" class="task-edit text-body"><i class="ri-edit-box-line"></i></a>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Assigned to</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Memebers</option>
-                                        <option>Kianna Septimus</option>
-                                        <option>Jaxson Herwitz</option>
-                                        <option>Ryan Schleifer</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText2" class="h5">Project Name</label>
-                                    <select name="type" class="selectpicker form-control" data-style="py-0">
-                                        <option>Enter your project Name</option>
-                                        <option>Ui/Ux Design</option>
-                                        <option>Dashboard Templates</option>
-                                        <option>Wordpress Themes</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText40" class="h5">Description</label>
-                                    <textarea class="form-control" id="exampleInputText40" rows="2" placeholder="Textarea"></textarea>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="exampleInputText8" class="h5">Checklist</label>
-                                    <input type="text" class="form-control" id="exampleInputText8" placeholder="Add List">
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="form-group mb-0">
-                                    <label for="exampleInputText01" class="h5">Attachments</label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="inputGroupFile01">
-                                        <label class="custom-file-label" for="inputGroupFile01">Upload media</label>
+                                    <div class="form-group">
+                                        <label for="table_description">Table Description</label>
+                                        <textarea class="form-control" name="table_description" id="table_description" rows="3" required></textarea>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-4">
-                                    <div class="btn btn-primary mr-3" data-dismiss="modal">Save</div>
-                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
-                                </div>
+
+                                    {% include 'custom_html/dynamic_table.html' %}
+
+                                    <div class="form-group" style="display: none;">
+                                        <input type="text" class="form-control" id="field_id" value="1" name="field_id" autocomplete="off">
+                                    </div>
+
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                        <button type="submit" class="btn btn-outline-danger mr-3 p-2">Create</button>
+                                        <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -880,7 +646,7 @@
     <script src="{% static 'assets_project_management/vendor/moment.min.js' %}"></script>
 
     {% block extra_js %}
-
+        <script src="{% static 'custom/dynamic_table/dynamic_table.js' %}"></script>
     {% endblock extra_js %}
   </body>
 </html>

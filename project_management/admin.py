@@ -30,3 +30,34 @@ class DepartmentProjectAdmin(admin.ModelAdmin):
 @admin.register(models.ProjectTarget)
 class TargetAdmin(admin.ModelAdmin):
     list_display = ('target_name', 'project', 'get_target_department', 'state')
+
+
+@admin.register(models.PendingDepartmentRequest)
+class PendingDepartmentRequestAdmin(admin.ModelAdmin):
+    list_display = ('applicant', 'target_department', 'date')
+    date_hierarchy = 'date'
+    list_filter = ('target_department', 'date',)
+
+
+# @admin.register(models.DepartmentTable)
+# class DepartmentTable(admin.ModelAdmin):
+#     list_display = ('table_name', 'department', 'date')
+#     list_filter = ('department',)
+#     date_hierarchy = 'date'
+
+
+class FieldValueInline(admin.TabularInline):
+    model = models.FieldValue
+    extra = 1
+
+
+class CustomFieldInline(admin.ModelAdmin):
+    model = models.CustomField
+    inlines = [FieldValueInline]
+
+
+@admin.register(models.DepartmentTable)
+class DepartmentTableAdmin(admin.ModelAdmin):
+    list_display = ('table_name_plural', 'department_name', 'date',)
+    list_filter = ('department_name', )
+    date_hierarchy = 'date'

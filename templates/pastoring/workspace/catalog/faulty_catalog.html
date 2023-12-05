@@ -1,5 +1,5 @@
 
-{% extends 'pastoring/catalog/catalog.html' %}
+{% extends 'pastoring/workspace/catalog/catalog.html' %}
 {% load static %}
 {% load extra_tags %}
 
@@ -109,7 +109,7 @@
                                                 {% else %}
                                                     {{ catalog.day|format_text }}
                                                 {% endif %}
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#FaultyCatalogModalScrollable" onclick="populate_edit_modal_box('{{ catalog.sermon_title }}', '{{ catalog.date|date:"%d %M %Y" }}', '{{ catalog.recommended_books_movies }}', '{{ catalog.new_songs_received }}', '{{ catalog.testimonies }}', '{{ catalog.things_spoken_about }}')">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#FaultyCatalogModalScrollable" onclick="populate_edit_modal_box(`{{ catalog.sermon_title }}`, '{{ catalog.date|date:"%d %M %Y" }}', `{{ catalog.recommended_books_movies }}`, `{{ catalog.new_songs_received }}`, `{{ catalog.testimonies }}`, `{{ catalog.things_spoken_about }}`)">
                                                     <span class="ri ri-tools-line text-danger" style="font-size: 20px;"></span>
                                                 </a>
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#DeleteCatalogModalScrollable" onclick="populate_delete_modal_box('{{ catalog.id }}')">

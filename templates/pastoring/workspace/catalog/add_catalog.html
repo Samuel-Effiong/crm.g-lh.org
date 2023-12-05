@@ -12,33 +12,33 @@
                         <form method="post" class="row">
                             {% csrf_token %}
 
-                            <div class="col-md-6 form-group">
-                                <label class="form-label" for="add_catalog_date">Date</label>
-                                <input type="date" class="form-control" id="add_catalog_date" name="add_catalog_date">
+                            <div class="col-md-6 form-group mb-4">
+                                <label class="form-label h5" for="add_catalog_date">Date</label>
+                                <input type="date" class="form-control" id="add_catalog_date" name="add_catalog_date" required>
                             </div>
 
-                            <div class="col-md-6 form-group">
-                                <label class="form-label" for="add_category_title">Sermon Title</label>
+                            <div class="col-md-6 form-group mb-4">
+                                <label class="form-label h5" for="add_category_title">Sermon Title</label>
                                 <input type="text" class="form-control" id="add_catalog_title" name="add_catalog_title">
                             </div>
 
-                            <div class="col-md-6 form-group">
-                                <label class="form-label" for="add_catalog_recommended_books_movies">Recommended Books/Movies</label>
+                            <div class="col-md-6 form-group mb-4">
+                                <label class="form-label h5" for="add_catalog_recommended_books_movies">Recommended Books/Movies</label>
                                 <input type="text" class="form-control" id="add_catalog_recommended_books_movies" name="add_catalog_recommended_books_movies">
                             </div>
 
-                            <div class="col-md-6 form-group">
-                                <label class="form-label" for="add_new_song_received">New Song Received</label>
+                            <div class="col-md-6 form-group mb-4">
+                                <label class="form-label h5" for="add_new_song_received">New Song Received</label>
                                 <input type="text" class="form-control" id="add_catalog_new_song_received" name="add_catalog_new_song_received">
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="add_catalog_testimonies">Testimonies</label>
+                                <label class="form-label h5" for="add_catalog_testimonies">Testimonies</label>
                                 <textarea class="form-control" id="add_catalog_testimonies" name="add_catalog_testimonies" rows="5"></textarea>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="add_catalog_things_spoken_about">Things Spoken About</label>
+                                <label class="form-label h5" for="add_catalog_things_spoken_about">Things Spoken About</label>
                                 <textarea class="form-control" id="add_catalog_things_spoken_about" name="add_catalog_things_spoken_about" rows="30"></textarea>
                             </div>
 

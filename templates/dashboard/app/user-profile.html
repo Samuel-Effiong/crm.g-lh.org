@@ -99,7 +99,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="#" onclick="birthday_pop_box(`{{ celeb.get_full_name }}`, `{{ celeb.username }}`, '{{ celeb.about }}', `{{ celeb.gender }}`, `{{ user.username }}`, {% if celeb.get_image_url %}`{{ celeb.get_image_url }}`{% else %}`{% static 'assets/images/avatars/01.png' %}`{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+                                    <a href="#" onclick="birthday_pop_box(`{{ celeb.get_full_name }}`, `{{ celeb.username }}`, `{{ celeb.about }}`, `{{ celeb.gender }}`, `{{ user.username }}`, {% if celeb.get_image_url %}`{{ celeb.get_image_url }}`{% else %}`{% static 'assets/images/avatars/01.png' %}`{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
                                         <h6 id="celebrant" class="mb-1" style="color: #3a57e8">
                                             {{ celeb.get_full_name }}
                                         </h6>
@@ -166,7 +166,7 @@
                                                     <input type="text" id="birthday_url" value="{% url 'users-profiles' user.username %}" hidden>
                                                 </div>
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">...close</button>
-                                                <button type="button" id="birthMessageSubmitButton" class="btn btn-outline-primary" onclick="send_birthday_message(event, '{{ user.username }}')">Send!</button>
+                                                <button type="button" id="birthMessageSubmitButton" class="btn btn-outline-primary" onclick="send_birthday_message(event, `{{ user.username }}`)">Send!</button>
                                             </form>
                                         </div>
                                         <div class="mt-3" id="birthday_reply_container" style="display: none">

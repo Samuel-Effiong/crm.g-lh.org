@@ -5,6 +5,17 @@
 {% block blue_background_heading %}
 {% endblock %}
 
+{% block extra_css %}
+    <script src="{% static 'assets/js/tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
+      <script>
+          tinymce.init({
+              selector:'#prophetic_word_message',
+              plugins: 'table wordcount list emoticons fullscreen preview',
+
+          });
+      </script>
+{% endblock extra_css %}
+
 {% block content %}
 
     <div class="modal fade" id="DisplayUniqueSpeakersModalScrollable" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-labelledby="DisplayUniqueSpeakersModalScrollableTitle" style="display: none;" aria-hidden="true">
@@ -62,17 +73,17 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="prophetic_word_speaker">Speaker</label>
+                                <label class="form-label h5" for="prophetic_word_speaker">Speaker</label>
                                 <input type="text" class="form-control" name="prophetic_word_speaker" id="prophetic_word_speaker">
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="prophetic_word_date">Date</label>
+                                <label class="form-label h5" for="prophetic_word_date">Date</label>
                                 <input type="date" class="form-control" id="prophetic_word_date" name="prophetic_word_date">
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Category</label>
+                                <label class="form-label h5">Category</label>
                                 <select name="prophetic_word_category" id="prophetic_word_category" class="form-select mb-3 shadow-none">
                                     <option value="church">Words for the Church</option>
                                     <option value="nigeria">Words for Nigeria</option>
@@ -82,8 +93,18 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="prophetic_word_message">Message</label>
-                                <textarea class="form-control" name="prophetic_word_message" id="prophetic_word_message" rows="10" cols="30"></textarea>
+                                <label class="form-label h5" for="prophetic_word_message">Message</label>
+                                <textarea class="form-control" name="prophetic_word_message" id="prophetic_word_message" rows="10"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between">
+                                    <label for="prophetic_ai_generated_keywords" class="form-label h5">Generated Summary</label>
+                                    <a href="#">
+                                        <span class="ri ri-restart-line text-danger" title="Regenerate" style="font-size: 30px;"></span>
+                                    </a>
+                                </div>
+                                <textarea class="form-control" name="prophetic_ai_generated_keywords" id="prophetic_ai_generated_keywords" readonly rows="5">Love God</textarea>
                             </div>
 
                         </div>
@@ -100,8 +121,8 @@
     </div>
 
     <div class="conatiner-fluid content-inner mt-n5 py-0">
-        <div class="row">
-            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+        <div class="row mt-5 pt-3">
+            <div class="col-lg-6 col-md-6">
                  <div class="card border-bottom border-4 border-0 border-success">
                     <div class="card-body">
                        <div class="d-flex justify-content-between align-items-center">
@@ -116,7 +137,7 @@
                  </div>
             </div>
 
-            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+            <div class="col-lg-6 col-md-6">
                  <div class="card border-bottom border-4 border-0 border-success">
                     <div class="card-body">
                        <div class="d-flex justify-content-between align-items-center">
@@ -158,7 +179,7 @@
                                 <tbody>
                                     {% for word in prophetic_words %}
                                         <tr>
-                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditPropheticWordModalScrollable" onclick="populate_prophetic_word_modal('{{ word.pk }}', '{{ word.title }}', '{{ word.speaker }}', '{{word.formatted_date}}', '{{ word.category }}', '{{ word.message }}')">{{ word.title|truncatewords:"7"}}</a></td>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditPropheticWordModalScrollable" onclick="populate_prophetic_word_modal('{{ word.pk }}', `{{ word.title }}`, `{{ word.speaker }}`, '{{word.formatted_date}}', '{{ word.category }}', `{{ word.message }}`)">{{ word.title|truncatewords:"7"}}</a></td>
                                             <td>{{ word.speaker }}</td>
                                             <td>{{ word.date|date:"jS E, Y" }}</td>
                                             <td>{{ word.category }}</td>
@@ -212,14 +233,15 @@
             const speaker_input = document.getElementById('prophetic_word_speaker');
             const date_input = document.getElementById('prophetic_word_date');
             const category_input = document.getElementById('prophetic_word_category');
-            const message_input = document.getElementById('prophetic_word_message');
+            {#const message_input = document.getElementById('prophetic_word_message');#}
 
             pk_input.value = pk;
             title_input.value = title;
             speaker_input.value = speaker;
             date_input.value = date;
             category_input.value = category;
-            message_input.value = message;
+
+            tinymce.get('prophetic_word_message').setContent(message)
         }
     </script>
 {% endblock javascript %}

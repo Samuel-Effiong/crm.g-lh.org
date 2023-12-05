@@ -101,7 +101,7 @@
 
     <div class="conatiner-fluid content-inner mt-n5 py-0">
         <div class="row">
-            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+            <div class="col-lg-6 col-md-6" style="margin-top: 20px;">
                  <div class="card border-bottom border-4 border-0 border-success">
                     <div class="card-body">
                        <div class="d-flex justify-content-between align-items-center">
@@ -116,7 +116,7 @@
                  </div>
             </div>
 
-            <div class="col-lg-6 col-md-6" style="margin-top: 70px;">
+            <div class="col-lg-6 col-md-6" style="margin-top: 20px;">
                  <div class="card border-bottom border-4 border-0 border-success">
                     <div class="card-body">
                        <div class="d-flex justify-content-between align-items-center">
@@ -158,7 +158,7 @@
                                 <tbody>
                                     {% for testimony in testimonies %}
                                         <tr>
-                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditTestimonyModalScrollable" onclick="populate_testimony_modal('{{testimony.pk}}', '{{testimony.testifier}}', '{{testimony.formatted_date}}', '{{testimony.category}}', '{{testimony.message}}', '{{testimony.title}}')">{{ testimony.title|truncatewords:"7"}}</a></td>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditTestimonyModalScrollable" onclick="populate_testimony_modal('{{testimony.pk}}', '{{testimony.testifier}}', '{{testimony.formatted_date}}', '{{testimony.category}}', `{{testimony.message}}`, `{{testimony.title}}`)">{{ testimony.title|truncatewords:"7"}}</a></td>
                                             <td>{{ testimony.testifier }}</td>
                                             <td>{{ testimony.date|date:"jS E, Y" }}</td>
                                             <td>{{ testimony.category }}</td>
@@ -211,7 +211,6 @@
             const testifier_input = document.getElementById('testimony_testifier');
             const date_input = document.getElementById('testimony_date');
             const category_input = document.getElementById('testimony_category');
-            const message_input = document.getElementById('testimony_message');
 
             pk_input.value = pk;
             title_input.value = title;
@@ -219,7 +218,8 @@
 
             date_input.value = date;
             category_input.value = category;
-            message_input.value = message;
+
+            tinymce.get('testimony_message').setContent(message);
         }
     </script>
 {% endblock javascript %}

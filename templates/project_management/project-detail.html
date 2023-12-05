@@ -51,6 +51,16 @@
                               <p style="margin-bottom:0px;">Priority:</p>
                               <p>{{ object.project_priority }}</p>
                           </div>
+
+                          <div class="mt-3 col-6">
+                              <p style="margin-bottom: 0;">Project Background Color:</p>
+                              <p class="p-4" style="background-color: {{ object.project_background_color }}; color: white">Project Background Color</p>
+                          </div>
+
+                          <div class="mt-3 col-6">
+                              <p style="margin-bottom: 0;">Project Text Color:</p>
+                              <p class="p-4" style="background-color: {{ object.project_text_color }}; color: white">Project Text Color</p>
+                          </div>
                       </div>
                   </div>
                </div>
@@ -197,6 +207,16 @@
                                         <option value="High">High</option>
                                     </select>
                                 </div>
+
+                                <div class="form-group mb-3 col-6">
+                                   <label for="project_background_color">Project Background Colour: </label>
+                                   <input type="color" class="form-control" id="project_background_color" value="{% if object.project_background_color %}{{ object.project_background_color }}{% else %}#32BDEA{% endif %}">
+                                </div>
+
+                                <div class="form-group mb-3 col-6">
+                                   <label for="project_text_color">Project Text Color: </label>
+                                   <input type="color" class="form-control" id="project_text_color" value="{% if object.project_text_color %}{{ object.project_text_color }}{% else %}#FFFFF{% endif %}">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -322,8 +342,6 @@
             url = `${url}?change_target_status&target_id=${target_id}&state=Reject`;
             _target_rejected_by_leader(element, url, target_id);
         }
-
-
 
     </script>
 {% endblock extra_js %}

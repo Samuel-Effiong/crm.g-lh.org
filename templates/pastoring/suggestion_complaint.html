@@ -39,7 +39,7 @@
                                     <tbody>
                                         {% for message in suggestions %}
                                              <tr class="{% if not message.message_seen %}table-danger{% endif %}">
-                                                 <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.sender }}', '{{ message.date_sent }}', '{{ message.message }}', '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
+                                                 <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box(`{{ message.title }}`, '{{ message.sender }}', '{{ message.date_sent }}', `{{ message.message }}`, '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
                                                 <td>{{ message.title|truncatewords:'7' }}</td>
                                                 <td>{{ message.level_of_urgency }}</td>
                                                 <td>{{ message.date_sent }}</td>
@@ -81,7 +81,7 @@
                                     <tbody>
                                         {% for message in complaints %}
                                             <tr class="{% if not message.message_seen %}table-danger{% endif %}">
-                                                <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box('{{ message.title }}', '{{ message.sender }}', '{{ message.date_sent }}', '{{ message.message }}', '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
+                                                <td><a href="#" data-bs-toggle="modal" data-bs-target="#DisplayShepherdSuggestionComplaintScrollable" onclick="populate_shepherd_suggestion_complaint_dialog_box(`{{ message.title }}`, '{{ message.sender }}', '{{ message.date_sent }}', `{{ message.message }}`, '{{ message.level_of_urgency }}', '{{ message.is_anonymous }}', '{{ message.message_seen }}', '{{ message.id }}')">{% if message.is_anonymous %}Anonymous <i class="ri ri-spy-fill"></i>{% else %}{{ message.sender }}{% endif %}</a></td>
                                                 <td>{{ message.title|truncatewords:'7' }}</td>
                                                 <td>{{ message.level_of_urgency }}</td>
                                                 <td>{{ message.date_sent }}</td>

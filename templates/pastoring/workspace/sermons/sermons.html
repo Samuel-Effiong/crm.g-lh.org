@@ -163,7 +163,7 @@
                                 <tbody>
                                     {% for sermon in sermons %}
                                         <tr>
-                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditSermonsModalScrollable" onclick="populate_sermon_modal('{{ sermon.pk }}', '{{ sermon.title }}', '{{ sermon.series_title }}', '{{ sermon.formatted_date }}', '{{ sermon.category }}', '{{ sermon.download_link }}')">{{ sermon.title|truncatewords:"7"}}</a></td>
+                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditSermonsModalScrollable" onclick="populate_sermon_modal('{{ sermon.pk }}', `{{ sermon.title }}`, `{{ sermon.series_title }}`, '{{ sermon.formatted_date }}', `{{ sermon.category }}`, '{{ sermon.download_link }}')">{{ sermon.title|truncatewords:"7"}}</a></td>
                                             <td>{{ sermon.series_title }}</td>
                                             <td>{{ sermon.date|date:"jS E, Y" }}</td>
                                             <td>{{ sermon.category }}</td>

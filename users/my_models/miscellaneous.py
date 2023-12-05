@@ -4,6 +4,7 @@ import datetime
 
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
 
 from .utilities import Validators, ValidationError
@@ -75,6 +76,12 @@ class Catalog(models.Model):
 
     class Meta:
         ordering = ('correct_date',)
+
+    def formatted_date(self):
+        if self.correct_date:
+            return self.correct_date.isoformat()
+        else:
+            return ''
 
     def __str__(self):
         return f"{self.sermon_title} on {self.date}"

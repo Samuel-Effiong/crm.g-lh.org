@@ -1,0 +1,28 @@
+
+#dynamic_table .container {
+    max-width: 1000px;
+    width: 100%;
+    background-color: #fff;
+    margin: auto;
+    padding: 0px;
+    box-shadow: 0 2px 20px #0001;
+    border-radius: 10px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+#dynamic_table .dynamic_table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+}
+
+#dynamic_table .dynamic_table th,
+#dynamic_table .dynamic_table td {
+    border: none;
+}
+
+#dynamic_table .dynamic_table td {
+    padding-top: 10px;
+    padding-right: 15px;
+}

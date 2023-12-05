@@ -51,7 +51,7 @@
                                                <div>
                                                   <div class="card-body">
                                                      <h4 class="card-title mb-3">Department Name
-                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_long_name', '{{ department.department_long_name }}');"></button>
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_long_name', `{{ department.department_long_name }}`);"></button>
                                                      </h4>
 
                                                      <p class="card-text h5" id="db_department_long_name">{{ department.department_long_name }}</p>
@@ -96,7 +96,7 @@
                                                <div>
                                                   <div class="card-body">
                                                      <h4 class="card-title mb-3">Department Objectives
-                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_objective', '{{ department.department_objectives }}');"></button>
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_objective', `{{ department.department_objectives }}`);"></button>
                                                      </h4>
                                                      <p class="card-text h5" id="db_department_objective">{{ department.department_objectives }}</p>
                                                   </div>

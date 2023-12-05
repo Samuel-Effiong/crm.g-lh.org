@@ -9,15 +9,10 @@
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <title>{{ title }}</title>
 
-      <script src="{% static 'assets/js/tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
-      <script>
-          tinymce.init({
-              selector:'textarea',
-              plugins: 'table wordcount list emoticons fullscreen preview accordion',
-
-          });
-      </script>
       {% include 'includes/vendor_css.html' %}
+
+      {% block extra_css %}
+      {% endblock extra_css %}
       
   </head>
   <body class="  ">

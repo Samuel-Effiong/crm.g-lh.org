@@ -3,6 +3,18 @@
 {% load static %}
 {% load extra_tags %}
 
+{% block extra_css %}
+    <script src="{% static 'assets/js/tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
+      <script>
+          tinymce.init({
+              selector:'textarea',
+              plugins: 'table wordcount list emoticons fullscreen preview',
+
+          });
+      </script>
+{% endblock extra_css %}
+
+
 {% block navbar %}
     <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
         <li class="nav-item static-item">

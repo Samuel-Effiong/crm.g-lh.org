@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 
 from django.db import models
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -131,6 +131,8 @@ class Department(models.Model):
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
     department_objectives = models.TextField()
+
+    custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
     objects = DepartmentManager()
 
@@ -280,6 +282,27 @@ class DepartmentProjectManager(models.Manager):
         
         return result
 
+    def calc_member_completed_percentage(self, user):
+        user_departments = DepartmentMember.objects.filter(member_name=user)
+        projects = self.get_queryset().filter(project_members__in=user_departments)
+
+        targets_completed = []
+        total = 0
+
+        for project in projects:
+            targets = project.target.all()
+            total += len(targets)
+            
+            targets = targets.filter(state='Completed')
+            targets_completed.extend(targets)
+
+        try:
+            percentage = ((len(targets_completed) / total) * 100, 2)
+        except ZeroDivisionError:
+            percentage = 0
+
+        return percentage
+
 
 class DepartmentProject(models.Model):
     PRIORITY_CHOICES = (
@@ -310,8 +333,8 @@ class DepartmentProject(models.Model):
     due_date = models.DateField(null=True, blank=True)
 
     # Choose colour that will be associated to the project
-    project_background_color = models.CharField(null=True, blank=True)
-    project_text_color = models.CharField(null=True, blank=True)
+    project_background_color = models.CharField(max_length=100, null=True, blank=True)
+    project_text_color = models.CharField(max_length=100, null=True, blank=True)
 
     objects = DepartmentProjectManager()
 
@@ -395,7 +418,7 @@ class DepartmentProject(models.Model):
         self.save()
 
     def to_event(self):
-        group_id = self.department_category
+        group_id = self.department_category.category_name
         title = self.project_name
         start = self.start_date.isoformat()
         end = self.due_date.isoformat()
@@ -404,6 +427,7 @@ class DepartmentProject(models.Model):
 
         event = {
             'groupId': group_id, 'title': title,
+            'url': f"{self.get_absolute_url()}",
             'start': start, 'end': end,
             'backgroundColor': background_color,
             'textColor': text_color,
@@ -411,6 +435,9 @@ class DepartmentProject(models.Model):
         }
 
         return event
+
+    def get_absolute_url(self):
+        return reverse_lazy('project_management:project-detail', args=[self.department, self.id])
 
 
 class PendingDepartmentRequest(models.Model):
@@ -420,4 +447,55 @@ class PendingDepartmentRequest(models.Model):
     reasons = models.TextField()
 
     def __str__(self):
-        return f"{self.applicant.get_full_name} applied to {self.target_department}"
+        return f"{self.applicant.get_full_name()} applied to {self.target_department}"
+
+
+class DepartmentTable(models.Model):
+    department_name = models.ForeignKey(Department, on_delete=models.CASCADE)
+    table_name = models.CharField(max_length=100, unique=True)
+    table_name_plural = models.CharField(max_length=255)
+    table_description = models.TextField()
+    date = models.DateTimeField(default=timezone.now)
+
+    fields = models.ManyToManyField('CustomField', blank=True)
+
+    class Meta:
+        verbose_name_plural = "Department's Tables"
+        ordering = ('-date', )
+
+    def __str__(self):
+        return f"{self.table_name} by {self.department_name}"
+    
+    def value_counts(self):
+        # select a particular field
+        field = self.fields.first()
+
+        if field and isinstance(field, FieldValue):
+            # check how many values this particular field have
+            values = field.values.all()
+            return len(values)
+        else:
+            return 0
+
+
+class CustomField(models.Model):
+    name = models.CharField(max_length=255)
+    field_type = models.CharField(max_length=255)
+    table = models.ForeignKey(DepartmentTable, on_delete=models.CASCADE)
+    foreign_key = models.CharField(max_length=255, blank=True, null=True,
+                                   help_text="Know which other it links to")
+    conditions = models.TextField(help_text="contains code that will executed with eval")
+
+    values = models.ManyToManyField('FieldValue', blank=True)
+
+    def __str__(self):
+        return f"{self.name}, Table: {self.table.table_name}"
+
+
+class FieldValue(models.Model):
+    value = models.TextField(help_text="use custom field definition to enforce constraints")
+    custom_field = models.ForeignKey(CustomField, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Field: {self.custom_field.name}, Value: {self.value}"
+

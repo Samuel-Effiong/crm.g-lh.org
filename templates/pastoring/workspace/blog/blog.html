@@ -162,7 +162,8 @@
                     title_input.value = data['title'];
                     author_input.value = data['author'];
                     date_input.value = data['date'];
-                    message_input.value = data['message'];
+
+                    tinymce.get('blog_message').setContent(data['message'])
                 })
                 .then(error => {
                     console.log(error);

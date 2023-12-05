@@ -13,6 +13,9 @@ const __save_project = (url) => {
     const project_priority = document.getElementById('project_priority').value;
     const project_leader = document.getElementById('project_leader').value;
 
+    const project_background_color = document.getElementById('project_background_color').value;
+    const project_text_color = document.getElementById('project_text_color').value;
+
     let project_members = document.getElementById('project_members');
     let members_options = project_members.options;
 
@@ -40,6 +43,8 @@ const __save_project = (url) => {
     formData.append('project_start_date', project_start_date);
     formData.append('project_due_date', project_due_date);
     formData.append('project_priority', project_priority);
+    formData.append('project_background_color', project_background_color);
+    formData.append('project_text_color', project_text_color);
     formData.append('project_leader', project_leader);
     formData.append('project_members', project_members);
     formData.append('project_targets', project_targets);

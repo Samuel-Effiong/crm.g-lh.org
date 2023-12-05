@@ -1,0 +1,48 @@
+<div id="dynamic_table">
+    <div class="container">
+        <table class="dynamic_table">
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Field Type</th>
+                    <th>
+                        <div class="button_style">
+                            <a class="h3" href="#" onclick="buildTable('tableBody')">
+                                <i class="ri-add-fill"></i>
+                            </a>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr class="mt-2">
+                    <td>
+                        <div class="form-group">
+                            <input type="text" name="field_name_1" class="form-control" placeholder="Field Name" required>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <select class="form-control" name="field_type_1">
+                                <option value="char" title="Maximum of 1000 characters">Character</option>
+                                <option value="textfield" title="Large body of text">Text Field</option>
+                                <option value="number">Number</option>
+                                <option value="datetime">Date/Time</option>
+                                <option value="url">URL</option>
+
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="button_style">
+
+                            <a href="#" onclick="removeRow(this)">
+                                <i class="text-danger ri-delete-bin-fill"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

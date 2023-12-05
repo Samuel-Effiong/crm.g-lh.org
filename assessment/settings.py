@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'custom_tags',
 
     'users',
+    
 
     'api',
     'home',
@@ -121,6 +122,7 @@ INSTALLED_APPS = [
     'hod_report',
     'pastoring',
     'project_management',
+    
 ]
 
 

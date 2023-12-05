@@ -1,5 +1,6 @@
 {% extends 'project_management/index.html' %}
 {% load static %}
+{% load extra_tags %}
 
 {% block extra_css %}
     <!-- Fullcalender CSS -->
@@ -16,7 +17,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between breadcrumb-content">
-                            <h5>Calender</h5>
+                            <h5>{{ department.department_long_name }}  <span class="text-primary h4">Calender</span></h5>
                         </div>
                     </div>
                 </div>
@@ -44,5 +45,9 @@
     <script src="{% static 'assets/vendor/fullcalendar/list/main.js' %}"></script>
     <script src="{% static 'assets/vendor/fullcalendar/interaction/main.js' %}"></script>
 {#        <script src="{% static %}"'assets/vendor/moment.min.js'></script>#}
+
+    <script>
+        const department_events = {{ department.get_department_project_events|jsonify }}
+    </script>
     <script src="{% static 'assets/js/plugins/calender.js' %}"></script>
 {% endblock extra_js %}
