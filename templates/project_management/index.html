@@ -13,11 +13,7 @@
       <link rel="stylesheet" href="{% static 'assets_project_management/css/backend-plugin.min.css' %}">
       <link rel="stylesheet" href="{% static 'assets_project_management/css/backend.css' %}">
       <link rel="stylesheet" href="{% static 'assets_project_management/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css' %}">
-      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/remixicon/fonts/remixicon.css' %}">
-      
-      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-calendar/dist/tui-calendar.css' %}">
-      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-date-picker/dist/tui-date-picker.css' %}">
-      <link rel="stylesheet" href="{% static 'assets_project_management/vendor/tui-calendar/tui-time-picker/dist/tui-time-picker.css' %}">
+      <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
 
       {% block extra_css %}
           <link rel="stylesheet" href="{% static 'custom/dynamic_table/dynamic_table.css' %}">
@@ -108,7 +104,7 @@
                               </a>
                               <ul id="dashboard" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
-                                      <li class="{% if department_name == department.department_name|concatenate:'Dashboard' %}active{% endif %}">
+                                      <li class="{% if page == 'Dashboard' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
                                           <a href="{% url 'project_management:department_dashboard' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
@@ -128,7 +124,7 @@
                               </a>
                               <ul id="projects" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
-                                      <li class="{% if not hack__ or not hack__calendar %}{% if category == department.department_name %}active{% endif %}{% endif %}">
+                                      <li class="{% if page == 'Project' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
                                           <a href="{% url 'project_management:project' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
@@ -142,13 +138,13 @@
                                   <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                                   </svg>
-                                  <span class="ml-4">Calender</span>
+                                  <span class="ml-4">Calendar</span>
                                   <i class="las la-angle-right iq-arrow-right arrow-active"></i>
                                   <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
                               </a>
                               <ul id="calender" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
                                   {% for department in member_departments %}
-                                      <li class="{% if hack__calendar %}{% if category == department.department_name %}active{% endif %}{% endif %}">
+                                      <li class="{% if page == 'Calendar' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
                                           <a href="{% url 'project_management:project-calender' department.department_name %}">
                                               <i class="las la-minus"></i>
                                               <span>{{ department.department_name }}</span>
@@ -164,7 +160,7 @@
                       <div class="card border-none mb-0 shadow-none">
                           <div class="card-body p-0">
                               <div class="sidebarbottom-content">
-                                  <h5 class="mb-3">Personal Project</h5>
+                                  <h5 class="mb-3">{{ page|concatenate:department.department_name }}</h5>
                                   <div id="circle-progress-6" class="sidebar-circle circle-progress circle-progress-primary mb-4" data-min-value="0" data-max-value="100" data-value="{{ member_percentage }}" data-type="percent"></div>
                                   <div class="custom-control custom-radio mb-1">
                                       <input type="radio" id="customRadio6" name="customRadio-1" class="custom-control-input" checked="">
@@ -473,6 +469,7 @@
                                                                 <div class="mb-3">
                                                                     <div class="d-flex justify-content-between">
                                                                         <h4>Database</h4>
+                                                                        
                                                                         <a class="h2">
                                                                             <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
                                                                         </a>
@@ -488,15 +485,27 @@
                                                                             <th scope="col">Table Name</th>
                                                                             <th scope="col">Count</th>
                                                                             <th scope="col">Created on</th>
+
+                                                                            {% if is_department_leader %}
+                                                                                <th scope="col"></th>
+                                                                            {% endif %}
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         {% for table in department.custom_tables.all %}
                                                                             <tr>
                                                                                 <th scope="row">{{ forloop.counter }}.</th>
-                                                                                <td>{{ table.table_name_plural }}</td>
+                                                                                <td><a href="{% url 'project_management:project-department-table-detail' department table.pk %}">{{ table.table_name_plural }}</</td>
                                                                                 <td>{{ table.value_counts }}</td>
                                                                                 <td>{{ table.date|date:"jS E, Y" }}</td>
+
+                                                                                {% if is_department_leader %}
+                                                                                    <td>
+                                                                                        <a class="h2" title="Delete table">
+                                                                                            <i class="ri-delete-bin-5-line text-primary" style="cursor: pointer"  data-target="#delete_table" onclick="delete_table({{table.pk}}, '{{ table.table_name_plural }}')" data-toggle="modal"></i>
+                                                                                        </a>
+                                                                                    </td>
+                                                                                {% endif %}
                                                                             </tr>
 
                                                                         {% empty %}
@@ -606,6 +615,35 @@
             </div>
         </div>
 
+        
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_table">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal" role="document">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bottom">
+                        <h3 class="modal-title" id="exampleModalCenterTitle03">Delete Table</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                
+                                <div class="mt-3 pb-3">
+
+                                    <p>
+                                        Are you sure you want to delete <span class="h4 text-danger" id="table_name"></span>
+                                    </p>
+                                </div>
+
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" id="confirm_delete" class="btn btn-outline-danger mr-3 p-2" onclick="delete_confirmed()">Delete</button>
+                                    <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     {% endblock modal %}
 
     {% block footer %}
@@ -628,25 +666,36 @@
 
     <!-- Backend Bundle JavaScript -->
     <script src="{% static 'assets_project_management/js/backend-bundle.min.js' %}"></script>
-    
-    <!-- Table Treeview JavaScript -->
-    <script src="{% static 'assets_project_management/js/table-treeview.js' %}"></script>
-    
-    <!-- Chart Custom JavaScript -->
-    <script src="{% static 'assets_project_management/js/customizer.js' %}"></script>
-    
-    <!-- Chart Custom JavaScript -->
-    <script async src="{% static 'assets_project_management/js/chart-custom.js' %}"></script>
-    <!-- Chart Custom JavaScript -->
-    <script async src="{% static 'assets_project_management/js/slider.js' %}"></script>
-
     <!-- app JavaScript -->
     <script src="{% static 'assets_project_management/js/app.js' %}"></script>
     
-    <script src="{% static 'assets_project_management/vendor/moment.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/moment.min.js' %}"></script>
 
     {% block extra_js %}
         <script src="{% static 'custom/dynamic_table/dynamic_table.js' %}"></script>
+
+        <script>
+            const delete_table = (id, name) => {
+                document.getElementById('table_name').textContent = name;
+                document.getElementById('confirm_delete').setAttribute('data-id', id);
+            }
+
+            const delete_confirmed = () => {
+                const delete_button= document.getElementById('confirm_delete');
+
+                const id = delete_button.dataset.id;
+                const url = `{% url 'project_management:department_dashboard' department %}?delete_table_id=${id}`;
+
+                fetch(url, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        window.location.reload();
+                    })
+            }
+        </script>
     {% endblock extra_js %}
   </body>
 </html>

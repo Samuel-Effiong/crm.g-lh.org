@@ -18,6 +18,7 @@ from django.contrib.auth import get_user_model
 
 from users.models import Shepherd, SubShepherd, CustomUser, Catalog
 from users.my_models.users import LEVEL_CHOICES
+from users.my_models.utilities import convert_to_format
 
 from church_work.models import ChurchWork
 from evangelism.models import Evangelism
@@ -60,6 +61,34 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep' or self.request.user.level == 'chief_shep'):
+
+            if 'download_profile' in request.GET:
+                document_format = request.GET['format']
+
+                fields = [
+                    'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
+                    'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
+                    'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
+                    'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
+                    'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
+                    'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
+                    'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
+                    'cloth_size', 'level'
+                ]
+
+                if request.user.level == 'chief_shep':
+                    data = CustomUser.objects.values(*fields)
+                elif request.user.level == 'core_shep':
+                    shepherd = Shepherd.objects.get(name=request.user)
+                    data = CustomUser.objects.get_shepherd_sheep(shepherd).values(*fields)
+
+                elif request.user.level == 'sub_shep':
+                    shepherd = SubShepherd.objects.get(name=request.user)
+                    data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values(*fields)
+
+                response = convert_to_format(data, 'Profile', document_format)
+                return response
+
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 
@@ -127,9 +156,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['total_users'] = users_with_skills + users_without_skills
 
         elif user.level == 'core_shep':
-
             context['sheep'] = get_user_model().objects.get_shepherd_sheep(shepherd=shepherd)
-
         elif user.level == 'sub_shep':
             context['sheep'] = get_user_model().objects.get_sub_shepherd_sheep(sub_shepherd=shepherd)
 
@@ -187,7 +214,7 @@ class SheepSummaryDetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['category'] = 'Dashboard'
+        context['category'] = 'Sheep Detail View'
         context['developers'] = developers
         context['user'] = self.request.user
         context['title'] = title

@@ -261,8 +261,11 @@ class CustomUser(AbstractUser):
     level = models.CharField(_('Level'), max_length=15, default='new_mem', choices=LEVEL_CHOICES)
 
     strict_report = models.CharField(max_length=20, default='None', choices=STRICT_REPORT)
+
+    # checks if status is updated
+    profile_updated = models.BooleanField(default=False)
     
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'email' 
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     objects = CustomUserManager()
@@ -336,10 +339,29 @@ class CustomUser(AbstractUser):
     def get_skillset(self) -> list:
         return [skill for skill in self.skills.split(',') if skill]
 
-    def get_image_url(self) -> str | None:
+    def get_image_url(self) -> str:
         if self.profile_pic:
             return self.profile_pic.url
         return ""
+
+    def set_profile_update_status(self):
+        if (self.first_name and self.last_name and self.username and 
+            self.gender and self.gender and self.date_of_birth and 
+            self.about and self.profile_pic and self.phone_number and
+            self.email and self.occupation and self.address and 
+            self.skills and self.blood_group and self.genotype and
+            self.chronic_illness and self.lga and self.state and 
+            self.country and self.course_of_study and self.years_of_study
+            and self.current_year_of_study and self.final_year_status
+            and self.next_of_kin_full_name and self.next_of_kin_relationship
+            and self.next_of_kin_phone_number and self.next_of_kin_address
+            and self.gift_graces and self.unit_of_work and self.shepherd
+            and self.sub_shepherd and self.shoe_size and self.cloth_size
+        ):
+            self.profile_updated = True 
+
+        else:
+            self.profile_updated = False
 
     def to_dict(self):
         data = {

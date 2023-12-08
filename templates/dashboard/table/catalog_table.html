@@ -3,6 +3,9 @@
 {% load static %}
 {% load extra_tags %}
 
+{% block extra_css %}
+{% endblock extra_css %}
+
 {% block blue_background_heading %}
 {% endblock %}
 
@@ -50,7 +53,7 @@
                                         <th>Day</th>
                                         <th>Date</th>
                                         <th>Sermon Title</th>
-                                        <th>Things Spoken About</th>
+                                        <th style="display: none">Things Spoken About</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -81,8 +84,8 @@
                                                     {{ item.date|format_text }}
                                                 {% endif %}
                                             </td>
-                                            <td>{{ item.sermon_title|format_text }}</td>
-                                            <td style="text-wrap: normal">{{ item.things_spoken_about|format_text }}</td>
+                                            <td>{{ item.sermon_title|format_text|truncatewords:"7" }}</td>
+                                            <td style="display: none">{{ item.things_spoken_about|format_text }}</td>
 
                                         </tr>
                                     {% empty %}
@@ -96,7 +99,7 @@
                                         <th>Day</th>
                                         <th>Date</th>
                                         <th>Sermon Title</th>
-                                        <th>Things Spoken About</th>
+                                        <th style="display: none">Things Spoken About</th>
                                     </tr>
                                     </tfoot>
                                 </table>

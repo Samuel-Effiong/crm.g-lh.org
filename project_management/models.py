@@ -54,7 +54,7 @@ class DepartmentMember(models.Model):
     def __str__(self) -> str:
         return f"{self.member_name.get_full_name()} - {self.department_name}"
 
-    def get_member_image_url(self) -> str | None:
+    def get_member_image_url(self) -> str:
         return self.member_name.get_image_url()
 
     def get_active_projects(self):
@@ -458,6 +458,7 @@ class DepartmentTable(models.Model):
     date = models.DateTimeField(default=timezone.now)
 
     fields = models.ManyToManyField('CustomField', blank=True)
+    row_values = models.ManyToManyField('FieldValueIndex', blank=True)
 
     class Meta:
         verbose_name_plural = "Department's Tables"
@@ -470,7 +471,7 @@ class DepartmentTable(models.Model):
         # select a particular field
         field = self.fields.first()
 
-        if field and isinstance(field, FieldValue):
+        if field and isinstance(field, CustomField):
             # check how many values this particular field have
             values = field.values.all()
             return len(values)
@@ -484,7 +485,9 @@ class CustomField(models.Model):
     table = models.ForeignKey(DepartmentTable, on_delete=models.CASCADE)
     foreign_key = models.CharField(max_length=255, blank=True, null=True,
                                    help_text="Know which other it links to")
-    conditions = models.TextField(help_text="contains code that will executed with eval")
+    conditions = models.TextField(
+        blank=True, null=True,
+        help_text="contains code that will executed with eval")
 
     values = models.ManyToManyField('FieldValue', blank=True)
 
@@ -492,8 +495,27 @@ class CustomField(models.Model):
         return f"{self.name}, Table: {self.table.table_name}"
 
 
+class FieldValueIndex(models.Model):
+    """This model is basically saying "Hey for each row this table
+    has this values" 
+    
+    """
+    department_table_name = models.ForeignKey(DepartmentTable, on_delete=models.CASCADE)
+    table_field_value = models.ManyToManyField('FieldValue', blank=True)
+
+    def __str__(self):
+        return f"{self.department_table_name}, row number: {self.pk}"
+    
+    def to_dict(self):
+        values = {item.custom_field.name: item.value for item in self.table_field_value.all() }
+
+        return values
+
+
 class FieldValue(models.Model):
-    value = models.TextField(help_text="use custom field definition to enforce constraints")
+    value = models.TextField(
+        blank=True, null=True,
+        help_text="use custom field definition to enforce constraints")
     custom_field = models.ForeignKey(CustomField, on_delete=models.CASCADE)
 
     def __str__(self):

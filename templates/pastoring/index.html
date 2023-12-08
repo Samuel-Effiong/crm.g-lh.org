@@ -5,15 +5,13 @@
 
 {% block extra_css %}
     <script src="{% static 'assets/js/tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
-      <script>
-          tinymce.init({
-              selector:'textarea',
-              plugins: 'table wordcount list emoticons fullscreen preview',
-
-          });
-      </script>
+    <script>
+        tinymce.init({
+            selector:'textarea',
+            plugins: 'table wordcount list emoticons fullscreen preview',
+        });
+    </script>
 {% endblock extra_css %}
-
 
 {% block navbar %}
     <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
@@ -138,6 +136,23 @@
                 {% else %}
                     <p>How are the Lord's sheep faring?</p>
                 {% endif %}
+            </div>
+            <div class="btn-group">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownRightMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        Download as
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRightMenuButton">
+                        <li><button class="btn dropdown-item" onclick="download_profile('pdf')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in PDF format">PDF</button></li>
+                        <li><button class="btn dropdown-item" onclick="download_profile('excel')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Excel format">MS Excel</button></li>
+                        <li><button class="btn dropdown-item" onclick="download_profile('text')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Text format">Text file</button></li>
+
+                        {% if category == 'Sheep Detail View' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="btn btn-primary dropdown-item" onclick="download_profile('image')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download profile as image" >Image</button></li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -350,9 +365,30 @@
 
 {% block javascript %}
     <script src="{% static 'assets/js/sub_main.js' %}"></script>
-{#    <script>#}
-{#        document.getElementById('test_function').addEventListener('click', () => {#}
-{#            display_gender_list('{{ male_list }}')#}
-{#        });#}
-{#    </script>#}
+
+    <script>
+        const download_profile = (format) => {
+            const url = `${window.location.pathname}?download_profile&format=${format}`;
+
+            let content_type;
+
+            if (format === 'pdf') {
+                content_type = 'application/pdf';
+            }
+            else if (format === 'excel') {
+                content_type = 'application/vnd.ms-excel';
+            }
+            else if (format === 'text') {
+                content_type = 'text/plain';
+            }
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+                {#headers: {#}
+                {#    'Content-Type': content_type#}
+                {# } #}
+            })
+        }
+    </script>
 {% endblock javascript %}

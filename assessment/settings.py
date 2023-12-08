@@ -119,7 +119,6 @@ INSTALLED_APPS = [
     'evangelism',
     'personal_development',
     'prophetic_vision',
-    'hod_report',
     'pastoring',
     'project_management',
     

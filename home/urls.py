@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import (Home, Profile, Registration, Login, logout_user, CounterUpdate,
                     ChartBibleReading, CatalogView, TaskView, ComingSoonView,
-                    SuggestionComplaintView)
+                    SuggestionComplaintView, RecoverPasswordView)
 
 
 urlpatterns = [
@@ -18,6 +18,7 @@ urlpatterns = [
     path('users-registration/', Registration.as_view(), name='users-registration'),
     path('users-login/', Login.as_view(), name='users-login'),
     path('users-logout/', logout_user, name='users-logout'),
+    path('users-recover-password', RecoverPasswordView.as_view(), name='users-recover-password'),
 
     path('users-tasks/', TaskView.as_view(), name='users-task'),
     path('coming-soon/<str:category>/', ComingSoonView.as_view(), name='coming-soon'),
@@ -33,7 +34,6 @@ urlpatterns = [
     path('update-counter/', CounterUpdate.as_view(), name='update-counter'),
     path('update-counter/<str:category>/<str:mode>/', ChartBibleReading.as_view(), name='update-charts'),
 
-    path('hod-report/', include('hod_report.urls')),
     path('pastoring/', include('pastoring.urls')),
     path('project-management/', include('project_management.urls')),
 

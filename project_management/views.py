@@ -15,7 +15,7 @@ from django.http import (HttpResponseRedirect, JsonResponse,
 from .models import (
     Department, DepartmentMember, DepartmentCategory,
     DepartmentProject, ProjectTarget, DepartmentTable,
-    CustomField, FieldValue
+    CustomField, FieldValue, FieldValueIndex
 )
 from users.models import Shepherd, SubShepherd
 
@@ -43,6 +43,17 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
             department_dashboard = kwargs.get('department', None)
 
             if department_dashboard:
+
+                if 'delete_table_id' in request.GET:
+                    delete_table_id = request.GET['delete_table_id']
+
+                    department = Department.objects.get(department_name=department_dashboard)
+
+                    department_table = department.custom_tables.get(id=delete_table_id)
+                    department_table.delete()
+
+                    return JsonResponse({})
+
                 return super().get(request, *args, **kwargs)
             else:
                 # check if any department has been created
@@ -73,9 +84,11 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
 
-        context['hack__'] = 'Dashboard'
-
         context['category'] = kwargs['department']
+
+        context['page'] = 'Dashboard'
+        context['nav_position'] = f"{context['page']} {context['category']}"
+
         context['title'] = title
         context['user'] = user
         context['project_title'] = project_title
@@ -89,6 +102,13 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         else:
             context['member_departments'] = Department.objects.get_member_departments(user)
         context['department_leaders'] = [leader.member_name for leader in Department.objects.department_leaders() if leader]
+
+        try:
+            department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
+            context['department_membership'] = department_member
+            context['is_department_leader'] = department.is_leader(department_member)
+        except DepartmentMember.DoesNotExist:
+            context['is_department_leader'] = False
 
         department_projects = DepartmentProject.objects.filter(department=department, status__in=['In Progress', 'Not Started'])
         context['department_projects'] = department_projects
@@ -144,7 +164,6 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
                     field_type=field_type,
                     table=department_table
                 )
-
                 fields.append(field)
         
         # Add fields to the department table
@@ -176,7 +195,9 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         category = kwargs['department']
 
+        context['page'] = 'Project'
         context['category'] = category
+
         context['title'] = title
         context['project_title'] = project_title
         context['user'] = user
@@ -295,7 +316,9 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         user = self.request.user
         category = self.kwargs['department']
 
+        context['page'] = 'Project'
         context['category'] = category
+
         context['title'] = title
         context['project_title'] = project_title
         context['user'] = user
@@ -759,9 +782,9 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         category = self.kwargs['department']
 
-        context['hack__calender'] = 'Calendar'
-
+        context['page'] = 'Calendar'
         context['category'] = category
+
         context['project_title'] = project_title
         context['user'] = user
 
@@ -780,14 +803,28 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
 
 class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
     login_url = reverse_lazy('users-login')
-    template_name = ""
-    model = DepartmentTable
+    template_name = "project_management/project-department-tables-detail.html"
+    model = DepartmentTable 
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'
                 or is_member(self.request.user)):
+
+            if 'table_row_id' in request.GET:
+
+                table_row_id = request.GET['table_row_id']
+                
+                table = self.get_object()
+                row = table.row_values.get(id=table_row_id)
+
+                for value in row.table_field_value.all():
+                    value.delete()
+
+                row.delete()
+
+                return JsonResponse({})
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
     
@@ -795,15 +832,17 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
-        category = kwargs['department']
+        category = self.kwargs['department']
 
+        context['page'] = 'Dashboard'
         context['category'] = category
+
         context['title'] = title
         context['project_title'] = project_title
         context['user'] = user
 
-        department = Department.objects.get(departmnet_name=category)
-        department['department'] = department
+        department = Department.objects.get(department_name=category)
+        context['department'] = department
 
         if user.is_superuser:
             context['member_departments'] = Department.objects.all()
@@ -811,3 +850,56 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
             context['member_departments'] = Department.objects.get_member_departments(user)
 
         context['department_leaders'] = Department.objects.department_leaders()
+
+        # GET Member Activity in the project
+        members, complete_project = department.member_activity_in_a_department()
+        context['member_activity_in_a_department'] = zip(members, complete_project)
+
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        # Now in this dynamic database we don't have any
+        # idea what is going to be in the POST request
+
+        database_action = request.POST['database_action']
+        database_table = self.get_object()
+
+        department = kwargs['department']
+        pk = kwargs['pk']
+
+        if database_action == 'add_row':
+            table_fields = database_table.fields.all()
+
+            field_values = []
+            for field in table_fields:
+                value = FieldValue(
+                    value=request.POST[field.name],
+                    custom_field=field
+                ) 
+                value.save()
+
+                # add value to this field
+                field.values.add(value)
+
+                field_values.append(value)
+
+            field_value_index = FieldValueIndex.objects.create(
+                department_table_name=database_table
+            )
+
+            field_value_index.table_field_value.add(*field_values)
+            database_table.row_values.add(field_value_index)
+
+        elif database_action == 'edit_row':
+            row_id = request.POST['row_id']
+
+            field_value_index = database_table.row_values.get(id=row_id)
+
+            for field_value in field_value_index.table_field_value.all():
+                field_value.value = request.POST[field_value.custom_field.name]
+                field_value.save()
+
+        return HttpResponseRedirect(reverse_lazy('project_management:project-department-table-detail', args=kwargs.values()))
+

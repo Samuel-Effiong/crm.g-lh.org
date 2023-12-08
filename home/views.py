@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 import pandas as pd
 
@@ -108,6 +109,8 @@ class Home(LoginRequiredMixin, TemplateView):
         context['title'] = title
         context['recent_activity'] = recent
 
+        
+
         # Get all the active notification for the user
         general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
                                                            is_activated=False)
@@ -169,6 +172,8 @@ class Profile(LoginRequiredMixin, TemplateView):
         active_notifications = list(general_notifications) + list(all_notifications)
         context['active_notifications'] = active_notifications
         context['no_of_notifications'] = len(active_notifications)
+
+        context['is_profile_updated'] = self.request.user
 
         return context
 
@@ -310,6 +315,8 @@ class Profile(LoginRequiredMixin, TemplateView):
                 user.profile_pic = profile_pic_webp
             except Exception as e:
                 pass
+
+            user.set_profile_update_status()
 
             user.save()
 
@@ -536,7 +543,6 @@ class Registration(TemplateView):
         return HttpResponseRedirect(reverse_lazy('home'))
 
 
-
 def logout_user(request):
     logout(request)
     return HttpResponseRedirect(reverse_lazy('users-login'))
@@ -546,7 +552,7 @@ class Login(TemplateView):
     template_name = 'dashboard/auth/sign-in.html'
 
     def get_context_data(self, **kwargs):
-        context = super(Login, self).get_context_data()
+        context = super(Login, self).get_context_data(**kwargs)
         context['developers'] = developers
         context['title'] = title
 
@@ -579,6 +585,40 @@ class Login(TemplateView):
 
         login(request, user)
         return HttpResponseRedirect(reverse_lazy('home'))
+
+
+class RecoverPasswordView(TemplateView):
+    template_name = 'dashboard/auth/recoverpw.html'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['developers'] = developers
+        context['title'] = title
+
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        email = request.POST['email']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+
+        new_password = request.POST['new_password']
+
+        # Validate if user is correct
+        try:
+            user = CustomUser.objects.get(
+                email=email, first_name=first_name,
+                last_name=last_name
+            )
+        except CustomUser.DoesNotExist:
+            user = None
+
+        if user:
+            user.set_password(new_password)
+            user.save()
+            return JsonResponse({'confirm': True})
+        else:
+            return JsonResponse({'confirm': False})
 
 
 class ComingSoonView(TemplateView):

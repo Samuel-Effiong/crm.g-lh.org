@@ -61,3 +61,21 @@ class DepartmentTableAdmin(admin.ModelAdmin):
     list_display = ('table_name_plural', 'department_name', 'date',)
     list_filter = ('department_name', )
     date_hierarchy = 'date'
+
+
+@admin.register(models.CustomField)
+class CustomFieldAdmin(admin.ModelAdmin):
+    list_display = ('name', 'field_type', 'table')
+    list_filter = ('field_type', 'table')
+
+
+@admin.register(models.FieldValue)
+class FieldValueAdmin(admin.ModelAdmin):
+    list_display = ('value', 'custom_field')
+    list_filter = ('custom_field', )
+
+
+@admin.register(models.FieldValueIndex)
+class FieldValueIndexAdmin(admin.ModelAdmin):
+    list_display = ('department_table_name', 'id')
+    list_filter = ('department_table_name', )

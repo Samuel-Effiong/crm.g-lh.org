@@ -11,6 +11,7 @@ urlpatterns = [
 
     path('project/<str:department>/', views.DepartmentProjectListView.as_view(), name='project'),
     path('project/<str:department>/<int:pk>/', views.DepartmentProjectDetailView.as_view(), name='project-detail'),
+    path('project/<str:department>/table/<int:pk>/', views.DepartmentTableDetailView.as_view(), name='project-department-table-detail'),
 
     path('project/calender/<str:department>/', views.DepartmentProjectCalenderView.as_view(), name='project-calender'),
 

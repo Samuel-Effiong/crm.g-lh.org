@@ -1,7 +1,9 @@
 import os, io
 import datetime
+import pandas as pd
 from PIL import Image
 
+from django.http.response import HttpResponse, FileResponse
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -75,3 +77,46 @@ def convert_image_in_path_to_webp(path):
 
     for img in images:
         pass
+
+
+def convert_to_format(data, category, format):
+    """
+    A category with a value of Sheep Detail View contain only
+    a single instance else it contain a multiple instance
+    """
+    if format == 'pdf':
+        from reportlab.pdfgen import canvas
+
+        if category == 'Sheep Detail View':
+            pass
+        else:
+            pass
+    elif format == 'excel':
+        response = HttpResponse(
+            content_type='application/vnd.ms-excel',
+            charset='utf-8',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{category}.xlsx"'
+
+        df = pd.DataFrame(data)
+        df.to_excel(response, category)
+    elif format == 'txt':
+        response = HttpResponse(
+            content_type='text/csv',
+            charset='utf-8',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{category}.csv"'
+
+        df = pd.DataFrame(data)
+        df.to_csv(response)
+    elif format == 'html':
+        response = HttpResponse(
+            content_type='text/html',
+            charset='utf-8',
+        )
+        response['Content-Disposition'] = f'attachment;filename="{category}.html"'
+
+        df = pd.DataFrame(data)
+        df.to_html(response)
+    return response
+

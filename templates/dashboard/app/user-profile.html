@@ -3,6 +3,9 @@
 {% load static %}
 {% load extra_tags %}
 
+{% block extra_css %}
+{% endblock extra_css %}
+
 {% block content %}
   <div class="conatiner-fluid content-inner mt-n5 py-0">
       <div class="row">
@@ -15,12 +18,12 @@
                               {% if user.get_image_url %}
                                   <img src="{{ user.get_image_url }}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
                               {% else %}
-                                  <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
-                                  <img src="{% static 'assets/images/avatars/avtar_1.png' %}" alt="User-Profile" id="preview" class="theme-color-purple-img img-fluid rounded-pill avatar-100">
-                                  <img src="{% static 'assets/images/avatars/avtar_2.png' %}" alt="User-Profile" id="preview" class="theme-color-blue-img img-fluid rounded-pill avatar-100">
-                                  <img src="{% static 'assets/images/avatars/avtar_4.png' %}" alt="User-Profile" id="preview" class="theme-color-green-img img-fluid rounded-pill avatar-100">
-                                  <img src="{% static 'assets/images/avatars/avtar_5.png' %}" alt="User-Profile" id="preview" class="theme-color-yellow-img img-fluid rounded-pill avatar-100">
-                                  <img src="{% static 'assets/images/avatars/avtar_3.png' %}" alt="User-Profile" id="preview" class="theme-color-pink-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/01.webp' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_1.webp' %}" alt="User-Profile" id="preview" class="theme-color-purple-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_2.webp' %}" alt="User-Profile" id="preview" class="theme-color-blue-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_4.webp' %}" alt="User-Profile" id="preview" class="theme-color-green-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_5.webp' %}" alt="User-Profile" id="preview" class="theme-color-yellow-img img-fluid rounded-pill avatar-100">
+                                  <img src="{% static 'assets/images/avatars/avtar_3.webp' %}" alt="User-Profile" id="preview" class="theme-color-pink-img img-fluid rounded-pill avatar-100">
                               {% endif %}
                            </div>
                            <div class="d-flex flex-wrap align-items-center mb-3 mb-sm-0">
@@ -95,11 +98,11 @@
                                     {% if celeb.profile_pic %}
                                        <img id="celebrant_image_data" src="/media/{{ celeb.profile_pic }}" class="rounded-circle bg-soft-primary p-1" width="50" height="50" alt="1">
                                     {% else %}
-                                        <img src="{% static 'assets/images/avatars/01.png' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-35">
+                                        <img src="{% static 'assets/images/avatars/01.webp' %}" alt="User-Profile" id="preview" class="theme-color-default-img img-fluid rounded-pill avatar-35">
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="#" onclick="birthday_pop_box(`{{ celeb.get_full_name }}`, `{{ celeb.username }}`, `{{ celeb.about }}`, `{{ celeb.gender }}`, `{{ user.username }}`, {% if celeb.get_image_url %}`{{ celeb.get_image_url }}`{% else %}`{% static 'assets/images/avatars/01.png' %}`{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+                                    <a href="#" onclick="birthday_pop_box(`{{ celeb.get_full_name }}`, `{{ celeb.username }}`, `{{ celeb.about }}`, `{{ celeb.gender }}`, `{{ user.username }}`, {% if celeb.get_image_url %}`{{ celeb.get_image_url }}`{% else %}`{% static 'assets/images/avatars/01.webp' %}`{% endif %})" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
                                         <h6 id="celebrant" class="mb-1" style="color: #3a57e8">
                                             {{ celeb.get_full_name }}
                                         </h6>
@@ -128,7 +131,7 @@
                             <div class="card-body">
                                 <div class="text-center">
                                     <div class="user-profile">
-                                        <img id="celebrant_image" src="/static/assets/images/avatars/01.png" alt="profile-img" class="rounded-pill avatar-155 img-fluid">
+                                        <img id="celebrant_image" src="/static/assets/images/avatars/01.webp" alt="profile-img" class="rounded-pill avatar-155 img-fluid">
                                     </div>
                                     <div class="mt-3">
                                         <h4 id="celebrant_full_name" style="display: inline">Ita Udoh </h4>
@@ -230,10 +233,11 @@
                                 <div class="header-title">
                                     <div class="d-flex flex-wrap">
                                       <div class="media-support-user-img me-3">
-                                         <img class="rounded-pill img-fluid avatar-60 bg-soft-danger p-1 ps-2" src="{% static 'assets/images/avatars/02.png' %}" alt="">
+                                         <img class="rounded-pill img-fluid avatar-60 bg-soft-danger p-1 ps-2" src="{% static 'assets/images/avatars/02.webp' %}" alt="">
                                       </div>
                                       <div class="media-support-info mt-2">
-                                         <h5 class="mb-0">Edit Profile</h5>
+                                        
+                                        <h5 class="mb-0">Edit Profile</h5>
                                       </div>
                                    </div>
                                 </div>
@@ -656,7 +660,25 @@
 
 
                         <div class="header-title">
-                           <h4 class="card-title">Profile</h4>
+                            <div class="d-flex justify-content-between">
+                                <h4 class="card-title">Profile</h4>
+
+                                <div class="btn-group">
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownRightMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Download as
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRightMenuButton">
+                                            <li><button class="btn dropdown-item">PDF</button></li>
+                                            <li><button class="btn dropdown-item">MS Excel</button></li>
+                                            <li><button class="btn dropdown-item">Text file</button></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><button class="btn btn-primary dropdown-item">Image</button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
                      </div>
                      <div class="card-body">
@@ -665,7 +687,7 @@
                                {% if user.get_image_url %}
                                    <img src="{{ user.get_image_url }}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
                                {% else %}
-                                   <img src="{% static 'assets/images/avatars/01.png' %}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
+                                   <img src="{% static 'assets/images/avatars/01.webp' %}" alt="profile-img" class="rounded-pill avatar-130 img-fluid" id="displayProfilePic2">
                                {% endif %}
                            </div>
                            <div class="mt-3">
@@ -949,11 +971,6 @@
                           <div class="card-body">
                              <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" id="password_form" novalidate>
                                 {% csrf_token %}
-                                <div style="text-align: center">
-                                    <p id="password_successful" style="color: green; display: none"><i>Password change successfully...<br>Please wait as page reloads</i></p>
-                                    <p id="password_failed" style="color: red; display: none"><i>Current password is incorrect</i></p>
-                                    <p id="password_error" style="color: red; display: none">An error occurred...Try again</p>
-                                </div>
 
                                  <div class="form-group col-lg-12 col-md-12">
                                    <input class="form-control" type="text" name="form_name" hidden value="password">
@@ -972,7 +989,7 @@
                                     <select class="form-select mb-3 shadow-none">
                                         <option value="mon" {% if user.strict_report == 'mon' %}selected{% endif %}>Monday</option>
                                         <option value="tue" {% if user.strict_report == 'tue' %}selected{% endif %}>Tuesday</option>
-                                        <option value="wed" {% if user.strict_report == 'wed' %}selected{% endif %}>Wednessday</option>
+                                        <option value="wed" {% if user.strict_report == 'wed' %}selected{% endif %}>Wednesday</option>
                                         <option value="thur" {% if user.strict_report == 'thur' %}selected{% endif %}>Thursday</option>
                                         <option value="fri" {% if user.strict_report == 'fri' %}selected{% endif %}>Friday</option>
                                         <option value="sat" {% if user.strict_report == 'sat' %}selected{% endif %}>Saturday</option>
@@ -992,47 +1009,13 @@
             </div>
           </div>
       </div>
-      <div class="offcanvas offcanvas-bottom share-offcanvas" tabindex="-1" id="share-btn" aria-labelledby="shareBottomLabel">
-         <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="shareBottomLabel">Share</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-         </div>
-         <div class="offcanvas-body small">
-            <div class="d-flex flex-wrap align-items-center">
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/08.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>Facebook</h6>
-               </div>
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/09.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>Twitter</h6>
-               </div>
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/10.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>Instagram</h6>
-               </div>
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/11.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>Google Plus</h6>
-               </div>
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/13.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>In</h6>
-               </div>
-               <div class="text-center me-3 mb-3">
-                  <img src="../../assets/images/brands/12.png" class="img-fluid rounded mb-2" alt="">
-                  <h6>YouTube</h6>
-               </div>
-            </div>
-         </div>
-      </div>
   </div>
 {% endblock content %}
 
 {% block javascript %}
     <script src="{% static 'assets/js/sub_main.js' %}"></script>
     <script>
-        url = "{% url 'users-profiles' user.username %}";
+        let url = "{% url 'users-profiles' user.username %}";
         {#change_password(url);#}
         password_validation();
         {#preview_image();#}
@@ -1049,6 +1032,18 @@
             }
         }
 
+        const download_profile = (format) => {
+            url = `${url}?download_profile&format=${format}`;
+            
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    
+                })
+        }
     </script>
 
 {% endblock javascript %}
