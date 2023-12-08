@@ -1,0 +1,15 @@
+<div class="popups-cont">
+    <div class="popups-cont__overlay"></div>
+    <div class="popup">
+      <div class="popup__pieces"></div>
+      <div class="popup__content">
+        <div class="popup__close"></div>
+        <h3 class="popup__heading text-white">Update your Profile</h3>
+        <p class="popup__text">
+            Please Kindly ensure that your <a href="{% url 'users-profiles' user.username %}">Profile</a> details is completed.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <button type="button" style="display: none;" id="update_profile_popup" class="popup-btn">Show Popup</button>

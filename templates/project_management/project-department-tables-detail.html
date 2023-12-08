@@ -1,0 +1,207 @@
+{% extends 'project_management/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+        
+            <div class="col-sm-12 col-lg-12">
+            
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title col-12">
+                        <h4 class="card-title">
+                            <div class="d-flex justify-content-between">
+                                {{object.table_name_plural}} Table
+                                <button type="button" class="btn btn-primary p-2" data-target="#add_to_database" data-toggle="modal">Add</button>
+                            </div>
+                        </h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ object.table_description }}</p>
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    {% for field in object.fields.all %}
+                                        <th scope="col">{{ field.name }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in object.row_values.all %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        {% for item in row.table_field_value.all %}
+                                            {% if forloop.counter == 1 %}
+                                                <td>
+                                                    <a href="#" data-target="#edit_database_row" data-toggle="modal" onclick="populate_edit_modal({{ row.to_dict}}, {{ row.id }})">{{ item.value }}</a>
+                                                </td>
+                                            {% else %}
+                                                <td>{{ item.value|truncatewords:"7" }}</td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr> 
+                                {% empty %}
+                                    <th>_</th>
+                                    <th colspan="{{ object.fields.all.count }}">No values</th>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+
+                        <div class="d-flex justify-content-center col-12">                        
+                            <button type="button" class="btn btn-primary p-2" data-target="#add_to_database" data-toggle="modal">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block modal %}
+    
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add_to_database">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal" role="document">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="exampleModalCenterTitle03">Add to {{ object.table_name }}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form method="post">
+                                {% csrf_token %}
+
+                                {% for field in object.fields.all %}
+                                    <div class="form-group mb-3">
+                                        <label for="{{ field.name }}">{{ field.name }}</label>
+
+                                        {% if field.field_type == 'char' %}
+                                            <input type="text" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'textfield' %}
+                                            <textarea class="form-control" name="{{ field.name }}" id="{{ field.name }}" rows="3"></textarea>
+                                        {% elif field.field_type == 'datetime' %}
+                                            <input type="date" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'number' %}
+                                            <input type="number" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'url'%}
+                                            <input type="url" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                
+                                <div class="form-group" style="display: none;">
+                                    <input type="text" class="form-control" value="add_row" name="database_action">
+                                </div>
+
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-3 p-2">Create</button>
+                                    <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="edit_database_row">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal" role="document">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <div class="d-flex justify-content-between">
+                        <h3 class="modal-title" id="exampleModalCenterTitle03">Edit Row <span id="row_id_title"></span></h3>
+                        <button type="button" class="btn btn-danger mr-3 p-2" id="delete_id" onclick="delete_row()">Delete</button>
+                    </div>
+                    
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form method="post">
+                                {% csrf_token %}
+
+                                {% for field in object.fields.all %}
+                                    <div class="form-group mb-3">
+                                        <label for="{{ field.name }}">{{ field.name }}</label>
+
+                                        {% if field.field_type == 'char' %}
+                                            <input type="text" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'textfield' %}
+                                            <textarea class="form-control" name="{{ field.name }}" id="edit_{{ field.name }}" rows="3"></textarea>
+                                        {% elif field.field_type == 'datetime' %}
+                                            <input type="date" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'number' %}
+                                            <input type="number" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
+                                        {% elif field.field_type == 'url'%}
+                                            <input type="url" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                
+                                <div class="form-group" style="display: none;">
+                                    <input type="text" class="form-control" id="row_id" name="row_id">
+                                    <input type="text" class="form-control" value="edit_row" name="database_action">
+                                </div>
+
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-3 p-2">Save</button>
+                                    <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock modal %}
+
+{% block extra_js %}
+    <script>
+        const populate_edit_modal = (details, id) => {
+
+            document.getElementById('row_id_title').textContent = id;
+            document.getElementById('row_id').value = id;
+            document.getElementById('delete_id').setAttribute('data-id', id);
+            
+            for (const [key, value] of Object.entries(details)) {
+                const input_element = document.getElementById(`edit_${key}`);
+
+                input_element.value = value;
+            }
+        }
+
+        const delete_row = () => {
+
+            delete_button = document.getElementById('delete_id');
+            id = delete_button.dataset.id;
+
+            const url = `{% url 'project_management:project-department-table-detail' department object.pk %}?table_row_id=${id}`;
+
+            console.log(url)
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    window.location.reload();
+                })
+        }
+    </script>
+{% endblock extra_js %}
