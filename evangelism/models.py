@@ -21,7 +21,7 @@ class DataAnalysisManager(models.Manager):
 
 # Create your models here.
 class Evangelism(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     field_of_visit = models.CharField(max_length=300)
     hours_spent_per_week = models.PositiveIntegerField(default=DEFAULT)
     no_led_to_christ = models.PositiveIntegerField(default=DEFAULT)

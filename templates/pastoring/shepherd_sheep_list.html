@@ -65,4 +65,12 @@
 {% endblock content %}
 
 {% block javascript %}
+    <script>
+        const download_profile = (e, format) => {
+            const download_format = document.getElementById('download_format');
+
+            download_format.value = format;
+            e.formAction = '?download_format';
+        }
+    </script>
 {% endblock javascript %}

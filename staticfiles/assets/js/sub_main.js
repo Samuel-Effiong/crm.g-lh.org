@@ -146,6 +146,7 @@ let edit_profile = (url) => {
         let years_of_study = document.querySelector('#years_of_study').value;
         let current_year_of_study = document.querySelector('#current_year_of_study').value;
         let final_year_status = document.querySelector('#final_year_status').value;
+        let graduate_status = document.querySelector('#graduate_status').value;
 
         // NEXT OF KIN INFORMATION
         let next_of_kin_full_name = document.querySelector('#next_of_kin_full_name').value;
@@ -198,6 +199,7 @@ let edit_profile = (url) => {
         formData.append('years_of_study', years_of_study);
         formData.append('current_year_of_study', current_year_of_study);
         formData.append('final_year_status', final_year_status);
+        formData.append('graduate_status', graduate_status);
 
         // NEXT OF KIN INFORMATION
         formData.append('next_of_kin_full_name', next_of_kin_full_name);
@@ -283,6 +285,7 @@ let edit_profile = (url) => {
                     document.querySelector('#displayYearsOfStudy').textContent = years_of_study;
                     document.querySelector('#displayCurrentYearOfStudy').textContent = current_year_of_study;
                     document.querySelector('#displayFinalYearStatus').textContent = final_year_status;
+                    document.querySelector('#displayGraduateStatus').textContent = graduate_status;
 
                     // NEXT OF KIN INFORMATION
                     document.querySelector('#displayNextOfKinFullName').textContent = next_of_kin_full_name;

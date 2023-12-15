@@ -32,7 +32,7 @@ class DataAnalysisManager(models.Manager):
 
 # Create your models here.
 class ChurchWork(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     work_category = models.CharField(max_length=100, choices=STATUS)
     date = models.DateField(default=timezone.now)

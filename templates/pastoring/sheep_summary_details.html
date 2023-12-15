@@ -3,9 +3,18 @@
 {% load static %}
 {% load extra_tags %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'custom/notification/notification.css' %}">
+{% endblock extra_css %}
+
 {% block content %}
     <div class="conatiner-fluid content-inner mt-n5 py-0">
         <div>
+            <div class="row">
+                <div class="col-12">
+                    {% include 'custom_html/notification.html'  with message='Setting saved successfully' position='top-right' %}
+                </div>
+            </div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="card">
@@ -60,9 +69,7 @@
                               </div>
                               <p>{{ sheep.about }}</p>
 
-                              {% if user.level == 'chief_shep' %}
-                                  <button type="button" class="btn btn-danger mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdropLive">Change Settings</button>
-                              {% endif %}
+                              <button type="button" class="btn btn-danger mb-2" data-bs-toggle="modal" data-bs-target="#staticBackdropLive">Change Settings</button>
 
                            </div>
                            <div class="d-flex justify-content-between mt-3">
@@ -83,48 +90,44 @@
                               </div>
                            </div>
 
-                           {% if user.level == 'chief_shep' %}
-                               <div class="modal fade" id="staticBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="staticBackdropLiveLabel">Setting</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form>
-                                                    <div class="form-group">
-                                                       <label class="form-label" for="blood_group">Level:</label>
-                                                       <select name="level" id="level" class="form-select mb-3">
-                                                           {% for option in level %}
-                                                               <option value="{{ option.0 }}" {% if option.0 == sheep.level %}selected{% endif %}>{{ option.1 }}</option>
-                                                           {% endfor %}
-                                                       </select>
-                                                   </div>
-
-                                                   <div class="form-group">
-                                                       <label for="form-label" style="padding: 15px 0 10px 0">Additional Settings</label>
-                                                       <div class="mb-3 form-check">
-                                                           <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                                                           <label class="form-check-label" for="exampleCheck1">Head of Department</label>
-                                                       </div>
-
-                                                       <div class="mb-3 form-check">
-                                                           <input type="checkbox" class="form-check-input" id="catalog">
-                                                           <label class="form-check-label" for="catalog">Can Edit Catalog</label>
-                                                       </div>
-                                                   </div>
-                                                </form>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="button" class="btn btn-primary">Understood</button>
-                                            </div>
-
+                            <div class="modal fade" id="staticBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="staticBackdropLiveLabel">Setting</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
+                                        <div class="modal-body">
+                                            <form>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="blood_group">Level:</label>
+                                                    <select name="level" id="settings_level" class="form-select mb-3">
+                                                        {% for option in level %}
+                                                            {% if option.0 != 'chief_shep' %}
+                                                                <option value="{{ option.0 }}" {% if option.0 == sheep.level %}selected{% endif %}>{{ option.1 }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="form-label" style="padding: 15px 0 10px 0">Additional Settings</label>
+
+                                                    <div class="mb-3 form-check">
+                                                        <input type="checkbox" class="form-check-input" id="settings_catalog">
+                                                        <label class="form-check-label" for="settings_catalog">Can Edit Catalog</label>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" id="dismiss_modal_button" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" onclick="change_user_details('{{ sheep.username }}')">Understood</button>
+                                        </div>
+                                        
                                     </div>
-                               </div>
-                           {% endif %}
+                                </div>
+                            </div>
 
                         </div>
                     </div>
@@ -397,4 +400,55 @@
 {% endblock content %}
 
 {% block javascript %}
+
+    <script src="{% static 'custom/jquery-3.7.1.min.js' %}"></script>
+    <script>
+        const change_user_details = (username) => {
+            let url = window.location.pathname;
+
+            const level = document.getElementById('settings_level').value;
+            const catalog = document.getElementById('settings_catalog').value;
+            const shepherd_rating = document.getElementById('settings_shepherd_rating');
+
+            url = `${url}?settings&username=${username}&level=${level}&catalog=${catalog}&shepherd_rating=${shepherd_rating}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    document.getElementById('dismiss_modal_button').click();
+
+                    let status, type;
+
+                    if (data['confirm']) {
+                        type = 'top-right';
+                        status = 'success';
+                    }
+                    else {
+                        type = 'top-left';
+                        status = 'warning';
+                    }
+
+                    $('.notification_notify')
+                            .removeClass()
+                            .attr('data-notification-status', status)
+                            .addClass(type + ' notification_notify')
+                            .addClass('do-show');
+
+                    const reset_notification = () => {
+                        $('.notification_notify')
+                            .removeClass('do-show');
+                    }
+
+                    setTimeout(reset_notification, 3000)
+                })
+
+            const type = 'top-right';
+            const status = 'warning';
+        }   
+    </script>
+    
 {% endblock javascript %}

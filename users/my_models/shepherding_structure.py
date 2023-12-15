@@ -68,6 +68,7 @@ class Shepherd(models.Model):
         sheep = get_user_model().objects.get_shepherd_sheep(shepherd=self)
 
         return len(sheep)
+    
 
 
 class SubShepherd(models.Model):
@@ -108,3 +109,8 @@ class SubShepherd(models.Model):
         date = Validators.validate_prevent_future_date(value=date)
 
         self.date_of_appointment = date
+
+    def get_no_of_sheep(self):
+        sheep = get_user_model().objects.get_sub_shepherd_sheep(sub_shepherd=self)
+
+        return len(sheep)

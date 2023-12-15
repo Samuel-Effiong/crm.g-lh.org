@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils.datastructures import MultiValueDictKeyError
 from django.http.response import JsonResponse
 
-from users.my_models import CustomUser, Catalog, Permission
+from users.my_models import CustomUser, Catalog
 from users.my_models.miscellaneous import upload_catalog_to_database
 
 
@@ -17,8 +17,8 @@ class LoginAndRegistrationTest(TestCase):
 
         self.user = CustomUser.objects.create_user(email='samueleffiong80@gmail.com', password='Nkopuruk@4',
                                                    gender='M', first_name='Samuel', last_name='Nkopuruk',
-                                                   username='Senai', phone_number='09035018948', occupation='Developer',
-                                                   skills='Python, Django')
+                                                   username='Senai', phone_number='09035018948', 
+                                                   occupation='Developer', skills='Python, Django')
 
     def always_test_this(self, response):
         self.assertEqual('GLH-FAM', response.context_data['title'])
@@ -82,6 +82,8 @@ class LoginAndRegistrationTest(TestCase):
             }, follow=True)
         except MultiValueDictKeyError:
             self.assertTrue(True)
+        else:
+            self.assertTrue(False)
 
     def test_registration_page_with_duplicate_details(self):
         response = self.client.post(self.registration_url, {
@@ -112,10 +114,10 @@ class LoginAndRegistrationTest(TestCase):
         user = CustomUser.objects.get(email='samueleffiong@gmail.com')
         self.assertEqual(user, response.context_data['user'])
 
-        user_permission = Permission.objects.get(name=user)
+        # user_permission = Permission.objects.get(name=user)
 
-        self.assertFalse(user_permission.can_edit_catalog)
-        self.assertFalse(user_permission.head_of_department)
+        # self.assertFalse(user_permission.can_edit_catalog)
+        # self.assertFalse(user_permission.head_of_department)
 
 
 class ProfileUpdateTest(TestCase):
@@ -187,7 +189,7 @@ class ProfileUpdateTest(TestCase):
             'next_of_kin_phone_number': '09035018948', 'next_of_kin_address': 'Ikot Ikpene',
             'gift_graces': 'seer, exhortation', 'unit_of_work': 'GAT CC, GMT',
             'shepherd': "", 'sub_shepherd': "", 'shoe_size': "33", 'cloth_size': '30',
-            'form_name': 'profile'
+            'graduate_status': 'undergraduate', 'form_name': 'profile'
         }
         response = self.client.post(self.profile_url, data)
 

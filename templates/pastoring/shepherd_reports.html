@@ -172,7 +172,7 @@
                                     </thead>
                                     <tbody>
                                     {% for sheep in sheep_reports %}
-                                        <tr>
+                                        <tr> 
                                             <td><a href="{% url 'shepherd_report:list' %}?shepherd_bypass=True&sheep_username={{ sheep }}">{% special_dictionary_formatter sheep_reports sheep 'full_name' %}</a></td>
                                             <td>{% special_dictionary_formatter sheep_reports sheep 'no_of_reports' %}</td>
                                             <td>{% special_dictionary_formatter sheep_reports sheep 'no_of_missed_weeks' %}</td>

@@ -87,7 +87,6 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         context['category'] = kwargs['department']
 
         context['page'] = 'Dashboard'
-        context['nav_position'] = f"{context['page']} {context['category']}"
 
         context['title'] = title
         context['user'] = user
@@ -857,6 +856,9 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
+        family_member = get_user_model().objects.exclude(level='chief_shep')
+        context['family_member'] = family_member
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -874,10 +876,27 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
 
             field_values = []
             for field in table_fields:
-                value = FieldValue(
-                    value=request.POST[field.name],
-                    custom_field=field
-                ) 
+                if field.field_type == 'file':
+                    # Do the upload here
+                    files = request.FILE.get(field.name, None)
+
+                    if files:
+                        files = '';
+                    else:
+                        pass
+                elif field.field_type == 'family_member':
+                    field.foreign_key = 'Family Member'
+
+                    fam_username = request.POST[field.name]
+                    fam = get_user_model().objects.get(username=fam_username).get_full_name()
+
+                    value = FieldValue(value=fam, custom_field=field)
+
+                else:
+                    value = FieldValue(
+                        value=request.POST[field.name],
+                        custom_field=field
+                    ) 
                 value.save()
 
                 # add value to this field

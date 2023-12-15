@@ -160,7 +160,7 @@
                       <div class="card border-none mb-0 shadow-none">
                           <div class="card-body p-0">
                               <div class="sidebarbottom-content">
-                                  <h5 class="mb-3">{{ page|concatenate:department.department_name }}</h5>
+                                  <h5 class="mb-3">Personal Evaluation</h5>
                                   <div id="circle-progress-6" class="sidebar-circle circle-progress circle-progress-primary mb-4" data-min-value="0" data-max-value="100" data-value="{{ member_percentage }}" data-type="percent"></div>
                                   <div class="custom-control custom-radio mb-1">
                                       <input type="radio" id="customRadio6" name="customRadio-1" class="custom-control-input" checked="">
@@ -580,7 +580,7 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-lg-12">
-                                <form method="post" novalidate>
+                                <form method="post">
                                     {% csrf_token %}
                                     <div class="form-group mb-3">
                                         <label for="table_name">Table Name</label>

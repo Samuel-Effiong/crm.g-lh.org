@@ -137,23 +137,30 @@
                     <p>How are the Lord's sheep faring?</p>
                 {% endif %}
             </div>
-            <div class="btn-group">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownRightMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        Download as
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRightMenuButton">
-                        <li><button class="btn dropdown-item" onclick="download_profile('pdf')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in PDF format">PDF</button></li>
-                        <li><button class="btn dropdown-item" onclick="download_profile('excel')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Excel format">MS Excel</button></li>
-                        <li><button class="btn dropdown-item" onclick="download_profile('text')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Text format">Text file</button></li>
 
-                        {% if category == 'Sheep Detail View' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><button class="btn btn-primary dropdown-item" onclick="download_profile('image')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download profile as image" >Image</button></li>
-                        {% endif %}
-                    </ul>
+            {% if category != 'Sheep Detail View' %}
+                <div class="btn-group">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownRightMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            Download as
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRightMenuButton">
+                            <form id="download_format_form" method="post">
+                                {% csrf_token %}
+                                <li><input id="download_format" name="download_format" style="display: none;" type="text"></li>
+                                <!-- <li><button type="submit" class="btn dropdown-item" onclick="download_profile('pdf')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in PDF format">PDF</button></li> -->
+                                <li><button type="submit" class="btn dropdown-item" onclick="download_profile(this, 'excel')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Excel format">MS Excel</button></li>
+                                <li><button type="submit" class="btn dropdown-item" onclick="download_profile(this, 'text')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Text format">Text file</button></li>
+                                <li><button type="submit" class="btn dropdown-item" onclick="download_profile(this, 'html')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {% if category != 'Sheep Detail View' %}profiles{% else %}profile{% endif %} in Html format">Html file</button></li>
+        
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button type="submit" class="btn btn-primary dropdown-item" onclick="download_profile(this, 'image')" data-bs-toggle="tooltip" data-bs-placement="top" title="Download profile images" >Image</button></li>    
+                            </form>
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+            
         </div>
     </div>
 {% endblock %}
@@ -367,28 +374,11 @@
     <script src="{% static 'assets/js/sub_main.js' %}"></script>
 
     <script>
-        const download_profile = (format) => {
-            const url = `${window.location.pathname}?download_profile&format=${format}`;
+        const download_profile = (e, format) => {
+            const download_format = document.getElementById('download_format');
 
-            let content_type;
-
-            if (format === 'pdf') {
-                content_type = 'application/pdf';
-            }
-            else if (format === 'excel') {
-                content_type = 'application/vnd.ms-excel';
-            }
-            else if (format === 'text') {
-                content_type = 'text/plain';
-            }
-
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin'
-                {#headers: {#}
-                {#    'Content-Type': content_type#}
-                {# } #}
-            })
+            download_format.value = format;
+            e.formAction = '?download_format';
         }
     </script>
 {% endblock javascript %}

@@ -516,6 +516,7 @@ class FieldValue(models.Model):
     value = models.TextField(
         blank=True, null=True,
         help_text="use custom field definition to enforce constraints")
+    
     custom_field = models.ForeignKey(CustomField, on_delete=models.CASCADE)
 
     def __str__(self):

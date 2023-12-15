@@ -109,8 +109,6 @@ class Home(LoginRequiredMixin, TemplateView):
         context['title'] = title
         context['recent_activity'] = recent
 
-        
-
         # Get all the active notification for the user
         general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
                                                            is_activated=False)
@@ -242,9 +240,9 @@ class Profile(LoginRequiredMixin, TemplateView):
 
             # BIO DATA
 
-            user.first_name = request.POST['first_name']
-            user.last_name = request.POST['surname']
-            user.gender = request.POST['gender']
+            user.first_name = request.POST['first_name'].strip()
+            user.last_name = request.POST['surname'].strip()
+            user.gender = request.POST['gender'].strip()
 
             # validate and set the date of birth
             try:
@@ -255,44 +253,51 @@ class Profile(LoginRequiredMixin, TemplateView):
             user.about = request.POST['about']
 
             # PERSONAL DATA
-            user.phone_number = request.POST.get('phone_number', '')
-            user.occupation = request.POST.get('occupation', '')
-            user.address = request.POST['address']
-            user.skills = request.POST['skills']
+            user.phone_number = request.POST.get('phone_number', '').strip()
+            user.occupation = request.POST.get('occupation', '').strip()
+            user.address = request.POST['address'].strip()
+            user.skills = request.POST['skills'].strip()
 
             # BASIC MEDICAL INFORMATION
             user.blood_group = request.POST['blood_group']
             user.genotype = request.POST['genotype']
-            user.chronic_illness = request.POST['chronic_illness']
+            user.chronic_illness = request.POST['chronic_illness'].strip()
 
             # RESIDENTIAL INFORMATION
-            user.lga = request.POST['lga']
-            user.state = request.POST['state']
-            user.country = request.POST['country']
+            user.lga = request.POST['lga'].strip()
+            user.state = request.POST['state'].strip()
+            user.country = request.POST['country'].strip()
 
             # SCHOOL INFORMATION
-            user.course_of_study = request.POST['course_of_study']
-            user.years_of_study = request.POST['years_of_study']
-            user.current_year_of_study = request.POST['current_year_of_study']
-            user.final_year_status = request.POST['final_year_status']
+            user.course_of_study = request.POST['course_of_study'].strip()
+            user.years_of_study = request.POST['years_of_study'].strip()
+            user.current_year_of_study = request.POST['current_year_of_study'].strip()
+            user.final_year_status = request.POST['final_year_status'].strip()
+            
+            graduate_status = request.POST['graduate_status'].strip()
+            if graduate_status.strip():
+                user.graduate_status = graduate_status
+            else:
+                user.graduate_status = None
 
             # NEXT OF KIN INFORMATION
-            user.next_of_kin_full_name = request.POST['next_of_kin_full_name']
-            user.next_of_kin_relationship = request.POST['next_of_kin_relationship']
-            user.next_of_kin_phone_number = request.POST['next_of_kin_phone_number']
-            user.next_of_kin_address = request.POST['next_of_kin_address']
+            user.next_of_kin_full_name = request.POST['next_of_kin_full_name'].strip()
+            user.next_of_kin_relationship = request.POST['next_of_kin_relationship'].strip()
+            user.next_of_kin_phone_number = request.POST['next_of_kin_phone_number'].strip()
+            user.next_of_kin_address = request.POST['next_of_kin_address'].strip()
 
             # SPIRITUAL INFORMATION
-            user.gift_graces = request.POST['gift_graces']
+            user.gift_graces = request.POST['gift_graces'].strip()
 
             # ADDITIONAL INFORMATION
-            user.unit_of_work = request.POST['unit_of_work']
+            user.unit_of_work = request.POST['unit_of_work'].strip()
 
             shepherd = request.POST['shepherd'].strip()
             if shepherd:
                 shepherd = get_user_model().objects.get(username=request.POST['shepherd'])
                 shepherd = Shepherd.objects.get(name=shepherd)
                 user.shepherd = shepherd
+
             else:
                 user.shepherd = None
 
@@ -319,6 +324,14 @@ class Profile(LoginRequiredMixin, TemplateView):
             user.set_profile_update_status()
 
             user.save()
+
+            # update relevant data
+            if shepherd:
+                shepherd.no_of_sheep = shepherd.get_no_of_sheep()
+                shepherd.save()
+            if sub_shepherd:
+                sub_shepherd.no_of_sheep = sub_shepherd.get_no_of_sheep()
+                sub_shepherd.save()
 
             recent = RecentActivity(username=request.user, category="bio_data",
                                     details='Updated Bio Data')
@@ -509,14 +522,14 @@ class Registration(TemplateView):
     def post(self, request, **kwargs):
         context = self.get_context_data(**kwargs)
 
-        first_name = request.POST['first_name']
-        surname = request.POST['last_name']
-        username = request.POST['username']
-        gender = request.POST['gender']
-        password = request.POST['password']
+        first_name = request.POST['first_name'].strip()
+        surname = request.POST['last_name'].strip()
+        username = request.POST['username'].strip()
+        gender = request.POST['gender'].strip()
+        password = request.POST['password'].strip()
 
-        email = request.POST['email']
-        phone_number = request.POST['phone_number']
+        email = request.POST['email'].strip()
+        phone_number = request.POST['phone_number'].strip()
 
         user = get_user_model().objects.create_user(email=email, password=password, save=False,
                                                     first_name=first_name, last_name=surname,
@@ -561,15 +574,24 @@ class Login(TemplateView):
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
 
-        email_username = request.POST['email_username']
-        password = request.POST['password']
+        email_username = request.POST['email_username'].strip()
+        password = request.POST['password'].strip()
 
-        user = authenticate(request, email=email_username, password=password)
+        User = get_user_model()
+        
+        try:
+            user = User.objects.get(email=email_username)
+        except User.DoesNotExist:
+            user = None
+        else:
+            confirm_password = user.check_password(password)
+            
+            if not confirm_password:
+                user = None
+        
 
         if user is None:
             # Username is used for login
-
-            User = get_user_model()
 
             try:
                 user = User.objects.get(username=email_username)

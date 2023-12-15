@@ -1,15 +1,15 @@
 import os, io
+import zipfile
 import datetime
 import pandas as pd
 from PIL import Image
 
-from django.http.response import HttpResponse, FileResponse
+from django.conf import settings
+from django.http.response import HttpResponse
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from django.contrib import admin
-from django.db import models
 
 # ###### CLASSES #########
 class Validators(object):
@@ -52,7 +52,7 @@ class Validators(object):
 def get_user_name(object, fname):
     _, ext = os.path.splitext(fname)
     username = object.username
-    return f"profile_pics/{username}{ext}"
+    return f"profile_pics/{username}_{datetime.date.today()}_{datetime.time.isoformat()}{ext}"
 
 
 def convert_image_to_webp(image):
@@ -85,22 +85,25 @@ def convert_to_format(data, category, format):
     a single instance else it contain a multiple instance
     """
     if format == 'pdf':
-        from reportlab.pdfgen import canvas
+        # from reportlab.pdfgen import canvas
 
-        if category == 'Sheep Detail View':
-            pass
-        else:
-            pass
+        # if category == 'Sheep Detail View':
+        #     pass
+        # else:
+        #     pass
+        response = None
     elif format == 'excel':
-        response = HttpResponse(
+        response = HttpResponse( 
             content_type='application/vnd.ms-excel',
             charset='utf-8',
         )
         response['Content-Disposition'] = f'attachment; filename="{category}.xlsx"'
 
         df = pd.DataFrame(data)
+
+        df.to_clipboard()
         df.to_excel(response, category)
-    elif format == 'txt':
+    elif format == 'text':
         response = HttpResponse(
             content_type='text/csv',
             charset='utf-8',
@@ -108,6 +111,8 @@ def convert_to_format(data, category, format):
         response['Content-Disposition'] = f'attachment; filename="{category}.csv"'
 
         df = pd.DataFrame(data)
+
+        df.to_clipboard()
         df.to_csv(response)
     elif format == 'html':
         response = HttpResponse(
@@ -117,6 +122,21 @@ def convert_to_format(data, category, format):
         response['Content-Disposition'] = f'attachment;filename="{category}.html"'
 
         df = pd.DataFrame(data)
+
+        df.to_clipboard() 
         df.to_html(response)
+
+    elif format == 'image':
+        response = HttpResponse(
+            content_type='application/zip',
+        )
+        response['Content-Disposition'] = f"attachment;filename='{category}.zip'"
+
+        zf = zipfile.ZipFile(response, 'w')
+
+        for image_path in data:
+            zf.write(f"{settings.MEDIA_ROOT}{image_path}")
+
     return response
+
 

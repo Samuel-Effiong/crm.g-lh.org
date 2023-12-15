@@ -281,9 +281,12 @@ class ShepherdReportListView(LoginRequiredMixin, ListView):
         personal_details = request.POST['shepherd_report_personal_details']
         books_read = request.POST['shepherd_report_books_read']
 
-        shepherd_report = ShepherdReport(church_work=church_work, personal_details=personal_details,
-                                         books_read=books_read, date=datetime.strptime(date, '%m/%d/%Y'),
-                                         sender=request.user, receiver=request.user.shepherd)
+        shepherd_report = ShepherdReport(church_work=church_work, 
+                                         personal_details=personal_details,
+                                         books_read=books_read, 
+                                         date=datetime.strptime(date, '%m/%d/%Y'),
+                                         sender=request.user, 
+                                         receiver=request.user.shepherd)
 
         shepherd_report.save()
 
@@ -324,9 +327,11 @@ class ShepherdReportDetailView(LoginRequiredMixin, DetailView):
         context['title'] = title
 
         # Get all the active notification for the user
+        general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
+                                                            is_activated=False)
         all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
                                                         is_activated=False)
-
+        
         if 'shepherd_bypass' in self.request.GET:
             context['shepherd_bypass'] = True
 
@@ -334,7 +339,7 @@ class ShepherdReportDetailView(LoginRequiredMixin, DetailView):
                                                                  is_activated=False)
             active_notifications = list(pastoral_notifications) + list(all_notifications)
         else:
-            context['shepherd_bypass'] = True
+            context['shepherd_bypass'] = False
 
             general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
                                                                 is_activated=False)

@@ -32,7 +32,7 @@ class RecentActivityManager(models.Manager):
 
 
 class RecentActivity(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     category = models.CharField(max_length=20, choices=CHOICES)
     date = models.DateField(auto_now_add=True)
     details = models.CharField(max_length=100, blank=True, null=True)

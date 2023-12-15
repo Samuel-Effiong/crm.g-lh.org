@@ -21,8 +21,6 @@ STATUS = (
 
 
 class DataAnalysisManager(models.Manager):
-    # def get_queryset(self):
-    #     return super(DataAnalysisManager, self).get_queryset().filter(username=settings.AUTH_USER_MODEL)
 
     def date_series(self, user) -> pd.DatetimeIndex:
         object = self.get_queryset().filter(username=user).values_list('date', flat=True)
@@ -32,7 +30,7 @@ class DataAnalysisManager(models.Manager):
 
 # Create your models here.
 class BibleReading(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
 
     bible_passage = models.CharField(max_length=100)
@@ -54,7 +52,7 @@ class BibleReading(models.Model):
 
 
 class PrayerMarathon(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     comment = models.TextField()
     date = models.DateField(default=timezone.now)
 
@@ -221,8 +219,8 @@ class ShepherdReportManager(models.Manager):
 class ShepherdReport(models.Model):
     # sender refers to the sheep that sent his/her shepherd report to their shepherd
     # receiver refers to the shepherds the report was sent to
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
-    receiver = models.ForeignKey(Shepherd, on_delete=models.CASCADE, to_field='name')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Shepherd, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
 
     books_read = models.TextField(null=True, blank=True)

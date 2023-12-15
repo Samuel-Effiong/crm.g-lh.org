@@ -28,7 +28,8 @@ BLOOD_GROUP_CHOICES = (
     ('A-', 'A-'),
     ('B+', 'B+'),
     ('B-', 'B-'),
-    ('AB+', 'AB-'),
+    ('AB+', 'AB+'),
+    ('AB-', 'AB-'),
     ('O+', 'O+'),
     ('O-', 'O-')
 )
@@ -65,6 +66,12 @@ STRICT_REPORT = (
     ('fri', 'Friday'),
     ('sat', 'Saturday'),
     ('sun', 'Sunday')
+)
+
+
+GRADUATE_STATUS_CHOICES = (
+    ('undergraduate', 'Undergraduate'),
+    ('graduate', 'Graduate'),
 )
 
 
@@ -236,6 +243,7 @@ class CustomUser(AbstractUser):
     years_of_study = models.CharField(_("No of Years of Study"), max_length=20, blank=True, null=True)
     current_year_of_study = models.CharField(_("Current Year of Study"), max_length=20, blank=True, null=True)
     final_year_status = models.CharField(_("Final Year Status"), max_length=255, help_text=_("Update when appropriate"), blank=True, null=True)
+    graduate_status = models.CharField(_("Graduate Status"), max_length=15, choices=GRADUATE_STATUS_CHOICES, blank=True, null=True)
 
     # NEXT OF KIN INFORMATION
     next_of_kin_full_name = models.CharField(_('Full Name'), max_length=200, blank=True, null=True)
@@ -385,6 +393,7 @@ class CustomUser(AbstractUser):
             'years_of_study': self.years_of_study,
             'current_year_of_study': self.current_year_of_study,
             'final_year_status': self.final_year_status,
+            'graduate_status': self.graduate_status,
 
             'next_of_kin_full_name': self.next_of_kin_full_name,
             'next_of_kin_relationship': self.next_of_kin_relationship,

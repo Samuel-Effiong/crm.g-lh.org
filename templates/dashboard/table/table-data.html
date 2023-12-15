@@ -64,7 +64,7 @@
                                     <th>Date</th>
                                 {% elif category == 'Evangelism' %}
                                     <td>Field of Visit</td>
-                                    <td>No led to Christ / Week</td>
+                                    <td>No. led to Christ / Week</td>
                                     <td>No Followed up</td>
                                     <td>No of Holy Spirit Baptism</td>
                                     <td>No of People Prayed</td>
@@ -96,7 +96,7 @@
                                     </tr>
                                 {% elif category == 'Prayer Marathon' %}
                                     <tr>
-                                        <td><a href="{{ item.get_absolute_url }}">{{ item.comment|truncatewords:"10" }}</a></td>
+                                        <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.comment|truncatewords:"10" }}</a></td>
                                         <td>{{ item.date }}</td>
                                     </tr>
                                 {% elif category == 'Church Work' %}
@@ -110,7 +110,7 @@
                                     </tr>
                                 {% elif category == 'Evangelism' %}
                                     <tr>
-                                        <td><a href="{{ item.get_absolute_url }}">{{ item.field_of_visit }}</a></td>
+                                        <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.field_of_visit }}</a></td>
                                         <td>{{ item.no_led_to_christ }}</td>
                                         <td>{{ item.follow_up }}</td>
                                         <td>{{ item.holy_spirit_baptism }}</td>
@@ -118,13 +118,13 @@
                                     </tr>
                                 {% elif category == 'Prophetic Vision' %}
                                     <tr>
-                                        <td><a href="{{ item.get_absolute_url }}">{{ item.description|truncatewords:"7" }}</a></td>
+                                        <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.description|truncatewords:"7" }}</a></td>
                                         <td>{{ item.date }}</td>
                                         <td>{{ item.body|truncatewords:"5" }}</td>
                                     </tr>
                                 {% elif category == 'Shepherd Report' %}
                                     <tr>
-                                        <td><a href="{{ item.get_absolute_url }}?shepherd_bypass=True">{{ item.date }} </a></td>
+                                        <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.date }} </a></td>
                                         <td>{{ item.books_read }} </td>
                                         <td>{{ item.church_work }} </td>
                                     </tr>
@@ -161,7 +161,7 @@
                                     <th>Date</th>
                                 {% elif category == 'Evangelism' %}
                                     <td>Field of Visit</td>
-                                    <td>No led to Christ / Week</td>
+                                    <td>No. led to Christ / Week</td>
                                     <td>No Followed up</td>
                                     <td>No of Holy Spirit Baptism</td>
                                     <td>No of People Prayed</td>
@@ -186,7 +186,7 @@
 
                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
                     <div class="offcanvas-header">
-                        <h5 id="offcanvasRightLabel">Add to {{ category }}</h5>
+                        <h5 id="offcanvasRightLabel">Add to Weekly {{ category }}</h5>
                         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
@@ -314,7 +314,7 @@
                                         </div>
 
                                         <div class="col-md-6">
-                                           <label for="validationCustom03" class="form-label">No led to Christ</label>
+                                           <label for="validationCustom03" class="form-label">No. led to Christ</label>
                                            <input type="number" class="form-control" name="evangelism_no_led_to_christ" id="validationCustom03" required>
                                         </div>
 
@@ -394,6 +394,8 @@
                                 <div>
                                     {% if user.level == 'chief_shep' %}
                                         <p><em>Sorry Sir, you are not allowed to use this feature</em></p>
+                                    {% elif user.shepherd is None %}
+                                        <p><em>Sorry, You must have a shepherd before you can send a report</em></p>
                                     {% else %}
                                         <form method="POST" class="row g-3 needs-validation" novalidate>
                                             <div class="col-md-12">

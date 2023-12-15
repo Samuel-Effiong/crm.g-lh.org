@@ -53,6 +53,54 @@ def sort_function(series):
     return series.apply(lambda x: rule[x])
 
 
+def download_profiles_in_format(request, _format, data=None):
+    if _format == 'image':
+        if request.user.level == 'chief_shep':
+            if data is None:
+                # We are in the shepherd dashboard
+                data = CustomUser.objects.values_list('profile_pic', flat=True)
+            else:
+                # We are in the shepherd list view
+                data = data.values_list('profile_pic', flat=True)
+
+        elif request.user.level == 'core_shep':
+            data = CustomUser.objects.get_shepherd_sheep(shepherd).values_list('profile_pic', flat=True)
+        elif request.user.level == 'sub_shep':
+            data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values_list('profile_pic', flat=True)
+        
+        response = convert_to_format(data, 'Profile Images', _format)
+
+    else:
+        fields = [
+            'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
+            'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
+            'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
+            'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
+            'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
+            'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
+            'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
+            'cloth_size', 'level'
+        ]
+
+        if request.user.level == 'chief_shep':
+            if data is None:
+                data = CustomUser.objects.values(*fields)
+            else:
+                data = data.values(*fields)
+        elif request.user.level == 'core_shep':
+            shepherd = Shepherd.objects.get(name=request.user)
+            data = CustomUser.objects.get_shepherd_sheep(shepherd).values(*fields)
+
+        elif request.user.level == 'sub_shep':
+            shepherd = SubShepherd.objects.get(name=request.user)
+            data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values(*fields)
+
+        response = convert_to_format(data, 'Profile', _format)
+
+    return response
+        
+
+
 # Create your views here.
 class DashboardView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
@@ -61,33 +109,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep' or self.request.user.level == 'chief_shep'):
-
-            if 'download_profile' in request.GET:
-                document_format = request.GET['format']
-
-                fields = [
-                    'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
-                    'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
-                    'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
-                    'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
-                    'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
-                    'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
-                    'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
-                    'cloth_size', 'level'
-                ]
-
-                if request.user.level == 'chief_shep':
-                    data = CustomUser.objects.values(*fields)
-                elif request.user.level == 'core_shep':
-                    shepherd = Shepherd.objects.get(name=request.user)
-                    data = CustomUser.objects.get_shepherd_sheep(shepherd).values(*fields)
-
-                elif request.user.level == 'sub_shep':
-                    shepherd = SubShepherd.objects.get(name=request.user)
-                    data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values(*fields)
-
-                response = convert_to_format(data, 'Profile', document_format)
-                return response
 
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
@@ -162,6 +183,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         return context
 
+    def post(self, request, *args, **kwargs):
+
+        # Process request to download users profile details
+        if 'download_format' in request.GET:
+            _format = request.POST['download_format']
+
+            response = download_profiles_in_format(request, _format)
+
+            return response
+        return self.render_to_response({})
 
 class ShepherdSheepListView(LoginRequiredMixin, TemplateView):
     """This view is exclusively for the Chief Shepherd to view the list of
@@ -199,6 +230,20 @@ class ShepherdSheepListView(LoginRequiredMixin, TemplateView):
 
         return context
 
+    def post(self, request, *args, **kwargs):
+        
+        if 'download_format' in request.GET:
+            _format = request.POST['download_format']
+
+            if request.user.level == 'chief_shep':
+                shepherd = Shepherd.objects.get(id=kwargs['pk'])
+                data = get_user_model().objects.get_shepherd_sheep(shepherd)
+
+            response = download_profiles_in_format(request, _format, data)
+
+            return response
+        return self.render_to_response({})
+
 
 class SheepSummaryDetailView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
@@ -208,6 +253,71 @@ class SheepSummaryDetailView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
+
+            if 'settings' in request.GET:
+                try:
+                    username = request.GET['username']
+                    level = request.GET['level']
+
+                    user = get_user_model().objects.get(username=username)
+
+                    if level == 'sub_shep':
+                        # check if user is already a subshepherd
+                        sub_shepherd = SubShepherd.objects.filter(name=user)
+                        
+                        if sub_shepherd:
+                            # user is already a subshepherd, do nothing
+                            return JsonResponse({'confirm': True})
+                        else:
+                            # check if user is core shepherd that you wish to lower
+                            if user.level == 'core_shep':
+                                # delete the user from the core shepherd database
+                                Shepherd.objects.get(name=user).delete()
+                                user.is_staff = False
+
+                            # add the new sub shepherd to the sub shepherd database
+                            sub_shepherd = SubShepherd(
+                                name=user, no_of_sheep=0,
+                                date_of_appointment=datetime.now(),
+                                calling='unknown'
+                            )
+                            sub_shepherd.save()
+
+                    elif level == 'core_shep':
+                        # check if user is already a shepherd
+                        core_shepherd = Shepherd.objects.filter(name=user)
+
+                        if core_shepherd:
+                            return JsonResponse({'confirm': True})
+                        else:
+                            # check if user is a sub shepherd that you wish to increase
+                            if user.level == 'sub_shep':
+                                # delete the user from the sub shepherd database
+                                SubShepherd.objects.get(name=user).delete()
+
+                            user.is_staff = True
+
+                            core_shepherd = Shepherd(
+                                name=user, no_of_sheep=0,
+                                date_of_appointment=datetime.now(),
+                                calling='unknown'
+                            )
+
+                            core_shepherd.save()
+
+                    else: 
+                        if user.level == 'sub_shep':
+                            SubShepherd.objects.get(name=user).delete()
+                            user.is_stafff = False
+                        elif user.level == 'core_shep':
+                            Shepherd.objects.get(name=user).delete()
+                            user.is_staff = False
+                    user.level = level        
+                    user.save()
+                except Exception as e:
+                    return JsonResponse({'confirm': False, 'message': str(e)})
+                return JsonResponse({'confirm': True})
+            
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 

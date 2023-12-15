@@ -43,7 +43,6 @@ class ChurchWorkListView(LoginRequiredMixin, ListView):
         context['active_notifications'] = active_notifications
         context['no_of_notifications'] = len(active_notifications)
 
-
         return context
 
     def post(self, request, **kwargs):
