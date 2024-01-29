@@ -79,3 +79,23 @@ class FieldValueAdmin(admin.ModelAdmin):
 class FieldValueIndexAdmin(admin.ModelAdmin):
     list_display = ('department_table_name', 'id')
     list_filter = ('department_table_name', )
+
+
+@admin.register(models.Diaconate)
+class EpiscopateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'head', 'assistant', 'get_number_of_departments')
+
+
+@admin.register(models.Unit)
+class UnitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'head', 'assistant', 'get_number_of_subunit')
+
+
+@admin.register(models.SubUnit)
+class SubUnitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'head', 'assistant', 'get_number_of_teams')
+
+
+@admin.register(models.Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ('name', 'head', 'assistant', 'get_number_of_members')

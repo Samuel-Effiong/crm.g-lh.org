@@ -94,17 +94,38 @@
 
                             <div class="form-group">
                                 <label class="form-label h5" for="prophetic_word_message">Message</label>
-                                <textarea class="form-control" name="prophetic_word_message" id="prophetic_word_message" rows="10"></textarea>
+                                <textarea class="form-control" name="prophetic_word_message" id="prophetic_word_message" rows="20"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <div class="d-flex justify-content-between">
-                                    <label for="prophetic_ai_generated_keywords" class="form-label h5">Generated Summary</label>
-                                    <a href="#">
+                                    <label for="prophetic_ai_generated_summary" class="form-label h5">Generated Summary</label>
+                                    <a style="cursor: pointer" id="generate_summary_button" onclick="generate_summary()">
                                         <span class="ri ri-restart-line text-danger" title="Regenerate" style="font-size: 30px;"></span>
                                     </a>
+
+                                    <span id="loading_gif" style="display: none; padding-top: 5px;">
+                                        <img class="img-fluid" width="30" src="{% static 'assets/images/loading.gif' %}" alt="loading gif" />
+                                    </span>
                                 </div>
-                                <textarea class="form-control" name="prophetic_ai_generated_keywords" id="prophetic_ai_generated_keywords" readonly rows="5">Love God</textarea>
+                                <textarea class="form-control" name="prophetic_ai_generated_summary" id="prophetic_ai_generated_summary" rows="9" placeholder="Summary will show here"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="d-flex justify-content-between">
+                                    <label for="prophetic_ai_generated_keyword" class="form-label h5">Generated Keyword</label>
+                                    <a style="cursor: pointer" id="generate_keyword_button" onclick="generate_keyword()">
+                                        <span class="ri ri-restart-line text-danger" title="Regenerate" style="font-size: 30px;"></span>
+                                    </a>
+
+                                    <span id="loading_keyword_gif" style="display: none; padding-top: 5px;">
+                                        <img class="img-fluid" width="30" src="{% static 'assets/images/loading.gif' %}" alt="loading gif" />
+                                    </span>
+                                </div>
+                                <textarea class="form-control" name="prophetic_ai_generated_keyword" id="prophetic_ai_generated_keyword" rows="5" placeholder="Keywords will show here"></textarea>
+                            </div>
+                            <div>
+                                <a class="text-primary" onclick="open_keywords_page()" style="cursor: pointer;">View Current News based on Keywords</a>
                             </div>
 
                         </div>
@@ -179,7 +200,7 @@
                                 <tbody>
                                     {% for word in prophetic_words %}
                                         <tr>
-                                            <td><a href="#" data-bs-toggle="modal" data-bs-target="#EditPropheticWordModalScrollable" onclick="populate_prophetic_word_modal('{{ word.pk }}', `{{ word.title }}`, `{{ word.speaker }}`, '{{word.formatted_date}}', '{{ word.category }}', `{{ word.message }}`)">{{ word.title|truncatewords:"7"}}</a></td>
+                                            <td><a style="cursor: pointer; color:blue" data-bs-toggle="modal" data-bs-target="#EditPropheticWordModalScrollable" onclick="populate_prophetic_word_modal('{{ word.pk }}', `{{ word.title }}`, `{{ word.speaker }}`, '{{word.formatted_date}}', '{{ word.category }}', `{{ word.message }}`, `{{ word.ai_generated_summary }}`, `{{ word.ai_generated_keywords }}`)">{{ word.title|truncatewords:"7"}}</a></td>
                                             <td>{{ word.speaker }}</td>
                                             <td>{{ word.date|date:"jS E, Y" }}</td>
                                             <td>{{ word.category }}</td>
@@ -227,21 +248,232 @@
 
 {% block javascript %}
     <script>
-        const populate_prophetic_word_modal = (pk, title, speaker, date, category, message) => {
+        const populate_prophetic_word_modal = (pk, title, speaker, date, category, message, message_summary, message_keywords) => {
             const pk_input = document.getElementById('pk');
             const title_input = document.getElementById('prophetic_word_title');
             const speaker_input = document.getElementById('prophetic_word_speaker');
             const date_input = document.getElementById('prophetic_word_date');
             const category_input = document.getElementById('prophetic_word_category');
-            {#const message_input = document.getElementById('prophetic_word_message');#}
+            const message_summary_input = document.getElementById('prophetic_ai_generated_summary');
+            const message_keywords_input = document.getElementById('prophetic_ai_generated_keyword');
 
             pk_input.value = pk;
             title_input.value = title;
             speaker_input.value = speaker;
             date_input.value = date;
             category_input.value = category;
+            message_summary_input.value = message_summary;
+            message_keywords_input.value = message_keywords;
 
             tinymce.get('prophetic_word_message').setContent(message)
+        }
+
+        const generate_summary = () => {
+
+            const generate_summary_button = document.getElementById('generate_summary_button');
+            generate_summary_button.style.display = 'none';
+
+            const loading_gif = document.getElementById('loading_gif');
+            loading_gif.style.display = 'inline';
+
+            const summary_textarea = document.getElementById('prophetic_ai_generated_summary');
+            summary_textarea.value = "";
+            let text_document = tinymce.get('prophetic_word_message').getContent().trim();
+
+            if (text_document) {
+                text_document = new DOMParser().parseFromString(text_document, "text/html");
+                text_document = text_document.body.textContent;
+
+                const apiKey = "80228e6d-35fe-4ae6-b2cb-2110b05a7d3d";
+                const oneai_url = "https://api.oneai.com/api/v0/pipeline";
+                const hugging_url = 'https://api-inference.huggingface.co/models/Falconsai/text_summarization'
+
+                const oneai_config = {
+                    method: "POST", 
+                    headers: {
+                        "api-key": apiKey,
+                        "Content-Type": "application/json",
+                    },
+                    
+                    body: JSON.stringify({
+                        input: `${text_document}`,
+                        input_type: "article",
+                        output_type: "json",
+                        multilingual: {
+                        enabled: true
+                        },
+                        steps: [
+                        {
+                            skill: "summarize"
+                        }
+                        ],
+                    }),
+                };
+
+                const oneaiRequest = fetch(oneai_url, oneai_config)
+                    .then(response => response.json())
+                    .then(data => {
+                        const oneai_summary = data['output'][0]['contents'][0]['utterance'];
+                        return oneai_summary;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        return null;
+                    });
+
+                
+                const huggingRequest = fetch(hugging_url, {
+                    headers: { Authorization: "Bearer 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" },
+                    method: "POST",
+                    body: JSON.stringify(text_document),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const hugging_summary = data[0]['summary_text'];
+                        return hugging_summary;
+                    })
+                    .catch(error => {
+                        return null;
+                    });
+
+                Promise.all([oneaiRequest, huggingRequest])
+                    .then(([oneaiSummary, huggingSummary]) => {
+
+                        generate_summary_button.style.display = 'inline';
+                        loading_gif.style.display = 'none';
+
+                        summary_textarea.value = `
+OneAI Summary: 
+
+${oneaiSummary || "Error fetching summary"}
+
+---------------------------------------
+
+
+Hugging Face Summary:
+
+${huggingSummary || "Error fetching summary"}
+`;
+                    })
+                    .catch(error => {
+                        generate_summary_button.style.display = 'inline';
+                        loading_gif.style.display = 'none';
+
+                        console.error("Promise.all Error: ", error);
+                    })
+            }
+        }
+
+        const generate_keyword = () => {
+            const generate_keyword_button = document.getElementById('generate_keyword_button');
+            generate_keyword_button.style.display = 'none';
+
+            const loading_keyword_gif = document.getElementById('loading_keyword_gif');
+            loading_keyword_gif.style.display = 'inline';
+
+            const keyword_textarea = document.getElementById('prophetic_ai_generated_keyword');
+            keyword_textarea.value = "";
+            let text_document = tinymce.get('prophetic_word_message').getContent().trim();
+
+            if (text_document) {
+                text_document = new DOMParser().parseFromString(text_document, 'text/html');
+                text_document = text_document.body.textContent;
+
+                const apiKey = "80228e6d-35fe-4ae6-b2cb-2110b05a7d3d";
+                const oneai_url = "https://api.oneai.com/api/v0/pipeline";
+
+                const cortical_url = "https://gw.cortical.io/nlp/keywords";
+                const cortical_apiKey = "eyJvcmciOiI2NTNiOTllNjEzOGM3YzAwMDE2MDM5NTEiLCJpZCI6IjAwYmZiNTc4OTdjMTQ3OTQ4MjcwMTcwMWUxZmQyNmVmIiwiaCI6Im11cm11cjEyOCJ9";
+
+                const oneai_config = {
+                    method: "POST",
+                    headers: {
+                        "api-key": apiKey,
+                        "Content-Type": "application/json",
+                    },
+
+                    body: JSON.stringify({
+                        input: `${text_document}`,
+                        input_type: "article",
+                        output_type: "json",
+                        multilingual: {
+                        enabled: true
+                        },
+                        steps: [
+                        {
+                            skill: "keywords"
+                        }
+                        ],
+                    }),
+                };
+
+                const oneaiKeywordRequest = fetch(oneai_url, oneai_config)
+                    .then(response => response.json())
+                    .then(data => {
+                        const labels = data['output'][0]['labels'];
+
+                        let oneai_keyword = labels.map(item => item.name);
+                        oneai_keyword = [...new Set(oneai_keyword)];
+
+                        return oneai_keyword;
+                    })
+                    .catch(error => {
+                        return null
+                    });
+
+                const corticalRequest = fetch(cortical_url, {
+                    "method": "POST",
+                    
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": cortical_apiKey
+                    },
+
+                    body: JSON.stringify({
+                        text: `${text_document}`,
+                        language: `en`
+                    })
+                    
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        let cortical_keywords = data['keywords'].map(item => item.word)
+                        cortical_keywords = [...new Set(cortical_keywords)];
+                        return cortical_keywords
+                    })
+                    .catch(err => {
+                        return null
+                    });
+
+
+                Promise.all([oneaiKeywordRequest, corticalRequest])
+                    .then(([oneaiKeyword, corticalKeyword]) => {
+
+                        generate_keyword_button.style.display = 'inline';
+                        loading_keyword_gif.style.display = 'none';
+
+                        const keywords = [...new Set([...oneaiKeyword, ...corticalKeyword])];
+                        console.log(keywords);
+
+                        keyword_textarea.value = `${keywords.join(', ') || 'Error fectching keywords...please try again'}`;
+                    })
+                    .catch(error => {
+                        generate_keyword_button.style.display = 'inline';
+                        loading_keyword_gif.style.display = 'none';
+
+                        console.error("Promise.all Error: ", error);
+                    })
+
+            }
+        }
+
+        const open_keywords_page = () => {
+            const keywords = document.getElementById('prophetic_ai_generated_keyword').value;
+
+            let url = "{% url 'pastoring:generate_news' %}";
+
+            url = `${url}?keywords=${keywords}`;
+            window.location.href = url;
         }
     </script>
 {% endblock javascript %}

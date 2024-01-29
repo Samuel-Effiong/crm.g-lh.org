@@ -36,5 +36,6 @@ urlpatterns = [
 
     path('pastoring/', include('pastoring.urls')),
     path('project-management/', include('project_management.urls')),
+    path('site_admin/', include('site_admin.urls')),
 
 ]

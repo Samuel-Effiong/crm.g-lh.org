@@ -5,7 +5,8 @@ from .views import (DashboardView, SheepSummaryDetailView, ShepherdSheepListView
 #############  WORKSPACE  ###########
 from .views import (CatalogView, AddCatalogView, FaultyCatalogView, TestimoniesView,
                     AddTestimonyView, PropheticWordsView, AddPropheticWordsView, 
-                    BlogView, AddBlogView, SermonsView, AddSermonsView)
+                    BlogView, AddBlogView, SermonsView, AddSermonsView, GeneratedNewsView)
+
 
 ###########  END WORKSPACE  ###########
 from .views import FetchView
@@ -35,6 +36,7 @@ urlpatterns = [
 
     path('prophetic-words/', PropheticWordsView.as_view(), name='prophetic_words'),
     path('prophetic-words/add/', AddPropheticWordsView.as_view(), name='add-prophetic_words'),
+    path('prophetic-words/generated_news/', GeneratedNewsView.as_view(), name='generate_news'),
 
     path('blog/', BlogView.as_view(), name='blog'),
     path('blog/add/', AddBlogView.as_view(), name='add-blog'),

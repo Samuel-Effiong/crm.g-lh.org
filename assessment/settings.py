@@ -112,7 +112,7 @@ INSTALLED_APPS = [
 
     'users',
     
-
+    'site_admin',
     'api',
     'home',
     'church_work',

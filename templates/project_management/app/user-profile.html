@@ -14,7 +14,7 @@
                <div class="card car-transparent">
                   <div class="card-body p-0">
                      <div class="profile-image position-relative">
-                        <img src="{% static 'assets_project_management/images/page-img/profile.png' %}" class="img-fluid rounded w-100" alt="profile-image">
+                        <img src="{% static 'assets/images/dashboard/Top.webp' %}" class="img-fluid rounded w-100" alt="profile-image">
                      </div>
                   </div>
                </div>
@@ -500,7 +500,7 @@
                     <h3 class="modal-title" id="add_category_title">Add Category</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department %}?settings=category" method="post">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=category" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
@@ -535,7 +535,7 @@
                     <h3 class="modal-title" id="add_member_title">Add Member</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department %}?settings=member" method="post">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=member" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
@@ -563,7 +563,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department %}?settings=remove_member" method="post">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_member" method="post">
                         {% csrf_token %}
                         <div class="row">
 
@@ -599,7 +599,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department %}?settings=remove_category" method="post">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_category" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12 mb-3" style="display: none">
@@ -634,7 +634,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Evaluation Score</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department %}?settings=experience_score" method="post">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=experience_score" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12 mb-3" style="display: none">

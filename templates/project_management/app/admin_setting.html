@@ -10,14 +10,15 @@
 {% block content %}
     <div class="container-fluid">
         <div class="row">
+
             <div class="col-lg-12">
                <div class="card">
                   <div class="card-body p-0">
                      <div class="iq-edit-list usr-edit">
-                         <ul class="iq-edit-profile d-flex nav nav-pills">
+                         <ul class="iq-edit-profile d-flex nav nav-tabs" role="tablist">
                              {% for department in departments %}
-                                 <li class="col-md-2 p-0">
-                                     <a id="tab_heading_{{ department.department_name }}" class="nav-link {% if forloop.counter0 == 0 %}active{% endif %}" data-toggle="pill" href="#{{ department }}">
+                                 <li class="nav-item">
+                                     <a id="tab_heading_{{ department.department_name }}" class="nav-link {% if forloop.counter0 == 0 %}active{% endif %}" data-toggle="tab" role="tab" href="#{{ department }}">
                                          {{ department.department_name }}
                                      </a>
                                  </li>

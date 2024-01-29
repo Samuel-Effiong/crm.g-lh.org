@@ -125,22 +125,30 @@ class Department(models.Model):
 
     member_names = models.ManyToManyField(DepartmentMember, blank=True)
     department_categories = models.ManyToManyField(DepartmentCategory, blank=True)
-    department_name = models.CharField(_('Department (Short Name)'), max_length=255, unique=True)
+    department_name = models.CharField(_('Department'), max_length=255, unique=True)
     department_long_name = models.CharField(_('Department (Long Name)'), max_length=1000, null=True, blank=True)
     leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
-    department_objectives = models.TextField()
-
+    department_objectives = models.TextField(null=True, blank=True)
     custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
+    department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE, blank=True, null=True)
+    # department_units = models.ManyToManyField('Unit', blank=True)
     objects = DepartmentManager()
+
+    constraints = [
+        models.UniqueConstraint(
+            fields=('department_diaconate', 'department_name'),
+            name="unique_episcopate_department"
+        )
+    ]
 
     class Meta:
         ordering = ('department_name', )
 
     def __str__(self):
-        return f"{self.department_name}"
+        return f"{self.department_name}\t-\t\t{self.department_diaconate}"
 
     @admin.display(description='No of Members')
     def get_no_of_members(self) -> int:
@@ -522,3 +530,110 @@ class FieldValue(models.Model):
     def __str__(self):
         return f"Field: {self.custom_field.name}, Value: {self.value}"
 
+
+class CustomDiaconateManager(models.Manager):
+    pass
+
+
+class Diaconate(models.Model):
+    name = models.CharField(max_length=500, unique=True)
+    info = models.TextField(null=True, blank=True)
+    head = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
+    assistant = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    departments = models.ManyToManyField(Department, blank=True)
+    objects = CustomDiaconateManager()
+
+    def __str__(self):
+        return f"{self.name}"
+
+    @admin.display(description="Number of Departments")
+    def get_number_of_departments(self) -> int:
+        return self.departments.count()
+
+
+class CustomUnitManager(models.Manager):
+    pass
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=500)
+    info = models.TextField(null=True, blank=True)
+    head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
+    assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    sub_units = models.ManyToManyField('SubUnit', blank=True)
+    objects = CustomUnitManager()
+
+    constraints = [
+        models.UniqueConstraint(
+            fields=('department', 'name'),
+            name='unique_department_unit'
+        )
+    ]
+
+    def __str__(self):
+        return f"{self.name}\t-\t\t{self.department}"
+
+    @admin.display(description="Number of Sub Units")
+    def get_number_of_subunit(self):
+        return self.sub_units.count()
+
+
+class SubUnitManager(models.Manager):
+    pass
+
+
+class SubUnit(models.Model):
+    name = models.CharField(max_length=500)
+    info = models.TextField(null=True, blank=True)
+    head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
+    assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    unit_name = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    teams = models.ManyToManyField('Team', blank=True)
+    objects = SubUnitManager()
+
+    constraint = [
+        models.UniqueConstraint(
+            fields=('unit_name', name),
+            name='unique_unit_sub_unit'
+        )
+    ]
+
+    def __str__(self):
+        return f"{self.name}\t-\t\t{self.unit_name}"
+
+    @admin.display(description="Number of Teams")
+    def get_number_of_teams(self):
+        return self.teams.count()
+
+
+class TeamManager(models.Manager):
+    pass
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=500)
+    info = models.TextField(null=True, blank=True)
+    head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='member_head')
+    assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    sub_unit = models.ForeignKey(SubUnit, on_delete=models.CASCADE)
+    members = models.ManyToManyField(DepartmentMember, blank=True)
+    objects = TeamManager()
+
+    constraint = [
+        models.UniqueConstraint(
+            fields=('sub_unit', 'name'),
+            name="unique_sub_unit_team"
+        )
+    ]
+
+    def __str__(self):
+        return self.name
+
+    @admin.display(description="Number of Members")
+    def get_number_of_members(self):
+        return self.members.count()

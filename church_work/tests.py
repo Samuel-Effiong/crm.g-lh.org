@@ -85,7 +85,6 @@ class ChurchWorkEditViewTest(TestCase):
         self.template_name = 'dashboard/special-pages/detail.html'
 
         # Create a User
-
         self.registration_url = '/users-registration/'
         response = self.client.post(self.registration_url, {
             'first_name': 'Utibe', 'last_name': 'Ettebong',
@@ -134,14 +133,15 @@ class ChurchWorkEditViewTest(TestCase):
         self.assertTemplateUsed(response, self.template_name)
 
     def test_church_work_update_posting_is_working(self):
-        response = self.client.post(self.church_work_edit_url, {
+        data = {
             'details': "I have just been changed",
             'work_category': 'building',
             'date': '12/13/2023',
             'hours_spent': '10',
             'start_time': '13:02',
             'end_time': '17:56:00',
-        }, follow=True)
+        }
+        response = self.client.post(self.church_work_edit_url, data, follow=True)
 
         self.assertEqual(200, response.status_code)
 

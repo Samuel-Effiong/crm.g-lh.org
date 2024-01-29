@@ -522,13 +522,13 @@ class Registration(TemplateView):
     def post(self, request, **kwargs):
         context = self.get_context_data(**kwargs)
 
-        first_name = request.POST['first_name'].strip()
-        surname = request.POST['last_name'].strip()
+        first_name = request.POST['first_name'].strip().lower()
+        surname = request.POST['last_name'].strip().lower()
         username = request.POST['username'].strip()
         gender = request.POST['gender'].strip()
         password = request.POST['password'].strip()
 
-        email = request.POST['email'].strip()
+        email = request.POST['email'].strip().lower()
         phone_number = request.POST['phone_number'].strip()
 
         user = get_user_model().objects.create_user(email=email, password=password, save=False,
@@ -580,7 +580,7 @@ class Login(TemplateView):
         User = get_user_model()
         
         try:
-            user = User.objects.get(email=email_username)
+            user = User.objects.get(email=email_username.lower())
         except User.DoesNotExist:
             user = None
         else:

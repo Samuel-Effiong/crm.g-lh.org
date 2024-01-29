@@ -190,23 +190,11 @@ class CustomUserManager(BaseUserManager):
 
     def get_user_from_full_name(self, full_name):
         full_name, username = full_name.split('@')
-        full_name = full_name.title().split()
-        full_name = [valid for valid in full_name if valid]
 
-        if len(full_name) == 2:
-            first_name, last_name = full_name
-            return self.get_queryset().get(
-                username=username, first_name=first_name,
-                last_name=last_name
-            )
+        full_name = full_name.split()
+        full_name = [valid.strip() for valid in full_name if valid]
 
-        elif len(full_name) == 3:
-            first_name, middle_name, last_name = full_name
-            raise NotImplementedError(
-                "This feature has not yet been implemented. Contact the developer"
-            )
-        else:
-            raise ValueError('You have a lot of names')
+        return self.get_queryset().get(username__iexact=username)
 
 
 class CustomUser(AbstractUser):
@@ -285,13 +273,6 @@ class CustomUser(AbstractUser):
         ordering = ('first_name', )
         verbose_name = "User"
         verbose_name_plural = "Users"
-
-        constraints = [
-            # models.UniqueConstraint(
-            #     fields=('shepherd', 'sub_shepherd'),
-            #     name="unique_shepherd_sub_shepherd"
-            # )
-        ]
 
     @admin.display(ordering='date_of_birth', description="Age")
     def get_user_age(self):
@@ -418,7 +399,6 @@ class Permission(models.Model):
         return str(self.name)
 
 
-
 @register_snippet
 class FamilyMemberWeeklySchedule(models.Model):
     username = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, to_field='username', primary_key=True)
@@ -445,7 +425,14 @@ class WeekOne(models.Model):
     exception = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Week Four for {self.family_schedule.username.get_full_name()}"
+        return f"Week One for {self.family_schedule.username.get_full_name()}"
+
+    def get_summary(self):
+
+        if self.In:
+            return f"IN; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
+        else:
+            return f"{self.out}; WEDNESDAY: {self.wednesday}; EXCEPTIO: {self.exception}"
 
     class Meta:
         verbose_name_plural = 'Week One'
@@ -460,7 +447,14 @@ class WeekTwo(models.Model):
     exception = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Week Four for {self.family_schedule.username.get_full_name()}"
+        return f"Week Two for {self.family_schedule.username.get_full_name()}"
+
+    def get_summary(self):
+
+        if self.In:
+            return f"IN; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
+        else:
+            return f"{self.out}; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
 
     class Meta:
         verbose_name_plural = 'Week Two'
@@ -475,7 +469,14 @@ class WeekThree(models.Model):
     exception = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Week Four for {self.family_schedule.username.get_full_name()}"
+        return f"Week Three for {self.family_schedule.username.get_full_name()}"
+
+    def get_summary(self):
+
+        if self.In:
+            return f"IN; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
+        else:
+            return f"{self.out}; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
 
     class Meta:
         verbose_name_plural = 'Week Three'
@@ -491,6 +492,13 @@ class WeekFour(models.Model):
 
     def __str__(self):
         return f"Week Four for {self.family_schedule.username.get_full_name()}"
+
+    def get_summary(self):
+
+        if self.In:
+            return f"IN; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
+        else:
+            return f"{self.out}; WEDNESDAY: {self.wednesday}; EXCEPTION: {self.exception}"
 
     class Meta:
         verbose_name_plural = 'Week Four'

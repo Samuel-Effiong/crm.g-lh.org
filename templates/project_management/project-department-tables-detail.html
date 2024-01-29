@@ -206,7 +206,7 @@
             delete_button = document.getElementById('delete_id');
             id = delete_button.dataset.id;
 
-            const url = `{% url 'project_management:project-department-table-detail' department object.pk %}?table_row_id=${id}`;
+            const url = `{% url 'project_management:project-department-table-detail' department.department_name object.pk %}?table_row_id=${id}`;
 
             console.log(url)
             fetch(url, {

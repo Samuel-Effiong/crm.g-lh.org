@@ -1,10 +1,11 @@
 from typing import Any, Dict
 
 import os
+import requests
 import numpy as np
 import pandas as pd
+from random import choice
 from datetime import datetime
-
 
 from django import http
 from django.urls import reverse_lazy
@@ -967,7 +968,8 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
         speaker = request.POST['prophetic_word_speaker']
         category = request.POST['prophetic_word_category']
         message = request.POST['prophetic_word_message']
-        ai_generated_kewywords = request.POST['prophetic_ai_generated_keywords']
+        ai_generated_summary = request.POST['prophetic_ai_generated_summary']
+        ai_generated_keywords = request.POST['prophetic_ai_generated_keyword']
 
         prophetic_word = PropheticWord.objects.get(id=int(pk))
         prophetic_word.title = title
@@ -975,7 +977,8 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
         prophetic_word.speaker = speaker
         prophetic_word.category = category
         prophetic_word.message = message
-        prophetic_word.ai_generated_keywords = ai_generated_kewywords
+        prophetic_word.ai_generated_summary = ai_generated_summary
+        prophetic_word.ai_generated_keywords = ai_generated_keywords
         prophetic_word.save()
 
         return HttpResponseRedirect(reverse_lazy('pastoring:prophetic_words'))
@@ -984,7 +987,6 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
 class AddPropheticWordsView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'pastoring/workspace/prophetic_words/add_prophetic_words.html'
-
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
@@ -1244,6 +1246,156 @@ class AddSermonsView(LoginRequiredMixin, TemplateView):
         context['upload_saved'] = True
         context['upload_title'] = title
         return self.render_to_response(context)
+
+
+class GeneratedNewsView(LoginRequiredMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'pastoring/workspace/prophetic_words/generated_news.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_staff and (
+                self.request.user.level == 'core_shep' 
+                or self.request.user.level == 'chief_shep'):
+            
+            return super().get(request, *args, **kwargs)
+        return HttpResponseForbidden("You are not a Shepherd...please go back")
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['developers'] = developers
+        context['user'] = self.request.user
+        context['title'] = title
+
+        # Get all the active notification for the user
+        pastoral_notifications = Notification.objects.filter(target=self.request.user, exposure_level='pastoral',
+                                                             is_activated=False)
+        all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
+                                                        is_activated=False)
+
+        active_notifications = list(pastoral_notifications) + list(all_notifications)
+        context['active_notifications'] = active_notifications
+        context['no_of_notifications'] = len(active_notifications)
+
+        if 'keywords' in self.request.GET:
+            keywords = self.request.GET['keywords'].strip().split(',')
+
+            context['keywords'] = keywords
+        return context
+
+    def post(self, request, *args, **kwargs):
+        keyword = request.POST['keyword'].strip()
+
+        random_list = [10, 3, 34, 11, 1, 15, 40]
+
+        
+        # response = requests.get(url, headers=headers, params=querystring)
+
+        # print(response.json())
+
+        # query Google News API
+        google_api_url = f"https://gnews.io/api/v4/search?q={keyword}&lang=en&max=10&apikey="
+
+        querystring = {
+            "q": keyword, 
+            "lang": 'en',
+            "max": 10,
+            "apikey": "cb52b85cb4f1f7fafd116445f37be30d"
+        } 
+        gnews_response = requests.get(google_api_url, params=querystring)
+        gnews_response = gnews_response.json()
+
+        html_markup = ""
+
+        if gnews_response:
+            for article in gnews_response['articles']:
+                html_markup += f"""
+                <div class="col-lg-4 col-md-6">
+                    <div class="card p-3">
+                        <img class="img-fluid" src="{article['image']}">
+                        <div class="card-body">
+                        <h5 class="card-title">{article['title']}</h5>
+                        <p class="card-text">{article['description']}</p>
+                        <a href="{article['url']}" target="_blank" class="btn btn-primary">See Full news</a>
+                        </div>
+                    </div>
+                </div>
+            
+                """
+
+
+        url = "https://news-api14.p.rapidapi.com/search"
+
+        querystring = {"q":keyword,"language":"en","pageSize":"10"}
+
+        headers = {
+            "X-RapidAPI-Key": "9c62ae64a0msh792c6aa55345b04p1fac91jsna0d4633ec694",
+            "X-RapidAPI-Host": "news-api14.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+
+        news_api_response = response.json()
+
+        if news_api_response:
+            for article in news_api_response['articles']:
+                html_markup += f"""
+                <div class="col-lg-4 col-md-6">
+                    <div class="card p-3">
+                        <img class="img-fluid" src="{article['thumbnail']}">
+                        <div class="card-body">
+                        <h5 class="card-title">{article['title']}</h5>
+                        <p class="card-text">{article['description']}</p>
+                        <a href="{article['url']}" target="_blank" class="btn btn-primary">See Full news</a>
+                        </div>
+                    </div>
+                </div>
+
+                """
+
+
+
+        url = "https://google-news13.p.rapidapi.com/search"
+
+        querystring = {"keyword":keyword,"lr":"en-US"}
+
+        headers = {
+            "X-RapidAPI-Key": "9c62ae64a0msh792c6aa55345b04p1fac91jsna0d4633ec694",
+            "X-RapidAPI-Host": "google-news13.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        rapid_response = response.json()
+
+        for article in rapid_response['items']:
+            # image = article['images']['thumbnail']
+            html_markup += f"""
+            <div class="col-lg-4 col-md-6">
+                <div class="card p-3">
+                    <img class="img-fluid" src="{article['images']['original']}">
+                    <div class="card-body">
+                    <h5 class="card-title">{article['title']}</h5>
+                    <p class="card-text">{article['snippet']}</p>
+                    <a href="{article['newsUrl']}" target="_blank" class="btn btn-primary">See Full news</a>
+                    </div>
+                </div>
+            </div>
+
+            """
+
+        
+        
+
+
+        
+        context = {
+            'confirm': True,
+            'articles': html_markup
+        }
+
+        return JsonResponse(context)
+    
+
 
 #########################  END WORKSPACE  ##########################
 

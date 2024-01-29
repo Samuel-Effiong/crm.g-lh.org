@@ -68,7 +68,6 @@ class Shepherd(models.Model):
         sheep = get_user_model().objects.get_shepherd_sheep(shepherd=self)
 
         return len(sheep)
-    
 
 
 class SubShepherd(models.Model):

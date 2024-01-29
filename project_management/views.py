@@ -15,7 +15,9 @@ from django.http import (HttpResponseRedirect, JsonResponse,
 from .models import (
     Department, DepartmentMember, DepartmentCategory,
     DepartmentProject, ProjectTarget, DepartmentTable,
-    CustomField, FieldValue, FieldValueIndex
+    CustomField, FieldValue, FieldValueIndex,
+
+    Diaconate, Unit, SubUnit, Team
 )
 from users.models import Shepherd, SubShepherd
 
@@ -525,10 +527,10 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                     else:
                         department_member.experience_score = new_experience_score
                         department_member.save()
-        return HttpResponseRedirect(reverse_lazy('project_management:project-settings', args=[department]))
+        return HttpResponseRedirect(reverse_lazy('project_management:project-settings', args=[department.department_name]))
 
 
-class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
+class ProjectManagementAdminSettingView3(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/app/admin_setting.html'
 
@@ -762,6 +764,243 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
         return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
 
 
+class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'project_management/app/admin_setting2.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_staff and (
+                self.request.user.level == 'core_shep'
+                or self.request.user.level == 'chief_shep'
+                or self.request.user.is_superuser):
+
+            if 'update_department' in request.GET:
+                admin_mode = request.GET['admin_mode']
+                department_name = request.GET['department_name']
+                new_value = request.GET.get('new_value', None)
+
+                department = Department.objects.get(department_name=department_name)
+
+                if new_value:
+                    if admin_mode == 'update_department_long_name':
+                        new_value = new_value.replace("'", "’")
+                        department.department_long_name = new_value
+                    elif admin_mode == 'update_department_name':
+                        department.department_name = new_value
+                    elif admin_mode == 'update_department_leader':
+                        leader = get_user_model().objects.get(id=new_value)
+
+                        try:
+                            leader = DepartmentMember.objects.get(member_name=leader, department_name=department)
+                        except DepartmentMember.DoesNotExist:
+                            leader = DepartmentMember(
+                                member_name=leader,
+                                department_name=department
+                            )
+                            leader.save()
+                        department.leader = leader
+
+                        if leader not in department.member_names.all():
+                            department.member_names.add(leader)
+
+                    elif admin_mode == 'update_department_sub_leader':
+                        sub_leader = get_user_model().objects.get(id=new_value)
+
+                        try:
+                            sub_leader = DepartmentMember.objects.get(member_name=sub_leader,
+                                                                      department_name=department)
+                        except DepartmentMember.DoesNotExist:
+                            sub_leader = DepartmentMember(
+                                member_name=sub_leader,
+                                department_name=department
+                            )
+                            sub_leader.save()
+                        department.sub_leader = sub_leader
+
+                        if sub_leader not in department.member_names.all():
+                            department.member_names.add(sub_leader)
+
+                    elif admin_mode == 'update_department_objective':
+                        department.department_objectives = new_value
+
+                    try:
+                        department.save()
+                    except Exception as e:
+                        err_msg = str(e)
+
+                        return JsonResponse({'confirm': False, 'err_msg': err_msg})
+
+                    if admin_mode == 'update_department_leader':
+                        new_value = department.leader.member_name.get_full_name()
+                    elif admin_mode == 'update_department_sub_leader':
+                        new_value = department.sub_leader.member_name.get_full_name()
+
+                    return JsonResponse({'confirm': True, 'value': new_value})
+
+            elif 'delete_department' in request.GET:
+                department_name = request.GET.get('department_name', None)
+
+                department = Department.objects.get(department_name=department_name)
+                department.delete()
+
+                return JsonResponse({'confirm': True})
+
+            elif 'delete_member' in request.GET:
+                department_member = request.GET.get('member_name', None)
+                department_name = request.GET.get('department_name')
+
+                department = Department.objects.get(department_name=department_name)
+                department_member = DepartmentMember.objects.get(id=department_member)
+
+                # if department_member.member_name.username == department.leader.username:
+
+                department.member_names.remove(department_member)
+                department_member.delete()
+
+                return JsonResponse({'confirm': True})
+
+            elif 'delete_category' in request.GET:
+                department_category = request.GET.get('category_name', None)
+                department_name = request.GET.get('department_name')
+
+                department = Department.objects.get(department_name=department_name)
+                department_category = DepartmentCategory.objects.get(id=department_category)
+
+                department.department_categories.remove(department_category)
+                department_category.delete()
+
+                return JsonResponse({'confirm': True})
+
+            return super().get(request, *args, **kwargs)
+        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+
+        context['project_title'] = project_title
+        context['user'] = user
+        context['page'] = 'Settings'
+
+        context['departments'] = Department.objects.all()
+        context['potential_leaders'] = get_user_model().objects.all()
+
+        context['member_departments'] = Department.objects.all()
+
+        context['family_members'] = [
+            f"{brethren.get_full_name()} @{brethren.username}" for brethren in context['potential_leaders']
+        ]
+
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
+        context['Diaconate'] = Diaconate.objects.all()
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        admin_mode = request.POST['admin_mode']
+
+        if admin_mode != 'add_department':
+            department_name = request.POST['department_name']
+            department = Department.objects.get(department_name=department_name)
+
+        if admin_mode == 'add_department':
+            department_long_name = request.POST['long_name'].replace("'", "’")
+            department_short_name = request.POST['short_name']
+            department_objective = request.POST['department_objective']
+
+            department_leader = request.POST['department_leader']
+            department_leader = get_user_model().objects.get(pk=department_leader)
+
+            department_sub_leader = request.POST['department_sub_leader']
+            department_sub_leader = get_user_model().objects.get(pk=department_sub_leader)
+
+            department = Department(
+                department_name=department_short_name,
+                department_long_name=department_long_name,
+                department_objectives=department_objective
+            )
+            department.save()
+
+            # Add the leaders and sub leader to the department
+            department_leader = DepartmentMember(
+                member_name=department_leader,
+                department_name=department
+            )
+            department_leader.save()
+
+            department_sub_leader = DepartmentMember(
+                member_name=department_sub_leader,
+                department_name=department
+            )
+            department_sub_leader.save()
+
+            # Add them to the department
+            department.leader = department_leader
+            department.sub_leader = department_sub_leader
+            department.save()
+
+            department.member_names.add(department_leader, department_sub_leader)
+
+            # Create department category instance and add to the department
+            department_category = request.POST['department_category'].strip()
+
+            if department_category:
+                department_category = department_category.split(',')
+                department_category = [
+                    DepartmentCategory.objects.create(
+                        category_name=name,
+                        department_name=department
+                    ) for name in department_category
+                ]
+                department.department_categories.add(*department_category)
+
+            # Create Department member instances and add them to the department
+            new_members = request.POST['family_members']
+            new_members = [member.strip() for member in new_members.split(',') if member]
+
+            if new_members:
+                new_members = [
+                    DepartmentMember.objects.create(
+                        member_name=get_user_model().objects.get_user_from_full_name(name),
+                        department_name=department)
+                    for name in new_members if name
+                ]
+
+                department.member_names.add(*new_members)
+
+        elif admin_mode == 'add_category':
+            category_name = request.POST['category_name']
+            category_objective = request.POST['category_objective']
+
+            # create department category instance
+            department_category = DepartmentCategory(
+                category_name=category_name,
+                department_name=department,
+                category_objective=category_objective
+            )
+            department_category.save()
+
+            # add category to the department
+            department.department_categories.add(department_category)
+
+        elif admin_mode == 'add_member':
+            new_member_name = request.POST['new_member_name']
+
+            member_user = get_user_model().objects.get(pk=new_member_name)
+
+            # add user to department member instance
+            department_member = DepartmentMember(
+                member_name=member_user,
+                department_name=department
+            )
+            department_member.save()
+            department.member_names.add(department_member)
+
+        return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
+
+
 class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/project-calender.html'
@@ -921,4 +1160,6 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
                 field_value.save()
 
         return HttpResponseRedirect(reverse_lazy('project_management:project-department-table-detail', args=kwargs.values()))
+
+
 

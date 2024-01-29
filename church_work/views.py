@@ -116,7 +116,7 @@ class ChurchWorkDetailView(LoginRequiredMixin, DetailView):
             church_work.last_active_date = timezone.now()
 
             church_work.save()
-        except Exception:
+        except NotImplementedError:
             context['detail_update'] = 'failed'
             return self.render_to_response(context)
 

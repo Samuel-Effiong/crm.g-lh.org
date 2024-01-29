@@ -1,0 +1,303 @@
+{% extends 'project_management/site_admin/admin_list.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+      <link rel="stylesheet" href="{% static 'custom/bootstrap/bootstrap.min.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Change {{ sub_category }}: {{ object_detail }}</h4>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Only Required details will be available for editing.
+                        Use django admin for access to all the details
+                    </p>
+
+                    <form class="needs-validation was-validated" novalidate="">
+                        {% csrf_token %}
+
+                        {% if sub_category == 'Users' %}
+                            <div class="form-row">
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="first_name">First name</label>
+                                    <input type="text" name="first_name" class="form-control" id="first_name" value="{{ object_detail.first_name }}" required="">
+                                    <div class="valid-feedback">
+                                        Valid!
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="last_name">Last name</label>
+                                    <input type="text" name="last_name" class="form-control" id="last_name" value="{{ object_detail.last_name }}" required="">
+                                    <div class="valid-feedback">
+                                        Valid!
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label for="username">Username</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="username" id="username" value="{{ object_detail.username }}" aria-describedby="inputGroupPrepend" required="">
+                                        <div class="invalid-feedback">
+                                            Please choose a username.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="gender">Gender</label>
+                                    <select class="form-control" name="gender" id="gender" required="">
+                                        <option value="M" {% if object_detail.gender == 'M' %}selected=""{% endif %}>Male</option>
+                                        <option value="F" {% if object_detail.gender == 'F' %}selected=""{% endif %}>Female</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid gender.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone_number">Phone Number</label>
+                                    <input type="tel" name="phone_number" class="form-control" id="phone_number" value="{{ object_detail.phone_number }}" required="">
+                                    <div class="valid-feedback">
+                                        Valid!
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="genotype">Blood Group</label>
+                                    <select class="form-control" name="blood_group" id="blood_group" required="">
+                                        <option value="unknown">Unknown</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid blood group.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="level">Genotype</label>
+                                    <select class="form-control" name="genotype" id="genotype" required="">
+                                        <option value="-" {% if object_detail.genotype == '-' %}selected=""{% endif %}>Unknown</option>
+                                        <option value="AA" {% if object_detail.genotype == 'AA' %}selected=""{% endif %}>AA</option>
+                                        <option value="AB" {% if object_detail.genotype == 'AB' %}selected=""{% endif %}>AB</option>
+                                        <option value="AO" {% if object_detail.genotype == 'AO' %}selected=""{% endif %}>AO</option>
+                                        <option value="BB" {% if object_detail.genotype == 'BB' %}selected=""{% endif %}>BB</option>
+                                        <option value="OO" {% if object_detail.genotype == 'OO' %}selected=""{% endif %}>OO</option>
+                                        <option value="AS" {% if object_detail.genotype == 'AS' %}selected=""{% endif %}>AS</option>
+                                        <option value="SS" {% if object_detail.genotype == 'SS' %}selected=""{% endif %}>SS</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid gender.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="level">Level</label>
+                                    <select class="form-control" name="level" id="level" required="">
+                                        <option value="new_mem" {% if object_detail.level == 'new_mem' %}selected=""{% endif %}>New Member</option>
+                                        <option value="mem" {% if object_detail.level == 'mem' %}selected=""{% endif %}>Member</option>
+                                        <option value="worker" {% if object_detail.level == 'worker' %}selected=""{% endif %}>Worker</option>
+                                        <option value="sub_shep" {% if object_detail.level == 'sub_shep' %}selected=""{% endif %}>Sub Shepherd</option>
+                                        <option value="core_shep"{% if object_detail.level == 'core_shep' %}selected=""{% endif %}>Core Shepherd</option>
+                                        <option value="chief_shep" {% if object_detail.level == 'chief_shep' %}selected=""{% endif %}>Chief Shepherd</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid gender.
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif sub_category == 'Sub Shepherd' %}
+                            <div class="form-row">
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="sub_shepherd">Name</label>
+                                    <select class="form-control form-control-lg">
+                                        {% for sub in sub_shepherd %}
+                                            <option value="{{ sub.pk }}" {% if sub.pk == object_detail.pk %}selected=""{% endif %}>{{ sub.get_subshepherd_full_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="subshepherd_no_of_sheep">No of Sheep</label>
+                                    <input type="number" name="subshepherd_no_of_sheep" class="form-control" min="0" id="subshepherd_no_of_sheep" value="{{ object_detail.no_of_sheep }}" required="">
+                                    <div class="invalid-feedback">
+                                        Must not be less than 0
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="subshepherd_date_of_appointment">Date of Appointment</label>
+                                    <input type="date" name="subshepherd_date_of_appointment" class="form-control" id="subshepherd_date_of_appointment" value="{{ object_detail.date_of_appointment.isoformat }}" required="">
+                                    <div class="valid-feedback">
+                                        Valid!
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="subshepherd_calling">Calling</label>
+                                    <select class="form-control" name="calling" id="calling" required="">
+                                        <option value="unknown" {% if object_detail.calling == 'unknown' %}selected=""{% endif %}>Unknown</option>
+                                        <option value="apostle" {% if object_detail.calling == 'apostle' %}selected=""{% endif %}>Apostle</option>
+                                        <option value="prophet" {% if object_detail.calling == 'prophet' %}selected=""{% endif %}>Prophet</option>
+                                        <option value="evangelist" {% if object_detail.calling == 'evangelist' %}selected=""{% endif %}>Evangelist</option>
+                                        <option value="teacher" {% if object_detail.calling == 'teacher' %}selected=""{% endif %}>Teacher</option>
+                                        <option value="pastor" {% if object_detail.pastor == 'pastor' %}selected=""{% endif %}>Pastor</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid gender.
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif sub_category == 'Shepherd' %}
+                            <div class="form-row">
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="sub_shepherd">Name</label>
+                                    <select class="form-control form-control-lg">
+                                        {% for sub in shepherd %}
+                                            <option value="{{ sub.pk }}" {% if sub.pk == object_detail.pk %}selected=""{% endif %}>{{ sub.get_shepherd_full_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="subshepherd_no_of_sheep">No of Sheep</label>
+                                    <input type="number" name="subshepherd_no_of_sheep" class="form-control" min="0" id="subshepherd_no_of_sheep" value="{{ object_detail.no_of_sheep }}" required="">
+                                    <div class="invalid-feedback">
+                                        Must not be less than 0
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <label for="subshepherd_date_of_appointment">Date of Appointment</label>
+                                    <input type="date" name="subshepherd_date_of_appointment" class="form-control" id="subshepherd_date_of_appointment" value="{{ object_detail.date_of_appointment.isoformat }}" required="">
+                                    <div class="valid-feedback">
+                                        Valid!
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="subshepherd_calling">Calling</label>
+                                    <select class="form-control" name="calling" id="calling" required="">
+                                        <option value="unknown" {% if object_detail.calling == 'unknown' %}selected=""{% endif %}>Unknown</option>
+                                        <option value="apostle" {% if object_detail.calling == 'apostle' %}selected=""{% endif %}>Apostle</option>
+                                        <option value="prophet" {% if object_detail.calling == 'prophet' %}selected=""{% endif %}>Prophet</option>
+                                        <option value="evangelist" {% if object_detail.calling == 'evangelist' %}selected=""{% endif %}>Evangelist</option>
+                                        <option value="teacher" {% if object_detail.calling == 'teacher' %}selected=""{% endif %}>Teacher</option>
+                                        <option value="pastor" {% if object_detail.pastor == 'pastor' %}selected=""{% endif %}>Pastor</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid gender.
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif sub_category == 'Members Schedule' %}
+                            <div class="form-row">
+                                <div class="accordion col-12" id="accordionExample">
+                                  <div class="accordion-item">
+                                    <h4 class="accordion-header">
+                                      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Week One
+                                      </button>
+                                    </h4>
+                                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample" style="">
+                                      <div class="accordion-body">
+                                          <div class="form-group col-md-6">
+                                              <div class="checkbox">
+                                                  <label><input type="checkbox" {% if object_detail.In %}checked{% endif %} style="transform: scale(2); margin-right: 20px">IN</label>
+                                              </div>
+                                          </div>
+
+                                        <div class="col-md-6">
+                                            <label for="out">OUT</label>
+                                            <select class="form-control" name="out" id="out" required="">
+                                                <option value="" {% if object_detail.out == '' %}selected=""{% endif %}>None</option>
+                                                <option value="annex" {% if object_detail.out == 'annex' %}selected=""{% endif %}>Annex</option>
+                                                <option value="permsite" {% if object_detail.out == 'permsite' %}selected=""{% endif %}>Permste/Street</option>
+                                                <option value="work_online" {% if object_detail.out == 'work_online' %}selected=""{% endif %}>Work/Online Evangelism</option>
+
+                                            </select>
+                                        </div>
+
+
+                                          <div class="form-group">
+                                              <div class="checkbox">
+                                                  <label><input type="checkbox" {% if object_detail.wednesday %}checked{% endif %} style="transform: scale(2); margin-right: 20px">Wednesday</label>
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <div class="checkbox">
+                                                  <label><input type="checkbox" {% if object_detail.exception %}checked{% endif %} style="transform: scale(2); margin-right: 20px">Exception</label>
+                                              </div>
+                                          </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion-item">
+                                    <h4 class="accordion-header">
+                                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Week Two
+                                      </button>
+                                    </h4>
+                                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                      <div class="accordion-body">
+                                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion-item">
+                                    <h4 class="accordion-header">
+                                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Week Three
+                                      </button>
+                                    </h4>
+                                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                      <div class="accordion-body">
+                                        <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="accordion-item">
+                                    <h4 class="accordion-header">
+                                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Week Four
+                                      </button>
+                                    </h4>
+                                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                      <div class="accordion-body">
+                                        <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-primary" type="submit">Save and add another</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+        <script src="{% static 'custom/bootstrap/bootstrap.bundle.min.js' %}"></script>
+{% endblock extra_js %}
