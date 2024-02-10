@@ -1,0 +1,101 @@
+{% extends 'pastoring/workspace/prophetic_words/prophetic_words.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row mt-5">
+            <div class="col-12 mb-3 mt-5">
+                <label for="form-label" for="keywords">Keywords:</label>
+                <select id="keywords" onchange="query_api()" class="form-select form-select-lg" aria-label=".form-select-lg example">
+                  <option selected="" value="">Select Keywords</option>
+                  {% for key in keywords %}
+                    <option value="{{ key }}">{{ key }}</option>
+                  {% empty %}
+                    <option disabled>No Keywords</option>
+                  {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="row align-items-center mt-5">
+            <div id="loading_gif" class="col-12 text-center" style="display: none;">
+                <img src="{% static 'assets/images/loading.gif' %}" width="100" alt="loading gif">
+            </div>
+
+            <div id="new_articles" class="col-12 mt-3" style="display: none;">
+                <div class="row" id="container">
+                </div>
+                
+            </div>
+        </div>
+
+
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+
+        const getCookie = (name) => {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++){
+                    const cookie = cookies[i].trim();
+
+                    if (cookie.substring(0, name.length + 1) === (name + '=')){
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrf_token = getCookie('csrftoken');
+
+        const query_api = () => {
+
+            const keyword_select_box = document.getElementById('keywords');
+            const keyword = keyword_select_box.value;
+
+            if (keyword) {
+                const loading_gif = document.getElementById('loading_gif');
+                loading_gif.style.display = 'block';
+                
+                const new_articles_container = document.querySelector('#new_articles');
+                new_articles_container.style.display = 'none';
+
+                const formData = new FormData();
+                formData.append('keyword', keyword);
+                formData.append('csrfmiddlewaretoken', csrf_token);
+                
+                const url = window.location.pathname;
+                fetch(url , {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'appliction/json',
+                        'X-CSRFToken': csrf_token,
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data['confirm']) {
+
+                            const new_articles = document.querySelector('#new_articles #container');
+                            new_articles.innerHTML = data['articles']
+
+                            loading_gif.style.display = 'none';
+                            new_articles_container.style.display = 'block';
+                        }
+                    })   
+            }
+        }
+    </script>
+{% endblock javascript %}

@@ -1,0 +1,50 @@
+
+{% if status %}
+    <div class="accordion col-lg-8" id="Users">
+      <div class="accordion-item card">
+        <h4 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#Collapse{{ counter }}" aria-expanded="false" aria-controls="Collapse{{ counter }}">
+            <h5 class="card-title"> {{ office.name }}</h5>
+          </button>
+        </h4>
+        <div id="Collapse{{ counter }}" class="accordion-collapse collapse" data-bs-parent="#Users{{ counter }}">
+          <div class="accordion-body">
+              <p class="card-text mb-2">{{ office.info }}</p>
+              <button type="button" class="btn btn-primary p-2 mb-4" data-target="#add_department" data-toggle="modal" onclick="document.getElementById('department_diaconate_name').value = '{{ office.name }}'">Add Department</button>
+              <ul class="list-group list-group-flush m-0">
+                  {% for department in office.departments.all %}
+                      <li class="list-group-item">
+                          <div class="d-flex justify-content-between">
+                              <a href="{% url 'site_admin:admin-category' 'users' 'users' %}">{{ department.department_name }}</a>
+                              <div>
+                                  <span class="ri-pencil-fill text-danger">Delete</span>
+                              </div>
+                          </div>
+                      </li>
+                  {% endfor %}
+              </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endif %}
+
+<script>
+    (function() {
+        // Your code here
+        const success_element = document.getElementById('{{ category }}_success_status');
+        const failure_element = document.getElementById('{{ category }}_failure_status');
+        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
+        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+
+        {% if status %}
+            success_element.style.display = 'block';
+            failure_element.style.display = 'none';
+            settings_mode.textContent = 'Diaconate';
+        {% else %}
+            failure_element.style.display = 'block';
+            failure_message.textContent = '{{ error_message }}';
+            success_element.style.display = 'none';
+        {% endif %}
+    })();
+</script>

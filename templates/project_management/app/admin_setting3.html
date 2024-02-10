@@ -1,0 +1,551 @@
+
+{% extends 'project_management/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'custom/autocomplete/autocomplete.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-lg-12">
+               <div class="card">
+                  <div class="card-body p-0">
+                     <div class="iq-edit-list usr-edit">
+                         <ul class="iq-edit-profile d-flex nav nav-tabs" role="tablist">
+                             {% for department in departments %}
+                                 <li class="nav-item">
+                                     <a id="tab_heading_{{ department.department_name }}" class="nav-link {% if forloop.counter0 == 0 %}active{% endif %}" data-toggle="tab" role="tab" href="#{{ department }}">
+                                         {{ department.department_name }}
+                                     </a>
+                                 </li>
+                             {% endfor %}
+                             <li class="col-md-2 p-0">
+                                 <a class="nav-link" data-toggle="pill" href="#add-department">
+                                     Add Department
+                                 </a>
+                             </li>
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-lg-12">
+               <div class="iq-edit-list-data">
+                   <div class="tab-content">
+                       {% for department in departments %}
+                           <div class="tab-pane fade {% if forloop.counter0 == 0 %}active show{% endif %}" id="{{ department }}" role="tabpanel">
+                               <div class="card">
+                                   <div class="card-header d-flex justify-content-between">
+                                       <div class="iq-header-title">
+                                           <h4 class="card-title"><span id="db_department_long_name_2">{{ department.department_long_name }}</span> - (<span id="db_department_name_2">{{ department }}</span>)</h4>
+                                       </div>
+                                   </div>
+                                   <div class="card-body">
+                                       <div class="card">
+                                           <div class="row">
+
+                                            <div class="col-lg-6 col-md-6">
+                                               <div>
+                                                  <div class="card-body">
+                                                     <h4 class="card-title mb-3">Department Name
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_long_name', `{{ department.department_long_name }}`);"></button>
+                                                     </h4>
+
+                                                     <p class="card-text h5" id="db_department_long_name">{{ department.department_long_name }}</p>
+                                                  </div>
+                                               </div>
+                                            </div>
+
+                                           <div class="col-lg-6 col-md-6">
+                                               <div>
+                                                  <div class="card-body">
+                                                     <h4 class="card-title mb-3">Department Name (Abridged)
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_name', '{{ department.department_name }}');"></button>
+                                                     </h4>
+                                                     <p class="card-text h5" id="db_department_name">{{ department.department_name }}</p>
+                                                  </div>
+                                               </div>
+                                           </div>
+
+                                           <div class="col-lg-6 col-md-6">
+                                               <div>
+                                                  <div class="card-body">
+                                                     <h4 class="card-title mb-3">Leader
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_leader', '{{ department.leader.member_name.pk }}');"></button>
+                                                     </h4>
+                                                     <p class="card-text h5" id="db_department_leader">{{ department.leader.member_name.get_full_name }}</p>
+                                                  </div>
+                                               </div>
+                                            </div>
+
+                                           <div class="col-lg-6 col-md-6">
+                                               <div>
+                                                  <div class="card-body">
+                                                     <h4 class="card-title mb-3">Sub Leader
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_sub_leader', '{{ department.sub_leader.member_name.pk }}');"></button>
+                                                     </h4>
+                                                     <p class="card-text h5" id="db_department_sub_leader">{{ department.sub_leader.member_name.get_full_name }}</p>
+                                                  </div>
+                                               </div>
+                                           </div>
+
+                                           <div class="col-12 border-top mt-3">
+                                               <div>
+                                                  <div class="card-body">
+                                                     <h4 class="card-title mb-3">Department Objectives
+                                                         <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_objective', `{{ department.department_objectives }}`);"></button>
+                                                     </h4>
+                                                     <p class="card-text h5" id="db_department_objective">{{ department.department_objectives }}</p>
+                                                  </div>
+                                               </div>
+                                           </div>
+
+                                           {#      DEPARTMENT CATEGORY    #}
+                                           <div class="col-12">
+                                               <div>
+                                                  <div class="card-body">
+                                                      <div class="d-flex justify-content-between">
+                                                          <h4 class="mb-3">Department Category</h4>
+                                                          <button type="button" class="btn btn-primary p-2 mb-3" data-target="#add_department_category" data-toggle="modal" onclick="document.querySelector('#add_category_department_name').value = '{{ department.department_name }}';">Add Category</button>
+                                                      </div>
+                                                      {% for category in department.department_categories.all %}
+                                                          <div class="list-group">
+                                                              <a class="list-group-item list-group-item-action">
+                                                                  <div class="d-flex w-100 justify-content-between">
+                                                                      <h5 class="mb-1">{{ category.category_name }}</h5>
+
+                                                                      <button type="button" class="btn btn-outline-danger mt-2 p-2" onclick="delete_category('{{ category.pk }}', '{{ department.department_name }}')">
+                                                                          <i class="ri-alert-line"></i>Delete
+                                                                      </button>
+                                                                  </div>
+                                                                  <p class="mb-1">{{ category.category_objective }}</p>
+                                                              </a>
+                                                          </div>
+                                                      {% endfor %}
+                                                  </div>
+                                               </div>
+                                           </div>
+
+                                           {#    DEPARTMENT MEMBERS    #}
+                                           <div class="col-12 border-top mt-3">
+                                               <div class="card">
+                                                  <div class="card-body">
+                                                      <div class="d-flex justify-content-between">
+                                                          <h4 class="mb-3">Department Members</h4>
+                                                          <button type="button" class="btn btn-primary p-2 mb-3" data-target="#add_department_member" data-toggle="modal" onclick="document.querySelector('#add_member_department_name').value = '{{ department.department_name }}'">Add Member</button>
+                                                      </div>
+
+                                                      <ul class="list-group list-group-flush">
+                                                          {% for member in department.member_names.all %}
+                                                              <li class="list-group-item d-flex justify-content-between">
+                                                                  <span>
+                                                                      <span class="iq-avatar mr-2">
+                                                                          <img class="avatar-80 rounded" src="{{ member.get_member_image_url }}" alt="#" data-original-title="" title="">
+                                                                      </span>
+                                                                      {{ member.member_name.get_full_name }}
+                                                                  </span>
+
+                                                                  <button type="button" class="btn btn-outline-danger" onclick="delete_member('{{ member.pk }}', '{{ department.department_name }}')">Remove</button>
+                                                              </li>
+                                                          {% endfor %}
+                                                      </ul>
+                                                  </div>
+                                               </div>
+                                           </div>
+
+                                           <div class="col-12">
+                                               <button type="button" class="btn btn-outline-danger mt-2 p-2" data-target="#confirm_delete" data-toggle="modal" onclick="document.querySelector('#delete_department_name').textContent = '{{ department.department_name }}';">
+                                                   <i class="ri-alert-line"></i>Delete
+                                               </button>
+                                           </div>
+                                         </div>
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
+                       {% endfor %}
+
+                       <div class="tab-pane fade" id="add-department" role="tabpanel">
+                           <div class="card">
+                               <div class="card-header d-flex justify-content-between">
+                                   <div class="iq-header-title">
+                                       <h4 class="card-title">Add Department</h4>
+                                   </div>
+                               </div>
+                               <div class="card-body">
+                                  <form method="post">
+                                      <div class="form-group" style="display: none">
+                                          <input type="text" name="admin_mode" value="add_department">
+                                      </div>
+
+                                      <div class="form-group">
+                                          <label for="long_name">Department Name:</label>
+                                          <input type="text" class="form-control" id="long_name" name="long_name" placeholder="God's Lighthouse Technical Team" required>
+                                      </div>
+
+                                      <div class="form-group">
+                                          <label for="short_name">Department Short Name:</label>
+                                          <input type="text" class="form-control" id="short_name" name="short_name" placeholder="GMT" required>
+                                      </div>
+
+                                      <div class="form-group">
+                                          <label>Leader:</label>
+                                          <select class="form-control" name="department_leader" required>
+                                              {% for member in potential_leaders %}
+                                                  <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
+                                              {% endfor %}
+                                          </select>
+                                      </div>
+
+                                     <div class="form-group">
+                                         <label for="">Sub Leader:</label>
+                                         <select name="department_sub_leader" class="form-control">
+                                             {% for member in potential_leaders %}
+                                                 <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
+                                             {% empty %}
+                                                 <option value="" disabled>Can't be empty</option>
+                                             {% endfor %}
+                                         </select>
+                                     </div>
+
+                                      <div class="form-group">
+                                          <label for="department_objective">Department Objective:</label>
+                                          <textarea class="form-control" name="department_objective" id="department_objective" cols="30" rows="10"></textarea>
+                                      </div>
+
+                                      <div class="form-group">
+                                          <label for="long_name">Department Category:</label>
+                                          <input type="text" class="form-control" name="department_category" placeholder="Must be a comma separated list of values">
+                                      </div>
+
+                                      {% include 'custom_html/autocomplete.html' with variable='Add Member' %}
+
+                                     <button type="submit" class="btn btn-primary p-3">Add</button>
+
+                                     {% csrf_token %}
+                                  </form>
+                               </div>
+                           </div>
+                       </div>
+                  </div>
+               </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block modal %}
+    {#      DEPARTMENT CATEGORY    #}
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add_department_category">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title">Add Department Category</h3>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-12" style="display: none">
+                                <input type="text" name="admin_mode" value="add_category">
+                                <input type="text" name="department_name" id="add_category_department_name">
+                            </div>
+
+                            <div class="form-group col-12 mb-3">
+                                <label for="category_name">Category Name</label>
+                                <input type="text" id="category_name" name="category_name" class="form-control">
+                            </div>
+
+                            <div class="form-group col-12">
+                                <label for="category_objective">Category Objective</label>
+                                <textarea class="form-control" name="category_objective" id="category_objective" rows="4"></textarea>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type=submit class="btn btn-outline-danger mr-3">Continue</button>
+                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#      DEPARTMENT MEMBER    #}
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add_department_member">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title">Add Department Member</h3>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-12" style="display: none">
+                                <input type="text" name="admin_mode" value="add_member">
+                                <input type="text" name="department_name" id="add_member_department_name">
+                            </div>
+
+                            <div class="form-group col-12">
+                                <label for="department_member_name">Member Name</label>
+                                <select id="department_member_name" name="new_member_name" class="form-control form-control-sm mb-3">
+                                    {% for member in potential_leaders %}
+                                        <option value="{{ member.pk }}">{{ member.get_full_name }} @{{ member.username }}</option>
+                                    {% endfor %}
+                                </select>
+                             </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type=submit class="btn btn-outline-danger mr-3">Continue</button>
+                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#      UPDATE DETAILS       #}
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="update_department_details">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title">Update Department</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12" style="display: none">
+                            <input type="text" id="update_department_details_modal">
+                            <input type="text" id="admin_mode">
+                        </div>
+
+                        <div class="form-group col-12 mb-3" id="update_department_name_input">
+                            <label for="category_name">Enter New Name</label>
+                            <input type="text" id="new_name_value" class="form-control">
+                        </div>
+
+                        <div class="form-group col-12" id="update_leaders_name_input">
+                            <label for="update_leader_name">Choose Name</label>
+                            <select id="update_leader_name" class="form-control form-control-sm mb-3">
+                                {% for member in potential_leaders %}
+                                    <option value="{{ member.pk }}">{{ member.get_full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group col-12" id="update_department_objective_input">
+                            <label for="update_department_objective">Update Department Objective:</label>
+                            <textarea class="form-control" id="update_department_objective" rows="5"></textarea>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                <button type=button class="btn btn-outline-danger mr-3" onclick="update_department_details()">Update</button>
+                                <div id="dismiss_modal" class="btn btn-success" data-dismiss="modal">Cancel</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="confirm_delete">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title">Confirm Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-3">
+                            <p><i>
+                                Are you sure you want to delete <span id="delete_department_name" class="text-danger"></span> Department?
+                            </i></p>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                <button type="button" class="btn btn-outline-danger mr-3" data-dismiss="modal" onclick="delete_department()">Continue</button>
+                                <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock modal %}
+
+{% block extra_js %}
+    <script src="{% static 'custom/jquery-3.7.1.min.js' %}"></script>
+    <script>
+        let searchIndex = {{ family_members|jsonify }}
+
+        const configure_modal_according_to_mode = (department_name, admin_mode, old_value) => {
+            document.querySelector('#update_department_details_modal').value = department_name;
+            document.querySelector('#admin_mode').value = admin_mode;
+
+            if (admin_mode === 'update_department_long_name' || admin_mode === 'update_department_name') {
+                document.querySelector('#update_department_name_input').style.display = 'block';
+                document.querySelector('#update_leaders_name_input').style.display = 'none';
+                document.querySelector('#update_department_objective_input').style.display = 'none';
+
+                document.querySelector('#new_name_value').value = old_value;
+            }
+            else if (admin_mode === 'update_department_objective') {
+                document.querySelector('#update_department_name_input').style.display = 'none';
+                document.querySelector('#update_leaders_name_input').style.display = 'none';
+                document.querySelector('#update_department_objective_input').style.display = 'block';
+
+                document.querySelector('#update_department_objective').value = old_value;
+
+            }
+            else if (admin_mode === 'update_department_leader' || admin_mode === 'update_department_sub_leader') {
+                document.querySelector('#update_department_name_input').style.display = 'none';
+                document.querySelector('#update_leaders_name_input').style.display = 'block';
+                document.querySelector('#update_department_objective_input').style.display = 'none';
+
+                document.querySelector('#update_leader_name').value = old_value;
+            }
+        }
+
+        const update_department_details = () => {
+        {#    update the form in the modal box #}
+            const department_name = document.querySelector('#update_department_details_modal').value;
+            const admin_mode = document.querySelector('#admin_mode').value;
+
+            let new_value;
+
+            if (admin_mode === 'update_department_long_name' || admin_mode === 'update_department_name') {
+                new_value = document.querySelector('#new_name_value').value;
+            }
+            else if (admin_mode === 'update_department_leader' || admin_mode === 'update_department_sub_leader') {
+                new_value = document.querySelector('#update_leader_name').value;
+            }
+            else if (admin_mode === 'update_department_objective') {
+                new_value = document.querySelector('#update_department_objective').value;
+            }
+
+            let url = "{% url 'project_management:project-admin-settings' %}";
+            url = `${url}?update_department&department_name=${department_name}&admin_mode=${admin_mode}&new_value=${new_value}`;
+
+            console.log(url);
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data['confirm']) {
+                        console.log('love');
+                        console.log('admin_mode', admin_mode);
+
+                        if (admin_mode === 'update_department_long_name'){
+                            document.getElementById('db_department_long_name').textContent = data['value'];
+                            document.getElementById('db_department_long_name_2').textContent = data['value'];
+                        }
+                        else if (admin_mode === 'update_department_name') {
+                            document.getElementById('db_department_name').textContent = data['value'];
+                            document.getElementById(`tab_heading_${department_name}`).textContent = data['value'];
+                            document.getElementById('db_department_name_2').textContent = data['value']
+                        }
+                        else if (admin_mode === 'update_department_leader') {
+                            leader = document.getElementById('db_department_leader')
+                            leader.textContent = data['value'];
+                        }
+                        else if (admin_mode === 'update_department_sub_leader') {
+                            document.getElementById('db_department_sub_leader').textContent = data['value'];
+                        }
+                        else if (admin_mode === 'update_department_objective') {
+                            document.getElementById('db_department_objective').textContent = data['value'];
+                        }
+                        document.querySelector('#dismiss_modal').click();
+                    }
+                    else {
+                        console.log('Error');
+                    }
+                })
+        }
+
+        const delete_department = () => {
+            const department_name = document.getElementById('delete_department_name').textContent;
+
+            let url = "{% url 'project_management:project-admin-settings' %}";
+            url = `${url}?delete_department&department_name=${department_name}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data['confirm']) {
+                        window.location.reload();
+                    }
+                })
+        }
+
+        const delete_member = (member, department) => {
+            let url = "{% url 'project_management:project-admin-settings' %}";
+            url = `${url}?delete_member&member_name=${member}&department_name=${department}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data['confirm']) {
+                        window.location.reload();
+                    }
+                })
+        }
+
+        const delete_category = (category, department) => {
+            let url = "{% url 'project_management:project-admin-settings' %}";
+            url = `${url}?delete_category&category_name=${category}&department_name=${department}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data['confirm']) {
+                        window.location.reload();
+                    }
+                })
+        }
+    </script>
+    <script src="{% static 'custom/autocomplete/auto_complete.js' %}"></script>
+{% endblock extra_js %}

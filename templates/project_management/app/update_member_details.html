@@ -1,0 +1,31 @@
+
+{% if status %}
+    <li class="list-group-item">
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}">{{ department.department_name }}</a>
+            <div>
+                <span class="ri-pencil-fill text-danger">Delete</span>
+            </div>
+        </div>
+    </li>
+{% endif  %}
+
+<script>
+    (function () {
+
+        const success_element = document.getElementById('{{ category }}_success_status');
+        const failure_element = document.getElementById('{{ category }}_failure_status');
+        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
+        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+
+        {% if status %}
+            success_element.style.display = 'block';
+            failure_element.style.display = 'none';
+            settings_mode.textContent = 'Department';
+        {% else %}
+            failure_element.style.display = 'block';
+            failure_message.textContent = '{{ error_message }}';
+            success_element.style.display = 'none';
+        {% endif %}
+    })()
+</script>

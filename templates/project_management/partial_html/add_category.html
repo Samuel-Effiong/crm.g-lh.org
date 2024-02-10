@@ -1,0 +1,34 @@
+
+{% if status %}
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ department_category.category_name }}</h5>
+
+                <button type="button" class="btn btn-outline-danger mt-2 p-2" onclick="delete_category('{{ department_category.pk }}')">
+                    <i class="ri-alert-line"></i>Delete
+                </button>
+            </div>
+            <p class="mb-1">{{ department_category.category_objective }}</p>
+        </a>
+    </div>
+{% endif %}
+
+<script>
+    (function () {
+        const success_element = document.getElementById('{{ category }}_success_status');
+        const failure_element = document.getElementById('{{ category }}_failure_status');
+        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
+        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+
+        {% if status %}
+            success_element.style.display = 'block';
+            failure_element.style.display = 'none';
+            settings_mode.textContent = 'Category';
+        {% else %}
+            failure_element.style.display = 'block';
+            failure_message.textContent = '{{ error_message }}';
+            success_element.style.display = 'none';
+        {% endif %}
+    })()
+</script>

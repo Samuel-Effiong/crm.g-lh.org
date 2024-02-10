@@ -18,6 +18,8 @@
       <link rel="stylesheet" href="{% static 'assets_project_management/css/backend.css' %}">
       <link rel="stylesheet" href="{% static 'assets_project_management/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css' %}">
       <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+
+      <script src="{% static 'assets/js/htmx.min.js' %}"></script>
   </head>
   <body class="  ">
         <!-- Wrapper Start -->
@@ -152,29 +154,30 @@
                                   {% endfor %}
                               </ul>
                           </li>
-                          <li class="">
-                              <a href="#settings" class="collapsed" data-toggle="collapse" aria-expanded="false">
-                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                                  </svg>
-                                  <span class="ml-4">Settings</span>
-                                  <i class="las la-angle-right iq-arrow-right arrow-active"></i>
-                                  <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
-                              </a>
-                              <ul id="settings" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                                  {% for department in member_departments %}
-                                      {% if department.leader.member_name == user or user.is_superuser %}
-                                          <li class="{% if page == 'Settings' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
-                                              <a href="{% url 'project_management:project-settings' department.department_name %}">
-                                                  <i class="las la-minus"></i>
-                                                  <span>{{ department.department_name }}</span>
-                                              </a>
-                                          </li>
-                                      {% endif %}
-                                  {% endfor %}
-                              </ul>
-                          </li>
-
+                          {% if user in department_leaders or user.is_superuser %}
+                              <li class="">
+                                  <a href="#settings" class="collapsed" data-toggle="collapse" aria-expanded="false">
+                                      <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                      </svg>
+                                      <span class="ml-4">Settings</span>
+                                      <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                      <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                                  </a>
+                                  <ul id="settings" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+                                      {% for department in member_departments %}
+                                          {% if department.leader.member_name == user or user.is_superuser %}
+                                              <li class="{% if page == 'Settings' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
+                                                  <a href="{% url 'project_management:project-settings' department.department_name %}">
+                                                      <i class="las la-minus"></i>
+                                                      <span>{{ department.department_name }}</span>
+                                                  </a>
+                                              </li>
+                                          {% endif %}
+                                      {% endfor %}
+                                  </ul>
+                              </li>
+                          {% endif %}
                       </ul>
                   </nav>
                   <div id="sidebar-bottom" class="position-relative sidebar-bottom">
@@ -247,49 +250,26 @@
                                               <h6 class="mb-0 line-height">{{ user.get_full_name }}<i class="las la-angle-down ml-2"></i></h6>
                                           </div>
                                       </a>
-                                          {% if department_leaders or user.is_superuser %}
-
-                                              {% if user in department_leaders or user.is_superuser %}
-
-                                                  <ul class="dropdown-menu dropdown-menu-right border-none" aria-labelledby="dropdownMenuButton" style="overflow-y: auto">
-                                                      <li class="dropdown-item d-flex svg-icon border-bottom mb-1">
+                                          {% if user.is_superuser %}
+                                              <ul class="dropdown-menu dropdown-menu-right border-none" aria-labelledby="dropdownMenuButton" style="overflow-y: auto">
+                                                  {% if user.is_superuser %}
+                                                      <li class="dropdown-item d-flex svg-icon border-top mt-3">
                                                           <svg class="svg-icon mr-0" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                           </svg>
-                                                          <a href="#">Settings</a>
+                                                          <a href="{% url 'project_management:project-admin-settings' %}">Admin Settings</a>
                                                       </li>
-{#                                                      {% for department in member_departments %}#}
-{#                                                          {% if department.leader.member_name == user or user.is_superuser %}#}
-{#                                                              <li class="dropdown-item d-flex svg-icon">#}
-{#                                                                  <svg class="svg-icon mr-0 text-primary" id="h-03-p" xmlns="http://www.w3.org/2000/svg" width="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">#}
-{#                                                                      <path fill-rule="evenodd" d="M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z"></path>#}
-{#                                                                  </svg>#}
-{##}
-{#                                                                  <a href="{% url 'project_management:project-settings' department.department_name %}">{{ department.department_name }}</a>#}
-{#                                                              </li>#}
-{#                                                          {% endif %}#}
-{#                                                      {% endfor %}#}
 
-                                                      {% if user.is_superuser %}
-                                                          <li class="dropdown-item d-flex svg-icon border-top mt-3">
-                                                              <svg class="svg-icon mr-0" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                              </svg>
-                                                              <a href="{% url 'project_management:project-admin-settings' %}">Admin Settings</a>
-                                                          </li>
-
-                                                          <li class="dropdown-item d-flex svg-icon border-top mt-3">
-                                                            <svg class="svg-icon mr-0" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            </svg>
-                                                            <a href="{% url 'site_admin:homepage' %}">Site Settings</a>
-                                                        </li>
-                                                      {% endif %}
-                                                  </ul>
-                                              {% endif %}
+                                                      <li class="dropdown-item d-flex svg-icon border-top mt-3">
+                                                        <svg class="svg-icon mr-0" id="h-03-p" width="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        <a href="{% url 'site_admin:homepage' %}">Site Settings</a>
+                                                    </li>
+                                                  {% endif %}
+                                              </ul>
                                           {% endif %}
                                   </li>
                               </ul>

@@ -175,6 +175,13 @@ class Department(models.Model):
     def is_leader(self, member: DepartmentMember) -> bool:
         return self.leader == member
 
+    def is_member(self, member: get_user_model()) -> bool:
+        department_member = self.member_names.all().filter(member_name=member)
+
+        if department_member:
+            return True
+        return False
+
     def member_activity_in_a_department(self):
         members = self.member_names.all()
         member_completed_project = []

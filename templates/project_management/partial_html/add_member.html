@@ -1,0 +1,32 @@
+
+{% if status %}
+    <li class="list-group-item d-flex justify-content-between">
+        <span>
+            <span class="iq-avatar mr-2">
+                <img class="avatar-80 rounded" src="{{ member.get_member_image_url }}" alt="#" data-original-title="" title="">
+            </span>
+            {{ member.member_name.get_full_name }}
+        </span>
+
+        <button type="button" class="btn btn-outline-danger" onclick="delete_member('{{ member.pk }}', '{{ department.department_name }}')">Remove</button>
+    </li>
+{% endif %}
+
+<script>
+    (function () {
+        const success_element = document.getElementById('{{ category }}_success_status');
+        const failure_element = document.getElementById('{{ category }}_failure_status');
+        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
+        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+
+        {% if status %}
+            success_element.style.display = 'block';
+            failure_element.style.display = 'none';
+            settings_mode.textContent = 'New Member'
+        {% else %}
+            failure_element.style.display = 'block';
+            failure_message.textContent = '{{ error_message }}';
+            success_element.style.display = 'none';
+        {% endif %}
+    })()
+</script>

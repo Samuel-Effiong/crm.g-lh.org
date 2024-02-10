@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'djoser',
+    'django_htmx',
 
     'custom_tags',
 
@@ -152,6 +153,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 # if DEBUG:
