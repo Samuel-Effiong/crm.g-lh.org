@@ -72,14 +72,29 @@
                               </div>
                               <div id="category_space">
                                   {% for category in department.department_categories.all %}
-                                      <div class="list-group">
+                                      <div class="list-group" id="category_space_{{category.pk}}">
                                           <a class="list-group-item list-group-item-action">
                                               <div class="d-flex w-100 justify-content-between">
                                                   <h5 class="mb-1">{{ category.category_name }}</h5>
 
-                                                  <button type="button" class="btn btn-outline-danger mt-2 p-2" onclick="delete_category('{{ category.pk }}', '{{ department.department_name }}')">
-                                                      <i class="ri-alert-line"></i>Delete
-                                                  </button>
+                                                  <form
+                                                      hx-post="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}?settings=delete_category"
+                                                      hx-trigger="submit"
+                                                      hx-target="#category_space_{{category.pk}}"
+                                                      hx-swap="delete"
+                                                      hx-confirm="Are you sure you want to delete {{ category.category_name }}"
+                                                      hx-indicator="#springBouceLoader"
+                                                  >
+                                                    {% csrf_token %}
+                                                    <div style="display: none;">
+                                                        <input type="text" name="category_pk" value="{{ category.pk }}">
+                                                    </div>
+                                                    
+                                                    <button type="submit" class="btn btn-outline-danger mt-2 p-2">
+                                                        <i class="ri-alert-line"></i>Delete
+                                                    </button>
+                                                  </form>
+                                                  
                                               </div>
                                               <p class="mb-1">{{ category.category_objective }}</p>
                                           </a>
@@ -101,7 +116,7 @@
 
                               <ul id="department_member_space" class="list-group list-group-flush">
                                   {% for member in department.member_names.all %}
-                                      <li class="list-group-item d-flex justify-content-between">
+                                      <li class="list-group-item d-flex justify-content-between" id="department_member_space_{{ member.pk }}">
                                           <span>
                                               <span class="iq-avatar mr-2">
                                                   <img class="avatar-80 rounded" src="{{ member.get_member_image_url }}" alt="#" data-original-title="" title="">
@@ -109,7 +124,21 @@
                                               {{ member.member_name.get_full_name }}
                                           </span>
 
-                                          <button type="button" class="btn btn-outline-danger" onclick="delete_member('{{ member.pk }}', '{{ department.department_name }}')">Remove</button>
+                                          <form
+                                              hx-post="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}?settings=delete_member"
+                                              hx-trigger="submit"
+                                              hx-target="#department_member_space_{{ member.pk }}"
+                                              hx-swap="delete"
+                                              hx-confirm="Are you sure you want to remove {{ member.member_name.get_full_name }} from {{ department.department_name }}"
+                                              hx-indicator="#springBouceLoader"
+                                          >
+                                            {% csrf_token %}
+                                            <div style="display: none;">
+                                                <input type="text" name="department_member_pk" value="{{ member.pk }}">
+                                            </div>
+
+                                            <button type="submit" class="btn btn-outline-danger">Remove</button>
+                                          </form>
                                       </li>
                                   {% endfor %}
                               </ul>
@@ -119,7 +148,7 @@
 
                    <div class="col-12">
                        <button type="button" class="btn btn-outline-danger mt-2 p-2" data-target="#confirm_delete" data-toggle="modal" onclick="document.querySelector('#delete_department_name').textContent = '{{ department.department_name }}';">
-                           <i class="ri-alert-line"></i>Delete
+                           <i class="ri-alert-line"></i>Delete Department
                        </button>
                    </div>
                </div>
@@ -141,6 +170,7 @@
                             hx-trigger="submit"
                             hx-target="#category_space"
                             hx-swap="beforeend"
+                            hx-indicator="#springBouceLoader"
                     >
 
                         {% csrf_token %}
@@ -148,9 +178,6 @@
                         {% include 'includes/server_status_warning.html' with category='add_category' %}
 
                         <div class="row">
-                            <div class="htmx-indicator" style="position:absolute; width: 100%; text-align: center">
-                                <img src="{% static 'assets/images/loading.gif' %}" width="100" alt="loading gif">
-                            </div>
 
                             <div class="form-group col-12 mb-3">
                                 <label for="category_name">Category Name</label>
@@ -187,13 +214,11 @@
                             hx-trigger="submit"
                             hx-target="#department_member_space"
                             hx-swap="beforeend"
+                            hx-indicator="#springBouceLoader"
                     >
                         {% csrf_token %}
                         {% include 'includes/server_status_warning.html' with category='add_department_member' %}
 
-                        <div class="htmx-indicator" style="position:absolute; width:100%; text-align: center">
-                            <img src="{% static 'assets/images/loading.gif' %}" width="100" alt="loading gif">
-                        </div>
                         <div class="row">
 
                             <div class="form-group col-12">
@@ -231,13 +256,10 @@
                             hx-trigger="submit"
                             hx-target="#member_details_space"
                             hx-swap="innerHTML"
+                            hx-indicator="#springBouceLoader"
                     >
                         {% csrf_token %}
                         {% include 'includes/server_status_warning.html' with category='update_member_details' %}
-
-                        <div class="htmx-indicator" style="position:absolute; margin-left: 40%">
-                            <img src="{% static 'assets/images/loading.gif' %}" width="100" alt="loading gif">
-                        </div>
 
                         <div class="row">
                             <div class="form-group col-12 mb-3">
@@ -278,7 +300,7 @@
 
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
-                                    <button type=button class="btn btn-outline-danger mr-3">Update</button>
+                                    <button type="submit" class="btn btn-outline-danger mr-3">Update</button>
                                     <div id="dismiss_modal" class="btn btn-success" data-dismiss="modal">Cancel</div>
                                 </div>
                             </div>
@@ -302,13 +324,19 @@
                                 Are you sure you want to delete <span id="delete_department_name" class="text-danger"></span> Department?
                             </i></p>
                         </div>
-
+                        
                         <div class="col-lg-12">
-                            <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
-                                <button type="button" class="btn btn-outline-danger mr-3" data-dismiss="modal" onclick="delete_department()">Continue</button>
-                                <div class="btn btn-success" data-dismiss="modal">Cancel</div>
-                            </div>
+                            <form action="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}?settings=delete_department" method="post">
+                                {% csrf_token %}
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                        <button type="submit" class="btn btn-outline-danger mr-3">Continue</button>
+                                        <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
+                        
                     </div>
                 </div>
             </div>

@@ -1,0 +1,73 @@
+{% if status %}
+    <div class="col-lg-6 col-md-6">
+        <div>
+            <div class="card-body">
+                <h4 class="card-title mb-3">Department Name
+                    <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_long_name', `{{ department.department_long_name }}`);"></button>
+                </h4>
+                <p class="card-text h5" id="db_department_long_name">
+                    {{ department.department_long_name }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div>
+        <div class="card-body">
+            <h4 class="card-title mb-3">Department Name (Abridged)
+                <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_name', '{{ department.department_name }}');"></button>
+            </h4>
+            <p class="card-text h5" id="db_department_name">{{ department.department_name }}</p>
+        </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div>
+        <div class="card-body">
+            <h4 class="card-title mb-3">Leader
+                <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_leader', '{{ department.leader.member_name.pk }}');"></button>
+            </h4>
+            <p class="card-text h5" id="db_department_leader">{{ department.leader.member_name.get_full_name }}</p>
+        </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div>
+        <div class="card-body">
+            <h4 class="card-title mb-3">Sub Leader
+                <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_sub_leader', '{{ department.sub_leader.member_name.pk }}');"></button>
+            </h4>
+            <p class="card-text h5" id="db_department_sub_leader">{{ department.sub_leader.member_name.get_full_name }}</p>
+        </div>
+        </div>
+    </div>
+    <div class="col-12 border-top mt-3">
+        <div>
+        <div class="card-body">
+            <h4 class="card-title mb-3">Department Objectives
+                <button style="background: none; border: none" class="las la-pen upload-button text-primary" data-target="#update_department_details" data-toggle="modal" onclick="configure_modal_according_to_mode('{{ department.department_name }}', 'update_department_objective', `{{ department.department_objectives }}`);"></button>
+            </h4>
+            <p class="card-text h5" id="db_department_objective">{{ department.department_objectives }}</p>
+        </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    (function () {
+        const success_element = document.getElementById('{{ category }}_success_status');
+        const failure_element = document.getElementById('{{ category }}_failure_status');
+        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
+        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+
+        {% if status %}
+            success_element.style.display = 'block';
+            failure_element.style.display = 'none';
+            settings_mode.textContent = 'Details'
+        {% else %}
+            failure_element.style.display = 'block';
+            failure_message.textContent = '{{ error_message }}';
+            success_element.style.display = 'none';
+        {% endif %}
+    })()
+</script>

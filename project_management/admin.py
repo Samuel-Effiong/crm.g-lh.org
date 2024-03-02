@@ -88,7 +88,7 @@ class EpiscopateAdmin(admin.ModelAdmin):
 
 @admin.register(models.Unit)
 class UnitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'head', 'assistant', 'get_number_of_subunit')
+    list_display = ('name', 'unit_leader', 'sub_leader', 'unit_department', 'get_number_of_subunit')
 
 
 @admin.register(models.SubUnit)

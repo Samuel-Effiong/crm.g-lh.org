@@ -1,0 +1,47 @@
+
+<svg class="htmx-indicator" id="springBouceLoader" viewBox="0 0 100 100" style="position: fixed; max-height: 120px; max-width:120px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index:9999">
+    <defs>
+        <marker id="pad1" viewBox="0 0 10 5" refX="5" refY="5" markerWidth="20" markerHeight="10">
+            <rect x="0" y="0" height="5" width="10" rx="1" fill="tan" />
+        </marker>
+        <marker id="pad2" viewBox="0 0 5 10" refX="0" refY="5" markerWidth="10" markerHeight="20">
+            <rect x="0" y="0" height="10" width="5" rx="1" fill="tan" />
+        </marker>
+        <path id="jumpBack" d="M 20 80 h 60 c 0 -80 -60 -80 -60 0z" stroke="none" fill="none" />
+    </defs>
+    <path d="M1 91 h 68 m22 0 h8" stroke="silver" stroke-linecap="round" fill="none" />
+    <ellipse id="c1" cx="0" cy="0" rx="10" ry="10"  fill="#e26ee5">
+        <animateMotion id="a1" href="#c1" dur="3000ms" begin="0s" fill="freeze" repeatCount="indefinite">
+            <mpath href="#jumpBack" />
+        </animateMotion>		
+        <animate attributeName="ry" values="8; 10; 10; 10; 10; 8" dur="3s" begin="-1.75s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="-4; 0; 0; 0; 0; -4" dur="3s" begin="-1.75s" repeatCount="indefinite" />
+        <animate attributeName="rx" values="8; 10; 10; 10; 10; 8" dur="3s" begin="-2.75s" repeatCount="indefinite" />
+        <animate attributeName="cx" values="4; 0; 0; 0; 0; 4" dur="3s" begin="-2.75s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse id="c2" cx="0" cy="0" rx="10" ry="10" fill="#7e30e1">
+        <animateMotion id="a2" href="#c2" dur="3000ms" begin="-1s" fill="freeze" repeatCount="indefinite">
+            <mpath href="#jumpBack" />
+        </animateMotion>
+        <animate attributeName="ry" values="8; 10; 10; 10; 10; 8" dur="3s" begin="-2.75s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="-4; 0; 0; 0; 0; -4" dur="3s" begin="-2.75s" repeatCount="indefinite" />
+        <animate attributeName="rx" values="8; 10; 10; 10; 10; 8" dur="3s" begin="-3.75s" repeatCount="indefinite" />
+        <animate attributeName="cx" values="4; 0; 0; 0; 0; 4" dur="3s" begin="-3.75s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse id="c3" cx="0" cy="0" rx="10" ry="10" fill="#49108b">
+        <animateMotion id="a3" href="#c3" dur="3000ms" begin="-2s" fill="freeze" repeatCount="indefinite">
+            <mpath href="#jumpBack" />
+        </animateMotion>
+        <animate attributeName="ry" values="8; 10; 10; 10; 10; 8" dur="3s" begin="-0.75s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="-4; 0; 0; 0; 0; -4" dur="3s" begin="-0.75s" repeatCount="indefinite" />
+        <animate attributeName="rx" values="9; 10; 10; 10; 10; 8" dur="3s" begin="-1.75s" repeatCount="indefinite" />
+        <animate attributeName="cx" values="4; 0; 0; 0; 0; 4" dur="3s" begin="-1.75s" repeatCount="indefinite" />
+    </ellipse>
+    <path class="spring" d="M 80 105 q -7 -2 0 -5 q 7 -3 0 -5 q -7 -2 0 -5 q 7 -3 0 -5 q -7 -2 0 -5" stroke="silver" fill="none" stroke-linecap="round" marker-end="url(#pad1)">
+        <animate attributeName="d" values="M 80 110 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2; M 80 105 q -7 -2 0 -5 q 7 -3 0 -5 q -7 -2 0 -5 q 7 -3 0 -5 q -7 -2 0 -5; M 80 110 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2; M 80 110 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2 q 7 -1 0 -2 q -7 -1 0 -2" dur="1s" begin="-1.2s" repeatCount="indefinite" />
+    </path>
+    <path d="M -10 80 q 1 -7 2 0 q 1 6 2 0 q 1 -7 2 0 q 1 6 2 0 q 1 -7 2 0" stroke="silver" fill="none" stroke-linecap="round" marker-end="url(#pad2)">
+        <animate attributeName="d" values="M -15 80 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0; M -10 80 q 1 -7 2 0 q 1 6 2 0 q 1 -7 2 0 q 1 6 2 0 q 1 -7 2 0; M -15 80 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0; M -15 80 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0 q 2 7 5 0 q 3 -7 5 0" dur="1s" begin="-0.5s" repeatCount="indefinite" />
+    </path>
+
+</svg>

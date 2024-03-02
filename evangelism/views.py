@@ -149,6 +149,9 @@ class EvangelismDetailView(LoginRequiredMixin, DetailView):
 
         context['detail'] = Evangelism.objects.get(id=kwargs['pk'])
         context['detail_update'] = 'successful'
+
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)
 
 

@@ -1,6 +1,6 @@
 {% load static %}
 {% load extra_tags %}
-{% load humanize %}
+{% load humanize %} 
 
 <!doctype html>
 <html lang="en" dir="ltr">
@@ -14,9 +14,27 @@
       {% block extra_css %}
         <link rel="stylesheet" href="{% static 'custom/shattered_popup/shattered_popup.css' %}">
       {% endblock extra_css %}
+
+      <script src="{% static 'assets/js/htmx.min.js' %}"></script>
+      <style>
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+
+        .htmx-request.htmx-indicator {
+            display: inline;
+        }
+      </style>
       
   </head>
   <body class="  ">
+
+    <div>
+        {% include "custom_html/loader.html" %}
+    </div>
     
     <aside class="sidebar sidebar-default navs-rounded-all ">
         <div class="sidebar-header d-flex align-items-center justify-content-start">
@@ -214,7 +232,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link {% if category == 'Suggestion/Complaint' %}active{% endif %}" data-bs-toggle="modal" data-bs-target="#SuggestionComplaintModalStatic" href="#">
+                            <a id="suggestions_complaints_modal_box" class="nav-link {% if category == 'Suggestion/Complaint' %}active{% endif %}" data-bs-toggle="modal" data-bs-target="#SuggestionComplaintModalStatic" href="#">
                                 <i class="icon">
                                     <svg width="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" clip-rule="evenodd" d="M12.1748 15.2165H11.825C9.42166 15.2165 7.47358 13.2928 7.47358 10.9204V6.29708C7.47358 3.92374 9.42166 2 11.825 2H12.1748C14.1693 2 15.8501 3.32395 16.3645 5.13098C16.4352 5.37874 16.2482 5.62459 15.9886 5.62459H14.8562C14.5142 5.62459 14.2362 5.89818 14.2362 6.23586V6.23682C14.2362 6.57546 14.5142 6.84905 14.8562 6.84905H15.9004C16.2463 6.84905 16.5272 7.12551 16.5272 7.46702C16.5272 7.80853 16.2463 8.08499 15.9004 8.08499H14.8562C14.5142 8.08499 14.2362 8.35953 14.2362 8.69817C14.2362 9.03585 14.5142 9.3104 14.8562 9.3104H15.9004C16.2463 9.3104 16.5272 9.58686 16.5272 9.92933C16.5272 10.2699 16.2463 10.5463 15.9004 10.5463H14.8562C14.5142 10.5463 14.2362 10.8209 14.2362 11.1595C14.2362 11.4972 14.5142 11.7708 14.8562 11.7708H15.9334C16.1988 11.7708 16.3887 12.0272 16.3054 12.2759C15.7309 13.9844 14.0996 15.2165 12.1748 15.2165ZM18.5626 10.7828C18.5626 10.2538 18.9966 9.8262 19.5313 9.8262C20.066 9.8262 20.5 10.2538 20.5 10.7828C20.5 15.0866 17.2006 18.6404 12.9692 19.1177V21.0434C12.9692 21.5714 12.5352 22 12.0005 22C11.4648 22 11.0318 21.5714 11.0318 21.0434V19.1177C6.79945 18.6404 3.5 15.0866 3.5 10.7828C3.5 10.2538 3.93398 9.8262 4.46872 9.8262C5.00345 9.8262 5.43743 10.2538 5.43743 10.7828C5.43743 14.3557 8.38136 17.2629 12.0005 17.2629C15.6186 17.2629 18.5626 14.3557 18.5626 10.7828Z" fill="currentColor"></path>
@@ -528,76 +546,76 @@
         <div class="modal fade" id="SuggestionComplaintModalStatic" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalCenteredScrollableTitle" style="display: none;" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenteredScrollableTitle">Awaiting Missive</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="clear_suggestion_complaint_message_dialog_inputs()"></button>
-                </div>
-                <div class="modal-body">
-                    {% if user.shepherd %}
-                        <div id="suggestion_complaint_box_content">
-                            <div class="row">
-                                <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
-                                    <input type="text" class="form-control" id="suggestion_complaint_title" onkeyup="validate_suggestion_complaint_message_dialog()" placeholder="Place Holder">
-                                    <label for="suggestion_complaint_title">Title</label>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Category</label>
-                                        <select class="form-select mb-3 shadow-none" id="suggestion_complaint_category">
-                                            <option selected value="Suggestion">Suggestion</option>
-                                            <option value="Complaint">Complaint</option>
-                                        </select>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalCenteredScrollableTitle">Awaiting Missive</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" {% if user.shepherd %}onclick="clear_suggestion_complaint_message_dialog_inputs()"{% endif %}"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if user.shepherd %}
+                            <div id="suggestion_complaint_box_content">
+                                <div class="row">
+                                    <div class="form-floating custom-form-floating custom-form-floating-lg form-group mb-3">
+                                        <input type="text" class="form-control" id="suggestion_complaint_title" onkeyup="validate_suggestion_complaint_message_dialog()" placeholder="Place Holder">
+                                        <label for="suggestion_complaint_title">Title</label>
                                     </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Level of Urgency</label>
-                                        <select class="form-select mb-3 shadow-none" id="suggestion_complaint_level_of_urgency">
-                                            <option selected value="Normal">Normal</option>
-                                            <option value="Important">Important</option>
-                                            <option value="Critical">Critical</option>
-                                            <option value="Emergency">Emergency</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="suggestion_complaint_message">Message</label>
-                                    <textarea class="form-control" id="suggestion_complaint_message" rows="6" onkeyup="validate_suggestion_complaint_message_dialog()"></textarea>
-                                </div>
-                                <div class="col-lg-8 col-md-8">
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="suggestion_complaint_anonymous">
-                                            <label class="form-check-label" for="suggestion_complaint_anonymous">
-                                                Send Anonymously <i class="ri ri-spy-fill"></i>
-                                            </label>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Category</label>
+                                            <select class="form-select mb-3 shadow-none" id="suggestion_complaint_category">
+                                                <option selected value="Suggestion">Suggestion</option>
+                                                <option value="Complaint">Complaint</option>
+                                            </select>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-lg-3 col-md-3">
-                                    <a href="{% url 'suggestion-complaint' 'Personal' %}"><small>View History</small></a>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Level of Urgency</label>
+                                            <select class="form-select mb-3 shadow-none" id="suggestion_complaint_level_of_urgency">
+                                                <option selected value="Normal">Normal</option>
+                                                <option value="Important">Important</option>
+                                                <option value="Critical">Critical</option>
+                                                <option value="Emergency">Emergency</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="suggestion_complaint_message">Message</label>
+                                        <textarea class="form-control" id="suggestion_complaint_message" rows="6" onkeyup="validate_suggestion_complaint_message_dialog()"></textarea>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="suggestion_complaint_anonymous">
+                                                <label class="form-check-label" for="suggestion_complaint_anonymous">
+                                                    Send Anonymously <i class="ri ri-spy-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3">
+                                        <a href="{% url 'suggestion-complaint' 'Personal' %}"><small>View History</small></a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mb-3 alert alert-left alert-success  fade show" id="suggestion_complaint_success_status" role="alert" style="display:none">
-                            <span> Message sent!</span>
-                        </div>
-                        <div class="mb-3 alert alert-left alert-danger  fade show" id="suggestion_complaint_error_status" role="alert" style="display:none">
-                            <span> This is a success alert—check it out!</span>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-danger mb-0" role="alert">
-                            <h3 class="alert-heading">Shepherd Missing Alert!</h3>
-                            <hr>
-                            <p class="mb-0">You must have a shepherd before you can be able to send suggestions/complaints.</p>
-                            <p class="mb-0">Meet a leader to assign to be assigned a shepherd if you don't have</p>
-                        </div>
-                    {% endif %}
-                </div>
+                            <div class="mb-3 alert alert-left alert-success  fade show" id="suggestion_complaint_success_status" role="alert" style="display:none">
+                                <span> Message sent!</span>
+                            </div>
+                            <div class="mb-3 alert alert-left alert-danger  fade show" id="suggestion_complaint_error_status" role="alert" style="display:none">
+                                <span> This is a success alert—check it out!</span>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger mb-0" role="alert">
+                                <h3 class="alert-heading">Shepherd Missing Alert!</h3>
+                                <hr>
+                                <p class="mb-0">You must have a shepherd before you can be able to send suggestions/complaints.</p>
+                                <p class="mb-0">Meet a leader to be assigned a Shepherd.</p>
+                            </div>
+                        {% endif %}
+                    </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="clear_suggestion_complaint_message_dialog_inputs()">Close</button>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" {% if user.shepherd %}onclick="clear_suggestion_complaint_message_dialog_inputs()"{% endif %}>Close</button>
                     {% if user.shepherd %}
                         <button type="button" class="btn btn-primary" id="suggestion_complaint_submit_button" disabled onclick="send_suggestion_complaint_message('{% url 'fetch' 'suggestion_complaint' %}')">Send</button>
                     {% endif %}
@@ -955,6 +973,9 @@
             </div>
           </div>
       {% endblock content %}
+
+      {% block modal %}
+      {% endblock modal %}
       <!-- Footer Section Start -->
       <footer class="footer">
           <div class="footer-body">
@@ -1171,6 +1192,7 @@
     </div>
 
     {% include 'includes/vendor_js.html' %}
+
 
     {% block javascript %}
         <script src="{% static 'assets/js/data_analysis.js' %}"></script>

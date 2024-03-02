@@ -5,7 +5,8 @@ from .views import (DashboardView, SheepSummaryDetailView, ShepherdSheepListView
 #############  WORKSPACE  ###########
 from .views import (CatalogView, AddCatalogView, FaultyCatalogView, TestimoniesView,
                     AddTestimonyView, PropheticWordsView, AddPropheticWordsView, 
-                    BlogView, AddBlogView, SermonsView, AddSermonsView, GeneratedNewsView)
+                    BlogView, AddBlogView, SermonsView, AddSermonsView, GeneratedNewsView,
+                    SearchInterfaceView)
 
 
 ###########  END WORKSPACE  ###########
@@ -22,6 +23,7 @@ urlpatterns = [
     path('<str:shepherd>/sheep-info/<str:sheep>/detail/<str:category>/<int:pk>/', DetailView.as_view(), name='sheep-detail'),
 
     path('shepherd-reports/', ShepherdReportView.as_view(), name='shepherd-reports'),
+    path('search-interface/', SearchInterfaceView.as_view(), name='search-interface'),
 
     #####################  WORKSPACE  ################################
     path('catalog/', CatalogView.as_view(), name='catalog'),

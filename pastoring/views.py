@@ -8,6 +8,7 @@ from random import choice
 from datetime import datetime
 
 from django import http
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonResponse
 from django.http import HttpRequest, HttpResponse
@@ -17,7 +18,7 @@ from django.views.generic.base import TemplateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 
-from users.models import Shepherd, SubShepherd, CustomUser, Catalog
+from users.models import Shepherd, SubShepherd, CustomUser, Catalog, Skill, Course
 from users.my_models.users import LEVEL_CHOICES
 from users.my_models.utilities import convert_to_format
 
@@ -29,7 +30,6 @@ from prophetic_vision.models import PropheticVision
 from home.models import Notification
 
 from .models import (Testimony, PropheticWord, Blog, Sermon)
-
 
 developers = "God's Lighthouse Developers Team (GDevT)"
 title = 'GLH-FAM'
@@ -54,7 +54,7 @@ def sort_function(series):
     return series.apply(lambda x: rule[x])
 
 
-def download_profiles_in_format(request, _format, data=None):
+def download_profiles_in_format(request, _format, data=None, filename=None):
     if _format == 'image':
         if request.user.level == 'chief_shep':
             if data is None:
@@ -68,7 +68,7 @@ def download_profiles_in_format(request, _format, data=None):
             data = CustomUser.objects.get_shepherd_sheep(shepherd).values_list('profile_pic', flat=True)
         elif request.user.level == 'sub_shep':
             data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values_list('profile_pic', flat=True)
-        
+
         response = convert_to_format(data, 'Profile Images', _format)
 
     else:
@@ -88,18 +88,23 @@ def download_profiles_in_format(request, _format, data=None):
                 data = CustomUser.objects.values(*fields)
             else:
                 data = data.values(*fields)
+            filename = 'Sheep Profiles' if not filename else filename
+
         elif request.user.level == 'core_shep':
             shepherd = Shepherd.objects.get(name=request.user)
             data = CustomUser.objects.get_shepherd_sheep(shepherd).values(*fields)
+
+            filename = f"{shepherd.get_shepherd_full_name()} Sheep Profiles"
 
         elif request.user.level == 'sub_shep':
             shepherd = SubShepherd.objects.get(name=request.user)
             data = CustomUser.objects.get_sub_shepherd_sheep(shepherd).values(*fields)
 
-        response = convert_to_format(data, 'Profile', _format)
+            filename = f"{shepherd.get_shepherd_full_name()} Sheep Profiles"
+
+        response = convert_to_format(data, filename, _format)
 
     return response
-        
 
 
 # Create your views here.
@@ -110,7 +115,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep' or self.request.user.level == 'chief_shep'):
-
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 
@@ -195,6 +199,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             return response
         return self.render_to_response({})
 
+
 class ShepherdSheepListView(LoginRequiredMixin, TemplateView):
     """This view is exclusively for the Chief Shepherd to view the list of
     all the shepherds"""
@@ -232,7 +237,7 @@ class ShepherdSheepListView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        
+
         if 'download_format' in request.GET:
             _format = request.POST['download_format']
 
@@ -240,7 +245,11 @@ class ShepherdSheepListView(LoginRequiredMixin, TemplateView):
                 shepherd = Shepherd.objects.get(id=kwargs['pk'])
                 data = get_user_model().objects.get_shepherd_sheep(shepherd)
 
-            response = download_profiles_in_format(request, _format, data)
+                filename = f"{shepherd.get_shepherd_full_name()} Sheep profiles"
+
+                response = download_profiles_in_format(request, _format, data, filename)
+            else:  # This code ought not to ever progress to this point
+                response = download_profiles_in_format(request, _format)
 
             return response
         return self.render_to_response({})
@@ -265,7 +274,7 @@ class SheepSummaryDetailView(LoginRequiredMixin, TemplateView):
                     if level == 'sub_shep':
                         # check if user is already a subshepherd
                         sub_shepherd = SubShepherd.objects.filter(name=user)
-                        
+
                         if sub_shepherd:
                             # user is already a subshepherd, do nothing
                             return JsonResponse({'confirm': True})
@@ -306,19 +315,19 @@ class SheepSummaryDetailView(LoginRequiredMixin, TemplateView):
 
                             core_shepherd.save()
 
-                    else: 
+                    else:
                         if user.level == 'sub_shep':
                             SubShepherd.objects.get(name=user).delete()
                             user.is_stafff = False
                         elif user.level == 'core_shep':
                             Shepherd.objects.get(name=user).delete()
                             user.is_staff = False
-                    user.level = level        
+                    user.level = level
                     user.save()
                 except Exception as e:
                     return JsonResponse({'confirm': False, 'message': str(e)})
                 return JsonResponse({'confirm': True})
-            
+
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 
@@ -585,7 +594,8 @@ class ShepherdReportView(LoginRequiredMixin, TemplateView):
 
             diligent_sheep, full_names = ShepherdReport.shepherd_manager.most_diligent_sheep(shepherd=shepherd)
             top_books = ShepherdReport.shepherd_manager.most_read_books(shepherd=shepherd)
-            unique_gender, gender_percentage = ShepherdReport.shepherd_manager.overall_gender_percentage(shepherd=shepherd)
+            unique_gender, gender_percentage = ShepherdReport.shepherd_manager.overall_gender_percentage(
+                shepherd=shepherd)
 
             pass
         elif user.level == 'chief_shep':
@@ -620,6 +630,109 @@ class ShepherdReportView(LoginRequiredMixin, TemplateView):
         context['shepherd'] = shepherd
 
         return context
+
+
+class SearchInterfaceView(LoginRequiredMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'pastoring/search_interface.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_staff and (
+                self.request.user.level == 'core_shep' or self.request.user.level == 'chief_shep'):
+            return super().get(request, *args, **kwargs)
+        return HttpResponseForbidden("You are not a Shepherd...please go back")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = title
+        context['category'] = 'Search'
+
+        # Get all the active notification for the user
+        pastoral_notifications = Notification.objects.filter(target=self.request.user, exposure_level='pastoral',
+                                                             is_activated=False)
+        all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
+                                                        is_activated=False)
+
+        active_notifications = list(pastoral_notifications) + list(all_notifications)
+        context['active_notifications'] = active_notifications
+        context['no_of_notifications'] = len(active_notifications)
+
+        context['users'] = CustomUser.objects.all()
+        context['skills'] = Skill.objects.all()
+        context['courses'] = Course.objects.all()
+
+        context['gender_filter'] = 'All'
+        context['graduate_status_filter'] = 'All'
+        context['employment_status_filter'] = 'All'
+        context['marital_status_filter'] = 'All'
+        context['skill_filter'] = 'All'
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        # Check if user want to download search instead
+        is_download = request.GET.get('download', False)
+
+        if is_download:
+            gender = request.GET['gender_filter']
+            graduate_status = request.GET['graduate_status_filter']
+            employment_status = request.GET['employment_status_filter']
+            marital_status = request.GET['marital_status_filter']
+            skills = request.GET['skill_filter']
+            course = request.GET['course_filter']
+        else:
+            gender = request.POST['search_filter_gender']
+            graduate_status = request.POST['search_filter_graduate_status']
+            employment_status = request.POST['search_filter_employment_status']
+            marital_status = request.POST['search_filter_marital_status']
+            skills = request.POST['search_filter_skills']
+            course = request.POST['search_filter_course']
+
+        search_result = CustomUser.objects.all()
+ 
+        if gender != 'All':
+            search_result = search_result.filter(gender=gender)
+        if graduate_status != 'All':
+            search_result = search_result.filter(graduate_status=graduate_status if graduate_status else None)
+        if employment_status != 'All':
+            search_result = search_result.filter(employment_status=employment_status)
+        if marital_status != 'All':
+            search_result = search_result.filter(marital_status=marital_status)
+        if skills != 'All':
+            search_result = search_result.filter(skills__icontains=skills)
+        if course != 'All':
+            search_result = search_result.filter(course_of_study=course)
+
+        if is_download:
+            fields = [
+                'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
+                'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
+                'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
+                'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
+                'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
+                'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
+                'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
+                'cloth_size', 'level'
+            ]
+            data = search_result.values(*fields)
+            response = convert_to_format(data, f"Search_result = Gender - {gender}; Graduate_status - {graduate_status}; employment_status - {employment_status}; marital_status - {marital_status}; skill - {skills}; course - {course}", 'excel')
+            return response
+
+        context['gender_filter'] = gender
+        context['graduate_status_filter'] = graduate_status
+        context['employment_status_filter'] = employment_status
+        context['marital_status_filter'] = marital_status
+        context['skill_filter'] = skills
+        context['course_filter'] = course
+
+        if search_result:
+            context['status'] = True
+            context['search_result'] = search_result
+        else:
+            context['status'] = False
+        return render(request, 'pastoring/partial_html/search_result.html', context)
 
 
 # #####################################  WORKSPACE SECTION  ##############################################
@@ -784,7 +897,8 @@ class FaultyCatalogView(LoginRequiredMixin, TemplateView):
         context['active_notifications'] = active_notifications
         context['no_of_notifications'] = len(active_notifications)
 
-        context['no_of_faulty_catalog'], context['breakdown'], context['faulty_catalog'] = Catalog.catalog_manager.retrieve_faulty_catalog(accept_catalog=True)
+        context['no_of_faulty_catalog'], context['breakdown'], context[
+            'faulty_catalog'] = Catalog.catalog_manager.retrieve_faulty_catalog(accept_catalog=True)
 
         return context
 
@@ -823,10 +937,10 @@ class TestimoniesView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep' 
+                self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
             return super().get(request, *args, **kwargs)
-        
+
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 
     def get_context_data(self, **kwargs):
@@ -870,7 +984,7 @@ class TestimoniesView(LoginRequiredMixin, TemplateView):
         testimony.title = title
         testimony.save()
 
-        return HttpResponseRedirect(reverse_lazy('pastoring:testimonies'))       
+        return HttpResponseRedirect(reverse_lazy('pastoring:testimonies'))
 
 
 class AddTestimonyView(LoginRequiredMixin, TemplateView):
@@ -901,7 +1015,7 @@ class AddTestimonyView(LoginRequiredMixin, TemplateView):
         context['active_notifications'] = active_notifications
         context['no_of_notifications'] = len(active_notifications)
 
-        return context  
+        return context
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
@@ -928,10 +1042,10 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep' 
+                self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
             return super().get(request, *args, **kwargs)
-        
+
         return HttpResponseForbidden("You are not a Shepherd...please go back")
 
     def get_context_data(self, **kwargs):
@@ -953,7 +1067,7 @@ class PropheticWordsView(LoginRequiredMixin, TemplateView):
 
         context['prophetic_words'] = PropheticWord.objects.all()
         context['total_prophetic_words'] = len(context['prophetic_words'])
-        
+
         context['unique_speakers'] = np.unique(PropheticWord.objects.retrieve_unique_speakers())
         context['no_of_speakers'] = len(context['unique_speakers'])
 
@@ -1022,8 +1136,6 @@ class AddPropheticWordsView(LoginRequiredMixin, TemplateView):
         speaker = request.POST['add_prophetic_word_speaker']
         category = request.POST['add_prophetic_word_category']
         message = request.POST['add_prophetic_word_message']
-        
-
 
         prophetic_word = PropheticWord(title=title, date=date, speaker=speaker,
                                        category=category, message=message)
@@ -1040,7 +1152,7 @@ class BlogView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep' 
+                self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
 
             if 'unique_id' in self.request.GET:
@@ -1054,9 +1166,9 @@ class BlogView(LoginRequiredMixin, TemplateView):
                 return JsonResponse(context, safe=False)
 
             return super().get(request, *args, **kwargs)
-        
+
         return HttpResponseForbidden("You are not a Shepherd...please go back")
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -1148,12 +1260,12 @@ class SermonsView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep' 
+                self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
             return super().get(request, *args, **kwargs)
-        
+
         return HttpResponseForbidden("You are not a Shepherd...please go back")
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -1178,7 +1290,7 @@ class SermonsView(LoginRequiredMixin, TemplateView):
         context['no_of_series_title'] = len(context['unique_series_title'])
 
         return context
-    
+
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
 
@@ -1254,12 +1366,11 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep' 
+                self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'):
-            
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden("You are not a Shepherd...please go back")
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -1288,7 +1399,6 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
 
         random_list = [10, 3, 34, 11, 1, 15, 40]
 
-        
         # response = requests.get(url, headers=headers, params=querystring)
 
         # print(response.json())
@@ -1297,11 +1407,11 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
         google_api_url = f"https://gnews.io/api/v4/search?q={keyword}&lang=en&max=10&apikey="
 
         querystring = {
-            "q": keyword, 
+            "q": keyword,
             "lang": 'en',
             "max": 10,
             "apikey": "cb52b85cb4f1f7fafd116445f37be30d"
-        } 
+        }
         gnews_response = requests.get(google_api_url, params=querystring)
         gnews_response = gnews_response.json()
 
@@ -1315,18 +1425,16 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
                         <img class="img-fluid" src="{article['image']}">
                         <div class="card-body">
                         <h5 class="card-title">{article['title']}</h5>
-                        <p class="card-text">{article['description']}</p>
+                        <p class="card-text">{article.get('description', '')}</p>
                         <a href="{article['url']}" target="_blank" class="btn btn-primary">See Full news</a>
                         </div>
                     </div>
                 </div>
-            
                 """
-
 
         url = "https://news-api14.p.rapidapi.com/search"
 
-        querystring = {"q":keyword,"language":"en","pageSize":"10"}
+        querystring = {"q": keyword, "language": "en", "pageSize": "10"}
 
         headers = {
             "X-RapidAPI-Key": "9c62ae64a0msh792c6aa55345b04p1fac91jsna0d4633ec694",
@@ -1342,22 +1450,20 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
                 html_markup += f"""
                 <div class="col-lg-4 col-md-6">
                     <div class="card p-3">
-                        <img class="img-fluid" src="{article['thumbnail']}">
+                        <img class="img-fluid" src="{article.get('thumbnail', '')}">
                         <div class="card-body">
-                        <h5 class="card-title">{article['title']}</h5>
-                        <p class="card-text">{article['description']}</p>
-                        <a href="{article['url']}" target="_blank" class="btn btn-primary">See Full news</a>
+                        <h5 class="card-title">{article.get('title', '')}</h5>
+                        <p class="card-text">{article.get('publisher', '').get('name', '')}</p>
+                        <a href="{article.get('url', '')}" target="_blank" class="btn btn-primary">See Full news</a>
                         </div>
                     </div>
                 </div>
 
                 """
 
-
-
         url = "https://google-news13.p.rapidapi.com/search"
 
-        querystring = {"keyword":keyword,"lr":"en-US"}
+        querystring = {"keyword": keyword, "lr": "en-US"}
 
         headers = {
             "X-RapidAPI-Key": "9c62ae64a0msh792c6aa55345b04p1fac91jsna0d4633ec694",
@@ -1372,29 +1478,23 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
             html_markup += f"""
             <div class="col-lg-4 col-md-6">
                 <div class="card p-3">
-                    <img class="img-fluid" src="{article['images']['original']}">
+                    <img class="img-fluid" src="{article['images'].get('thumbnail', '')}">
                     <div class="card-body">
-                    <h5 class="card-title">{article['title']}</h5>
-                    <p class="card-text">{article['snippet']}</p>
-                    <a href="{article['newsUrl']}" target="_blank" class="btn btn-primary">See Full news</a>
+                    <h5 class="card-title">{article.get('title', ''), ''}</h5>
+                    <p class="card-text">{ article.get('snippet', '') }</p>
+                    <a href="{article.get('newsUrl', '')}" target="_blank" class="btn btn-primary">See Full news</a>
                     </div>
                 </div>
             </div>
 
             """
 
-        
-        
-
-
-        
         context = {
             'confirm': True,
             'articles': html_markup
         }
 
         return JsonResponse(context)
-    
 
 
 #########################  END WORKSPACE  ##########################

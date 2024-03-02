@@ -63,6 +63,14 @@ class ChurchWorkListView(LoginRequiredMixin, ListView):
                                 details=f"Worked on {work_category}")
         recent.save()
 
+        if request.htmx:
+            context = dict()
+
+            context['category'] = 'Church Work'
+            context['lists'] = ChurchWork.objects.all()
+
+            return render(request, 'dashboard/table/partial_html/table-data.html', context)
+
         return HttpResponseRedirect(reverse_lazy('church_work:list'))
 
 
@@ -116,6 +124,7 @@ class ChurchWorkDetailView(LoginRequiredMixin, DetailView):
             church_work.last_active_date = timezone.now()
 
             church_work.save()
+
         except NotImplementedError:
             context['detail_update'] = 'failed'
             return self.render_to_response(context)
@@ -127,5 +136,7 @@ class ChurchWorkDetailView(LoginRequiredMixin, DetailView):
         context['detail'] = ChurchWork.objects.get(id=kwargs['pk'])
         context['detail_update'] = 'successful'
 
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)
 

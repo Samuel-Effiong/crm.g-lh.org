@@ -73,8 +73,8 @@ class PropheticWord(models.Model, Utility):
     date = models.DateField(default=timezone.now)
     speaker = models.CharField(max_length=255)
     message = models.TextField()
-    ai_generated_summary = models.TextField(blank=True)
-    ai_generated_keywords = models.TextField(blank=True)
+    ai_generated_summary = models.TextField(blank=True, null=True)
+    ai_generated_keywords = models.TextField(blank=True, null=True)
 
     objects = PropheticWordManager()
 

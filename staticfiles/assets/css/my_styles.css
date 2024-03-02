@@ -8,3 +8,15 @@
 #coming_soon_container img {
     animation: imgRotate 50s linear infinite;
 }
+
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline;
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859" ?>
+<!DOCTYPE Music_Library [
+    <!ELEMENT Music_Libray (Title,Artist,Country,Price,Year)>
+    <!ELEMENT Title (#PCDATA)>
+    <!ELEMENT Artist (#PCDATA)>
+    <!ELEMENT Country (#PCDATA)>
+    <!ELEMENT Price (#PCDATA)>
+    <!ELEMENT Year (#PCDATA)>
+]>
+
+<Music_Library>
+    <Title>Children of Light</Title>
+    <Artist>
+        <FirstName>Barr. Ita</FirstName>
+        <LastName>Udoh</LastName>
+    </Artist>
+    <Country>Nigeria</Country>
+    <Price>Free</Price>
+    <Year>2019</Year>
+</Music_Library

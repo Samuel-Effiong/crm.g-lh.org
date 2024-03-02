@@ -1,0 +1,229 @@
+
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+{% block content %}  
+    <div class="conatiner-fluid content-inner mt-n5 py-0">
+        <div class="row" style="margin-top: 70px;">
+            
+            <div class="col-lg-3">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Filters</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <form
+                                        hx-post="{% url 'pastoring:search-interface' %}"
+                                        hx-trigger="change delay:500ms, submit"
+                                        hx-target="#search_result"
+                                        hx-swap="innerHTML"
+                                        hx-indicator="#springBouceLoader"
+                                >
+                                    {% csrf_token %}
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_gender">Gender</label>
+                                        <select class="form-select" name="search_filter_gender" id="search_filter_gender">
+                                            <option value="All">All</option>
+                                            <option value="F">Female</option>
+                                            <option value="M">Male</option>
+                                        </select>
+                                    </div>
+        
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_graduate_status">Graduate Status</label>
+                                        <select class="form-select" name="search_filter_graduate_status" id="search_filter_graduate_status">
+                                            <option value="All">All</option>
+                                            <option value="">None</option>
+                                            <option value="Undergraduate">Undergraduate</option>
+                                            <option value="Graduate">Graduate</option>
+                                        </select>
+                                    </div>
+        
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_employment_status">Employment Status</label>
+                                        <select class="form-select" name="search_filter_employment_status" id="search_filter_employment_status">
+                                            <option value="All">All</option>
+                                            <option value="Employed">Employed</option>
+                                            <option value="Employed but still looking for another job">Employed but still looking</option>
+                                            <option value="Under Employed">Under Employed </option>
+                                            <option value="Unemployed">Unemployed</option>
+                                        </select>
+                                    </div>
+        
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_marital_status">Marital Status</label>
+                                        <select class="form-select" name="search_filter_marital_status" id="search_filter_marital_status">
+                                            <option value="All">All</option>
+                                            <option value="Single">Single</option>
+                                            <option value="Married">Married</option>
+                                            <option value="Divorced">Divorced </option>
+                                            <option value="Widow">Widow</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_skills">Skills</label>
+                                        <select class="form-select" name="search_filter_skills" id="search_filter_skills">
+                                            <option value="All">All</option>
+                                            {% for item in skills %}
+                                                <option value="{{ item }}">{{ item }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_course">Course</label>
+                                        <select class="form-select" name="search_filter_course" id="search_filter_course">
+                                            <option value="All">All</option>
+                                            {% for item in courses %}
+                                                <option value="{{ item }}">{{ item }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-sm-6 col-lg-12">
+                                        <label class="form-label" for="search_filter_state">State</label>
+                                        <select class="form-select" id="search_filter_state" disabled>
+                                            <option value="all">...Coming Soon</option>
+                                        </select>
+                                    </div>
+
+                                </form>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+            
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between">
+                                <div class="header-title">
+                                    <h4 class="card-title">Search Result</h4>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="search_result">
+                                    <div class="d-flex justify-content-end">
+                                        <form method="post" action="{% url 'pastoring:search-interface' %}?download=True&gender_filter={{ gender_filter }}&graduate_status_filter={{ graduate_status_filter }}&employment_status_filter={{ employment_status_filter }}&marital_status_filter={{ marital_status_filter }}&skill_filter={{ skill_filter }}&course_filter={{ course_filter }}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-secondary mb-4" type="submit" id="download_filtered_profile">
+                                                Download
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Full name</th>
+                                            <th scope="col">Gender</th>
+                                            <th scope="col">Age</th>
+                                            <th scope="col">Marital Status</th>
+                                            <th scope="col">Shepherd</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for user in users %}
+                                                <tr>
+                                                    <th scope="row">{{ forloop.counter }}</th>
+                                                    <td><a class="text-primary" style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#DisplayResultDetailsModalStatic" onclick="populate_user_dialog('{{ user.get_image_url }}', '{{ user.get_full_name }}', '{{ user.get_user_age }}', '{{ user.about }}', '{{ user.marital_status }}', '{{ user.employment_status }}', '{{ user.graduate_status }}', '{{ user.shepherd.get_shepherd_full_name }}', '{{ user.skills }}')">{{ user.get_full_name }}</a></td>
+                                                    <td>{{ user.gender }}</td>
+                                                    <td>{{ user.get_user_age }}</td>
+                                                    <td>{{ user.marital_status }}</td>
+                                                    <td>{{ user.shepherd.get_shepherd_full_name }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block modal %}
+    <div class="modal fade" id="DisplayResultDetailsModalStatic" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="DisplayResultDetailsScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="DisplayResultDetailsScrollableTitle">Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div>
+                        <img id="user_profile_pic" src="" alt="" class="rounded-circle bg-soft-primary avatar-235 mb-3">
+                    </div>
+                    <h3 id="user_full_name" class="mb-2"></h3>
+                    <h3 class="mb-2">Age, <span id="user_age"></h3>
+                    <p id="user_about_me"></p>
+                </div>
+                <div class="mb-4">
+                    <p class="p-2">Marital Status: <span class="h5" id="user_marital_status"></span></p>
+                    <p class="p-2">Employment Status: <span class="h5" id="user_employment_status"></span></p>
+                    <p class="p-2">Graduate Status: <span class="h5" id="user_graduate_status"></span></p>
+                </div>
+                <div class="mb-4">
+                    <p class="p-2">Shepherd: <span class="h5" id="user_shepherd"></span></p>
+                </div>
+                <div class="mb-4">
+                    <p class="p-2">Skills: <span class="h5" id="user_skills"></span></p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        const populate_user_dialog = (profile_pic_url, full_name, age, about, marital_status, employment_status, graduate_status, shepherd, skills) => {
+            const user_profile_pic = document.getElementById('user_profile_pic');
+            const user_full_name = document.getElementById('user_full_name');
+            const user_age = document.getElementById('user_age');
+            const user_about_me = document.getElementById('user_about_me');
+
+            const user_marital_status = document.getElementById('user_marital_status');
+            const user_employment_status = document.getElementById('user_employment_status');
+            const user_graduate_status = document.getElementById('user_graduate_status');
+
+            const user_shepherd = document.getElementById('user_shepherd');
+            const user_skills = document.getElementById('user_skills');
+
+            user_profile_pic.src = profile_pic_url;
+            user_full_name.textContent = full_name;
+            user_age.textContent = age;
+            user_about_me.textContent = about;
+            user_marital_status.textContent = marital_status;
+            user_employment_status.textContent = employment_status;
+            user_graduate_status.textContent = graduate_status;
+            user_shepherd.textContent = shepherd;
+            user_skills.textContent = skills;
+        }
+    </script>
+{% endblock javascript %}

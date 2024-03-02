@@ -194,7 +194,7 @@
                                             </div>
                                             <div class="alert alert-success d-flex align-items-center" id="message_delivered" role="alert" style="display: none !important;">
                                                 <svg class="bi flex-shrink-0 me-2" width="24" height="24">
-                                                    <use xlink:href="#check-circle-fill" />
+                                                    <use xlink:href="#check-circle-fill"></use>
                                                 </svg>
                                                 <div>
                                                     Message have been sent successfully!
@@ -323,8 +323,34 @@
                                            </div>
 
                                            <div class="form-group col-md-12">
-                                               <label for="skills" class="form-label">Skills</label>
-                                               <input type="text" class="form-control" id="skills" name="skills" placeholder="Enter a comma-separated list of your skills (e.g., Writing, Voice over, Graphic Designer)" value="{{ user.skills|empty_space_if_none }}">
+                                               <label for="skills" class="form-label">Marital Status</label>
+                                               <select name="marital_status" id="marital_status" class="form-select mb-3">
+                                                   <option value="Single" {% if user.marital_status == 'Single' %}selected{% endif %}>Single</option>
+                                                   <option value="Married" {% if user.marital_status == 'Married' %}selected{% endif %}>Married</option>
+                                                   <option value="Divorced" {% if user.marital_status == 'Divorced' %}selected{% endif %}>Divorced</option>
+                                                   <option value="Widow" {% if user.marital_status == 'Widow' %}selected{% endif %}>Widow</option>
+                                               </select>
+                                           </div>
+
+                                           <div class="form-group col-md-12">
+                                               <label for="skills" class="form-label">Skills (Select multiple where apply)</label>
+                                               <select name="skills" id="skills" class="form-select mb-3" multiple>
+                                                   {% for item in skills %}
+                                                       <option value="{{ item }}" {% if item.name in user.skills %}selected{% endif %}>{{ item }}</option>
+                                                   {% endfor %}
+                                               </select>
+                                               <p><small class="text-danger">Your skills not available? <a class="text-primary" style="cursor: pointer" onclick="toggle_suggestion_dialog('skills')">Suggest one</a></small></p>
+                                           </div>
+
+                                           <div class="form-group col-md-12">
+                                               <label class="form-label" for="sub_shepherd">Employment Status:</label>
+                                               <select name="employment_status" id="employment_status" class="form-select mb-3">
+                                                   {% for status in employment_status %}
+                                                       <option value="{{ status }}" {% if status == user.employment_status %}selected{% endif %}>
+                                                           {{ status }}
+                                                       </option>
+                                                   {% endfor %}
+                                               </select>
                                            </div>
                                        </fieldset>
                                     </div>
@@ -423,7 +449,12 @@
                                        <fieldset id="school_information" class="row">
                                            <div class="form-group col-md-6">
                                                <label class="form-label" for="course_of_study">Course of Study:</label>
-                                               <input type="text" class="form-control" id="course_of_study" name="course_of_study" placeholder="e.g. Computer Engineering" value="{{ user.course_of_study|empty_space_if_none }}">
+                                               <select name="course_of_study" id="course_of_study" class="form-select mb-3">
+                                                {% for course in courses %}
+                                                    <option value="{{ course }}" {% if user.course_of_study == course.name %}selected{% endif %}>{{ course }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <p><small class="text-danger">Your course not available? <a class="text-primary" style="cursor: pointer" onclick="toggle_suggestion_dialog('course_of_study')">Suggest one</a></small></p>
                                            </div>
                                            <div class="form-group col-md-6">
                                                <label class="form-label" for="years_of_study">Years of Study:</label>
@@ -437,12 +468,13 @@
                                                <label class="form-label" for="final_year_status">Final Year Status <i><small>(Update when appropriate)</small></i>:</label>
                                                <input type="text" class="form-control" id="final_year_status" name="final_year_status" value="{{ user.final_year_status|empty_space_if_none }}">
                                            </div>
+
                                            <div class="form-group col-md-12">
                                               <label class="form-label" for="graduate_status">Graduate Status:</label>
                                               <select name="graduate_status" id="graduate_status" class="form-select mb-3">
                                                 <option value="">None</option>
-                                                <option value="undergraduate">Undergraduate</option>
-                                                <option value="graduate">Graduate</option>
+                                                <option value="Undergraduate" {% if user.graduate_status.capitalize == 'Undergraduate' %}selected{% endif %}>Undergraduate</option>
+                                                <option value="Graduate" {% if user.graduate_status.capitalilze == 'Graduate' %}selected{% endif %}>Graduate</option>
                                               </select>
                                            </div>
                                        </fieldset>
@@ -551,6 +583,7 @@
                                                    {% endfor %}
                                                </select>
                                            </div>
+
                                        </fieldset>
                                     </div>
                                 </div>
@@ -602,13 +635,16 @@
                              </div>
                           </div>
                           <div class="card-body">
-                             <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" id="password_form" novalidate>
+                              <div id="password_form_status">
+                              </div>
+                             <form
+                                     hx-post=""
+                                     hx-trigger="submit"
+                                     hx-target="#password_form_status"
+                                     hx-swap="innerHTML"
+                                     hx-indicator="#springBouceLoader"
+                             >
                                 {% csrf_token %}
-                                <div style="text-align: center">
-                                    <p id="password_successful" style="color: green; display: none"><i>Password change successfully...<br>Please wait as page reloads</i></p>
-                                    <p id="password_failed" style="color: red; display: none"><i>Current password is incorrect</i></p>
-                                    <p id="password_error" style="color: red; display: none">An error occurred...Try again</p>
-                                </div>
 
                                  <div class="form-group col-lg-12 col-md-12">
                                    <input class="form-control" type="text" name="form_name" hidden value="password">
@@ -731,21 +767,29 @@
                                 <h6 class="mb-1">Phone Number:</h6>
                                 <p id="displayPhoneNumber">{{ user.phone_number }}</p>
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-3">
                                 <h6 class="mb-1">Email:</h6>
                                 <p id="displayEmail">{{ user.email }}</p>
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-3">
                                 <h6 class="mb-1">Occupation:</h6>
                                 <p id="displayOccupation">{{ user.occupation }}</p>
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-3">
                                 <h6 class="mb-1">Address:</h6>
                                 <p id="displayAddress">{{ user.address }}</p>
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-3">
                                 <h6 class="mb-1">Skills:</h6>
-                                <pd id="displaySkills">{{ user.skills }}</pd>
+                                <p id="displaySkills">{{ user.skills }}</p>
+                            </div>
+                            <div class="mt-3">
+                                <h6 class="mb-1">Marital Status:</h6>
+                                <p id="displayMaritalStatus">{{ user.marital_status }}</p>
+                            </div>
+                            <div class="mt-3">
+                                <h6 class="mb-1">Employment Status:</h6>
+                                <p id="displayEmploymentStatus">{{ user.employment_status }}</p>
                             </div>
                         </fieldset>
                      </div>
@@ -967,7 +1011,7 @@
                              </div>
                           </div>
                           <div class="card-body">
-                             <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" id="password_form" novalidate>
+                             <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
                                 {% csrf_token %}
 
                                  <div class="form-group col-lg-12 col-md-12">
@@ -1030,18 +1074,23 @@
             }
         }
 
-        const download_profile = (format) => {
-            url = `${url}?download_profile&format=${format}`;
-            
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    
-                })
+        const toggle_suggestion_dialog = (option) => {
+            const suggestion_box_modal = document.getElementById('suggestions_complaints_modal_box');
+
+            {% if user.shepherd %}
+                const modal_title = document.getElementById('suggestion_complaint_title');
+                if (option === 'skills'){
+                    modal_title.value = "My Skills Suggestions"
+                }
+                else if (option === 'course_of_study') {
+                    modal_title.value = "My Course Suggestions"
+                }
+                
+            {% endif %}
+
+            suggestion_box_modal.click()
         }
+
     </script>
 
 {% endblock javascript %}

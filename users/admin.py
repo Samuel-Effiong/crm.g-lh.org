@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Shepherd, SubShepherd, Catalog, Permission,
-                     FamilyMemberWeeklySchedule, WeekOne, WeekTwo, WeekThree, WeekFour)
+                     FamilyMemberWeeklySchedule, WeekOne, WeekTwo, WeekThree,
+                     WeekFour, Skill, Course)
 
 
 class PermissionInline(admin.StackedInline):
@@ -15,7 +16,8 @@ class PermissionInline(admin.StackedInline):
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     list_display = ('get_full_name', 'level', 'shepherd', 'sub_shepherd', 'get_user_age')
-    list_filter = ('gender', 'level', 'country', 'state', 'lga', 'course_of_study', 'occupation', 'skills', 'graduate_status')
+    list_filter = ('gender', 'level', 'country', 'state', 'lga', 'course_of_study', 'occupation',
+                   'skills', 'graduate_status', 'marital_status', 'employment_status')
     search_fields = ('first_name', 'last_name', 'country', 'state',)
     date_hierarchy = 'date_of_birth'
     # inlines = (PermissionInline, )
@@ -23,10 +25,16 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = [
         ("Bio Data", {
             'classes': ('wide', ),
-            'fields': ('first_name', 'last_name', 'username', 'gender', 'date_of_birth',
-                       'about', 'password')}),
+            'fields': (
+                'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
+                'about', 'password'
+            )
+        }),
         ('Personal Data', {
-            'fields': ('phone_number', 'email', 'occupation', 'address', 'skills'),
+            'fields': (
+                'phone_number', 'email', 'occupation', 'address', 'skills',
+                'marital_status', 'employment_status'
+            ),
             'classes': ('wide',)
         }),
         ("Basic Medical Information", {
@@ -147,3 +155,14 @@ class FamilyMemberWeeklyScheduleAdmin(admin.ModelAdmin):
     inlines = (WeekOneInline, WeekTwoInline, WeekThreeInline, WeekFourInline, )
     list_display = ('username', )
 
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    list_filter = ('name', )
+
+
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    list_filter = ('name', )

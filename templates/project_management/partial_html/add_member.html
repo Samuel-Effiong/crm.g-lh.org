@@ -1,6 +1,6 @@
 
 {% if status %}
-    <li class="list-group-item d-flex justify-content-between">
+    <li class="list-group-item d-flex justify-content-between" id="department_member_space_{{ member.pk }}">
         <span>
             <span class="iq-avatar mr-2">
                 <img class="avatar-80 rounded" src="{{ member.get_member_image_url }}" alt="#" data-original-title="" title="">
@@ -8,7 +8,21 @@
             {{ member.member_name.get_full_name }}
         </span>
 
-        <button type="button" class="btn btn-outline-danger" onclick="delete_member('{{ member.pk }}', '{{ department.department_name }}')">Remove</button>
+        <form
+            hx-post="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}?settings=delete_member"
+            hx-trigger="submit"
+            hx-target="#department_member_space_{{ member.pk }}"
+            hx-swap="delete"
+            hx-confirm="Are you sure you want to remove {{ member.member_name.get_full_name }} from {{ department.department_name }}"
+            hx-indicator="#springBouceLoader"
+        >
+            {% csrf_token %}
+            <div style="display: none;">
+                <input type="text" name="department_member_pk" value="{{ member.pk }}">
+            </div>
+
+            <button type="submit" class="btn btn-outline-danger">Remove</button>
+        </form>
     </li>
 {% endif %}
 

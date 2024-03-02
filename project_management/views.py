@@ -456,6 +456,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
         context['department_projects'] = DepartmentProject.objects.filter(department=department).order_by('-start_date')
         context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
         context['department_members'] = DepartmentMember.objects.get_department_members(department)
+        context['department_units'] = department.unit_set.all()
 
         # family_members not in the department
         context['family_members'] = [
@@ -484,6 +485,27 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                     category.save()
                     department.department_categories.add(category)
 
+            if settings == 'unit':
+                unit_name = request.POST.get('unit_name', None).strip()
+                unit_objective = request.POST.get('unit_objective').strip()
+
+                unit_leader = request.POST.get('unit_leader')
+                unit_leader = DepartmentMember.objects.get(id=unit_leader)
+
+                unit_members = request.POST.getlist('unit_members')
+                unit_members = [DepartmentMember.objects.get(id=member) for member in unit_members]
+
+                department_unit = Unit.objects.create(
+                    name=unit_name, info=unit_objective,
+                    unit_leader=unit_leader,
+                    objective=unit_objective
+                )
+                department_unit.members.add(*unit_members)
+
+                # add leader to the unit in case the leader is not selected or if 
+                # it is selected refrain from adding again
+                # if department_unit.members.contain
+
             elif settings == 'member':
                 family_members = request.POST.get('family_members', None).strip()
 
@@ -504,7 +526,11 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
 
                 if removed_member:
                     department_member = DepartmentMember.objects.get(id=removed_member)
-                    department.member_names.remove(department_member)
+
+                    if department.leader == department_member:
+                        department.leader = None
+                    elif department.sub_leader == department_member:
+                        department.sub_leader = None
 
                     department_member.delete()
 
@@ -627,7 +653,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
                 department_member.delete()
 
                 return JsonResponse({'confirm': True})
-
+            
             elif 'delete_category' in request.GET:
                 department_category = request.GET.get('category_name', None)
                 department_name = request.GET.get('department_name')
@@ -835,8 +861,8 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
             category_name = request.POST['category_name']
             category_objective = request.POST['category_objective']
 
-            # check to see if user is already a member
-            # in case the admin made the mistake of choosing the same user
+            # check to see if category is already in the department
+            # in case the admin made the mistake of creating the same category
             category = DepartmentCategory.objects.filter(category_name=category_name, department_name=department)
 
             # create department category instance
@@ -855,6 +881,7 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
                     context['status'] = True
                     context['department_category'] = category
                     context['category'] = settings
+                    context['department'] = department
 
                     return render(request, 'project_management/partial_html/add_category.html', context)
             else:
@@ -890,7 +917,69 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
                     return render(request, 'project_management/partial_html/add_member.html', context)
 
         elif settings == 'update_member_details':
-            pass
+            department_name = request.POST['update_department_name']
+            abridged_department_name = request.POST['update_department_name_abridge']
+            
+            leader_name = request.POST['update_leaders_name']
+            try:
+                leader_name = DepartmentMember.objects.get(member_name__id=leader_name, department_name=department)
+            except DepartmentMember.DoesNotExist:
+                leader_name = DepartmentMember.objects.create(
+                    member_name=get_user_model().objects.get(id=leader_name),
+                    department_name=department
+                )
+                department.member_names.add(leader_name)
+
+            assistant_leader_name = request.POST['update_assistant_leaders_name']
+            try:
+                assistant_leader_name = DepartmentMember.objects.get(member_name__id=assistant_leader_name, department_name=department)
+            except DepartmentMember.DoesNotExist:
+                assistant_leader_name = DepartmentMember.objects.create(
+                    member_name=get_user_model().objects.get(id=assistant_leader_name),
+                    department_name=department
+                )
+                department.member_names.add(assistant_leader_name)
+
+            department_objective = request.POST['update_department_objective']
+
+            department.department_name = abridged_department_name
+            department.department_long_name = department_name
+            department.leader = leader_name
+            department.sub_leader = assistant_leader_name
+            department.department_objectives = department_objective
+
+            department.save()
+
+            if request.htmx:
+                context['status'] = True
+                context['category'] = settings
+                context['department'] = department
+                return render(request, 'project_management/partial_html/update_department_details.html', context)
+
+        elif settings == 'delete_category':
+            department_category = request.POST.get('category_pk', None)
+            department_category = DepartmentCategory.objects.get(pk=department_category)
+
+            department.department_categories.remove(department_category)
+            department_category.delete()
+
+            return JsonResponse({}, safe=True)
+
+        elif settings == 'delete_member':
+            department_member = request.POST.get('department_member_pk', None)
+            department_member = DepartmentMember.objects.get(pk=department_member)
+
+            department.member_names.remove(department_member)
+            department_member.delete()
+            
+            return JsonResponse({}, safe=True)
+        elif settings == 'delete_department':
+            diaconate = department.department_diaconate
+
+            # diaconate.departments.remove(department)
+            department.delete()
+
+            return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
 
         return HttpResponseRedirect(
             reverse_lazy(

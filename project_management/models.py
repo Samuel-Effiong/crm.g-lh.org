@@ -565,23 +565,24 @@ class CustomUnitManager(models.Manager):
 
 class Unit(models.Model):
     name = models.CharField(max_length=500)
-    info = models.TextField(null=True, blank=True)
-    head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
-    assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    objective = models.TextField(null=True, blank=True)
+    unit_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
+    sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    members = models.ManyToManyField(DepartmentMember, blank=True, related_name='+')
 
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    unit_department = models.ForeignKey(Department, on_delete=models.CASCADE)
     sub_units = models.ManyToManyField('SubUnit', blank=True)
     objects = CustomUnitManager()
 
     constraints = [
         models.UniqueConstraint(
-            fields=('department', 'name'),
+            fields=('unit_department', 'name'),
             name='unique_department_unit'
         )
     ]
 
     def __str__(self):
-        return f"{self.name}\t-\t\t{self.department}"
+        return f"{self.name}\t-\t\t{self.unit_department}"
 
     @admin.display(description="Number of Sub Units")
     def get_number_of_subunit(self):

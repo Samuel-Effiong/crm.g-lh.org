@@ -84,9 +84,9 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="pill" href="#profile3" role="tab" aria-selected="false">Projects Timeline</a>
                         </li>
-{#                        <li class="nav-item">#}
-{#                            <a class="nav-link" data-toggle="pill" href="#profile4" role="tab" aria-selected="false">Experience</a>#}
-{#                        </li>#}
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="pill" href="#profile4" role="tab" aria-selected="false">Units</a>
+                        </li>
 {#                        <li class="nav-item">#}
 {#                            <a id="view-btn" class="nav-link" data-toggle="pill" href="#profile5" role="tab" aria-selected="true">About</a>#}
 {#                        </li>#}
@@ -97,7 +97,6 @@
                            <p class="d-flex justify-content-between">
                                Active Categories in {{ department.department_name }}
                                <button type="button" class="btn btn-primary p-2" data-target="#add-category" data-toggle="modal">Add Category</button>
-
                            </p>
                            <div class="row">
                               <div class="col-12">
@@ -401,76 +400,33 @@
                               </ul>
                            </div>
                         </div>
-{#                        <div id="profile4" class="tab-pane fade">#}
-{#                           <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">#}
-{#                              <ul class="list-inline p-0 m-0 w-100">#}
-{#                                 <li>#}
-{#                                    <div class="row align-items-top">#}
-{#                                       <div class="col-md-3">#}
-{#                                          <h6 class="mb-2">2020 - present</h6>#}
-{#                                       </div>#}
-{#                                       <div class="col-md-9">#}
-{#                                          <div class="media profile-media align-items-top">#}
-{#                                             <div class="profile-dots border-primary mt-1"></div>#}
-{#                                             <div class="ml-4">#}
-{#                                                <h6 class=" mb-1">Software Engineer at Mathica Labs</h6>#}
-{#                                                <p class="mb-0 font-size-14">Total : 02 + years of experience</p>#}
-{#                                             </div>#}
-{#                                          </div>   #}
-{#                                       </div>#}
-{#                                    </div>#}
-{#                                 </li>#}
-{#                                 <li>#}
-{#                                    <div class="row align-items-top">#}
-{#                                       <div class="col-md-3">#}
-{#                                          <h6 class="mb-2">2018 - 2019</h6>#}
-{#                                       </div>#}
-{#                                       <div class="col-md-9">#}
-{#                                          <div class="media profile-media align-items-top">#}
-{#                                             <div class="profile-dots border-primary mt-1"></div>#}
-{#                                             <div class="ml-4">#}
-{#                                                <h6 class=" mb-1">Junior Software Engineer at Zimcore Solutions</h6>#}
-{#                                                <p class="mb-0 font-size-14">Total : 1.5 + years of experience</p>#}
-{#                                             </div>#}
-{#                                          </div> #}
-{#                                       </div>#}
-{#                                    </div>#}
-{#                                 </li>#}
-{#                                 <li>#}
-{#                                    <div class="row align-items-top">#}
-{#                                       <div class="col-md-3">#}
-{#                                       <h6 class="mb-2">2017 - 2018</h6>#}
-{#                                       </div>#}
-{#                                       <div class="col-md-9">#}
-{#                                          <div class="media profile-media align-items-top">#}
-{#                                             <div class="profile-dots border-primary mt-1"></div>#}
-{#                                             <div class="ml-4">#}
-{#                                                <h6 class=" mb-1">Junior Software Engineer at Skycare Ptv. Ltd</h6>#}
-{#                                                <p class="mb-0 font-size-14">Total : 0.5 + years of experience</p>#}
-{#                                             </div>#}
-{#                                          </div> #}
-{#                                       </div>#}
-{#                                    </div>#}
-{#                                 </li>#}
-{#                                 <li>#}
-{#                                    <div class="row align-items-top">#}
-{#                                       <div class="col-3">#}
-{#                                          <h6 class="mb-2">06 Months</h6>#}
-{#                                       </div>#}
-{#                                       <div class="col-9">#}
-{#                                          <div class="media profile-media pb-0 align-items-top">#}
-{#                                             <div class="profile-dots border-primary mt-1"></div>#}
-{#                                             <div class="ml-4">#}
-{#                                                <h6 class=" mb-1">Junior Software Engineer at Infosys Solutions</h6>#}
-{#                                                <p class="mb-0 font-size-14">Total : Freshers</p>#}
-{#                                             </div>#}
-{#                                          </div>                                    #}
-{#                                       </div>#}
-{#                                    </div>#}
-{#                                 </li>#}
-{#                              </ul>#}
-{#                           </div>#}
-{#                        </div>#}
+                        <div id="profile4" class="tab-pane fade">
+                            <p class="d-flex justify-content-between">
+                                Active Units in {{ department.department_name }}
+                                <button type="button" class="btn btn-primary p-2" data-target="#add-unit" data-toggle="modal">Add Unit</button>
+                            </p>
+                            <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
+                                <ul class="list-group list-group-flush col-12">
+                                    {% for unit in department_units %}
+                                        <li class="list-group-item col-12">
+                                            <div class="d-flex justify-content-between">
+                                                <p class="h4">{{ unit.name }}</p>
+                                                <button type="button" class="btn btn-outline-danger" data-target="#remove-unit" data-toggle="modal">
+                                                    <i class="ri-alert-fill"></i>
+                                                </button>
+                                            </div>
+                                            <p>
+                                                {{ unit.info }}
+                                            </p>
+                                        </li>
+                                    {% endfor %}
+                                    <button type="button" class="btn btn-primary p-2" data-target="#add-unit" data-toggle="modal">Add Unit</button>
+                                </ul>
+                                
+                                
+                                
+                           </div>
+                        </div>
 {#                        <div id="profile5" class="tab-pane fade">#}
 {#                           <p>I'm Web Developer from California. I code and design websites worldwide. Mauris variustellus vitae #}
 {#                              tristique sagittis. Sed aliquet, est nec auctor aliquet, orci ex vestibulum ex, non pharetra lacus#}
@@ -515,6 +471,65 @@
                                     <textarea class="form-control" name="category_objective" id="category_objective" cols="20" rows="10"></textarea>
                                 </div>
                             </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add-unit">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_unit_title">Add Unit</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=unit" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="unit_name" class="h5">Unit Name</label>
+                                    <input type="text" class="form-control" name="unit_name" id="unit_name" placeholder="Enter Unit name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="unit_objective" class="h5">Objective</label>
+                                    <textarea class="form-control" name="unit_objective" id="unit_objective" cols="20" rows="10"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label for="unit_leader">leader</label>
+                                    <select name="unit_leader" id="unit_leader" class="form-control form-select-lg mb-3">
+                                        {% for member in department_members %}
+                                            <option value="{{ member.pk }}">{{ member.member_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label for="unit_members">Unit Member <span style="color:red">(can select multiple)</span></label>
+                                    <select name="unit_members" id="unit_members" class="form-control form-select-lg" multiple>
+                                        {% for member in department_members %}
+                                            <option value="{{ member.pk }}">{{ member.member_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
                                     <button type="submit" class="btn btn-primary mr-3">Save</button>

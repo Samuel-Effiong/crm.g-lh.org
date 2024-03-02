@@ -1,0 +1,144 @@
+
+{% load static %}
+{% load extra_tags %}
+
+{% if detail_update == 'successful' %}
+
+    <div class="mb-3 alert alert-left alert-success alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+        <span id="message"> Your {{ category }} has been successfully updated!</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+   </div>
+
+{% elif detail_update == 'failed' %}
+
+    <div class="alert alert-bottom alert-danger alert-dismissible fade show " role="alert" style="margin-top: 10px;">
+        <span id="message"> Your {{ category }} failed to be updated </span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+   </div>
+
+{% endif %}
+
+{#                  BIBLE READING DISPLAY                            #}
+
+
+{% if category == 'Bible Reading' %}
+    <h5 style="margin-bottom: 10px;">Comment</h5>
+    <p style="text-align: justify" id="display_comment">{{ detail.comment }}</p>
+
+    <h5 style="margin-bottom: 10px;">Status</h5>
+    {% if detail.status == 'completed' %}
+        <td><p class="badge rounded-pill bg-success" style="padding:8px;" id="display_status">Completed</p></td>
+    {% elif detail.status == 'in_progress' %}
+        <td><p class="badge rounded-pill bg-warning" style="padding:8px;" id="display_status">In Progress</p></td>
+    {% elif detail.status == 'not_started' %}
+        <td><p class="badge rounded-pill bg-danger" style="padding:8px;" id="display_status">Not Started</p></td>
+    {% endif %}
+
+    <h5 style="margin-bottom: 10px;">Date</h5>
+    <p id="display_date">{{ detail.date|my_date_filter }}</p>
+
+{% elif category == 'Prayer Marathon' %}
+{#                  PRAYER MARATHON DISPLAY                            #}
+
+    <h5 style="margin-bottom: 10px;">Comment</h5>
+    <p style="text-align: justify" id="display_comment">{{ detail.comment }}</p>
+
+    <h5 style="margin-bottom: 10px;">Date</h5>
+    <p id="display_date">{{ detail.date|my_date_filter }}</p>
+
+{% elif category == 'Church Work' %}
+    <h5 style="margin-bottom: 10px;">Work Category</h5>
+    <p style="text-align: justify" id="display_category">{{ detail.work_category|format_text }}</p>
+
+    <h5 style="margin-bottom: 10px;">Details</h5>
+    <p style="text-align: justify" id="display_detail">{{ detail.details }}</p>
+
+    <h5 style="margin-bottom: 10px;">Time Stamp</h5>
+    <p style="text-align: justify" id="display_time">
+        Start Time: {{ detail.start_time|my_time_filter }}<br /> End Time: {{ detail.end_time|my_time_filter }}
+    </p>
+
+    <h5 style="margin-bottom: 10px;">Hours Spent</h5>
+    <p style="text-align: justify" id="display_hours_spent">{{ detail.hours_spent }}</p>
+
+    <h5 style="margin-bottom: 10px;">Date</h5>
+    <p id="display_date">{{ detail.date|my_date_filter }}</p>
+
+{% elif category == 'Evangelism' %}
+
+    <h5 style="margin-bottom: 10px;">Field of Visit</h5>
+    <p style="text-align: justify" id="display_field_of_visit">{{ detail.field_of_visit }}</p>
+
+    <h5 style="margin-bottom: 10px;">Hours Spent</h5>
+    <p style="text-align: justify" id="display_hours_spent">{{ detail.hours_spent_per_week }}</p>
+
+    <h5 style="margin-bottom: 10px;">No Led to Christ</h5>
+    <p style="text-align: justify" id="display_led_to_christ">{{ detail.no_led_to_christ }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of Follow Up</h5>
+    <p style="text-align: justify" id="display_follow_up">{{ detail.follow_up }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of Invitees</h5>
+    <p style="text-align: justify" id="display_invites">{{ detail.invitees }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of Holy Spirit Baptism</h5>
+    <p style="text-align: justify" id="display_holy_spirit_baptism">{{ detail.holy_spirit_baptism }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of People Prayed for</h5>
+    <p style="text-align: justify" id="display_people_prayed">{{ detail.no_of_people_prayed }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of Prints Shared</h5>
+    <p style="text-align: justify" id="display_prints_shared">{{ detail.prints_shared }}</p>
+
+    <h5 style="margin-bottom: 10px;">Messages Shared</h5>
+    <p style="text-align: justify" id="display_messages">{{ detail.messages }}</p>
+
+    <h5 style="margin-bottom: 10px;">No of Snippets</h5>
+    <p style="text-align: justify" id="display_snippet">{{ detail.snippets }}</p>
+
+    <h5 style="margin-bottom: 10px;">Beginning Date of the Week</h5>
+    <p style="text-align: justify" id="display_first_date">{{ detail.first_date_of_week }}</p>
+
+    <h5 style="margin-bottom: 10px;">Last Date of the Week</h5>
+    <p style="text-align: justify" id="display_last_date">{{ detail.last_date_of_week }}</p>
+
+{% elif category == 'Prophetic Vision' %}
+
+    <h5 style="margin-bottom: 10px;">Description</h5>
+    <p style="text-align: justify" id="display_description">{{ detail.description }}</p>
+
+    <h5 style="margin-bottom: 10px;">Date</h5>
+    <p id="display_date">{{ detail.date|my_date_filter }}</p>
+
+    <h5 style="margin-bottom: 10px;">Body</h5>
+    <p style="text-align: justify" id="display_body">{{ detail.body }}</p>
+
+{% elif category == 'Shepherd Report' %}
+    <h5 style="margin-bottom: 10px;">Date</h5>
+    <p id="display_date">{{ detail.date }}</p>
+
+    <h5 style="margin-bottom: 10px;">Books Read</h5>
+    <p style="text-align: justify" id="display_books_read">{{ detail.books_read|truncatewords:"7" }}</p>
+
+    <h5 style="margin-bottom: 10px;">Church Work</h5>
+    <p style="text-align: justify" id="display_church_work">{{ detail.church_work }}</p>
+
+    <h5 style="margin-bottom: 10px;">Personal Details</h5>
+    <p style="text-align: justify" id="display_body">{{ detail.personal_details }}</p>
+{% endif %}
+
+{% block edit_button %}
+    <div class="d-flex justify-content-between flex-wrap">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalCenteredScrollable">
+            Edit
+        </button>
+    </div>
+{% endblock edit_button %}
+
+<script>
+    (function () {
+        const button = document.getElementById('close_detail_modal');
+
+        button.click()
+    })()
+</script>

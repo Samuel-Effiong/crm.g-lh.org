@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from django.utils import timezone
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect, JsonResponse
@@ -21,7 +22,7 @@ from church_work.models import ChurchWork
 from evangelism.models import Evangelism
 
 from users.models import (Catalog, Shepherd, SubShepherd, CustomUser,
-                          Permission, FamilyMemberWeeklySchedule)
+                          Permission, FamilyMemberWeeklySchedule, Skill, Course)
 from users.my_models.users import GENOTYPE_CHOICES, BLOOD_GROUP_CHOICES
 from users.my_models.utilities import convert_image_to_webp
 
@@ -172,6 +173,14 @@ class Profile(LoginRequiredMixin, TemplateView):
         context['no_of_notifications'] = len(active_notifications)
 
         context['is_profile_updated'] = self.request.user
+        context['skills'] = Skill.objects.all()
+        context['courses'] = Course.objects.all()
+
+        employment_status = [
+            'Employed', 'Employed but still looking for another job',
+            'Under Employed', 'Unemployed'
+        ]
+        context['employment_status'] = employment_status
 
         return context
 
@@ -222,16 +231,24 @@ class Profile(LoginRequiredMixin, TemplateView):
 
             if not user.check_password(current_password):
                 context['password_update'] = 'failed'
+
+                if request.htmx:
+                    return render(request, 'dashboard/app/partial_html/change_password.html', context)
                 return self.render_to_response(context)
 
             user.set_password(new_password)
             user.save()
 
-            recent = RecentActivity(username=request.user, category="bio_data",
-                                    details='Changed Password')
-            recent.save()
+            recent = RecentActivity.objects.create(
+                username=request.user,
+                category="bio_data",
+                details='Changed Password'
+            )
 
             context['password_update'] = 'successful'
+
+            if request.htmx:
+                return render(request, 'dashboard/app/partial_html/change_password.html', context)
             return self.render_to_response(context)
 
         elif form.lower().strip() == 'profile':
@@ -256,7 +273,13 @@ class Profile(LoginRequiredMixin, TemplateView):
             user.phone_number = request.POST.get('phone_number', '').strip()
             user.occupation = request.POST.get('occupation', '').strip()
             user.address = request.POST['address'].strip()
-            user.skills = request.POST['skills'].strip()
+            user.marital_status = request.POST['marital_status']
+
+            user.employment_status = request.POST['employment_status']
+
+            skills = request.POST.getlist('skills')
+            skills = ", ".join(skills)
+            user.skills = skills
 
             # BASIC MEDICAL INFORMATION
             user.blood_group = request.POST['blood_group']
@@ -275,7 +298,7 @@ class Profile(LoginRequiredMixin, TemplateView):
             user.final_year_status = request.POST['final_year_status'].strip()
             
             graduate_status = request.POST['graduate_status'].strip()
-            if graduate_status.strip():
+            if graduate_status:
                 user.graduate_status = graduate_status
             else:
                 user.graduate_status = None
@@ -297,7 +320,6 @@ class Profile(LoginRequiredMixin, TemplateView):
                 shepherd = get_user_model().objects.get(username=request.POST['shepherd'])
                 shepherd = Shepherd.objects.get(name=shepherd)
                 user.shepherd = shepherd
-
             else:
                 user.shepherd = None
 

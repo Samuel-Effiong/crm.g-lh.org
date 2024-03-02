@@ -2,14 +2,13 @@ from datetime import datetime, time
 from typing import Any, Dict
 from django.db.models.query import QuerySet
 
-from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, JsonResponse
-from django.contrib.auth import get_user_model
 
 from .models import BibleReading, PrayerMarathon, ShepherdReport
 from home.models import RecentActivity, Notification
@@ -122,6 +121,9 @@ class BibleReadingDetailView(LoginRequiredMixin, DetailView):
 
         context['detail'] = BibleReading.objects.get(id=kwargs['pk'])
         context['detail_update'] = 'successful'
+
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)
 
 
@@ -222,6 +224,9 @@ class PrayerMarathonDetailView(LoginRequiredMixin, DetailView):
 
         context['detail'] = PrayerMarathon.objects.get(id=kwargs['pk'])
         context['detail_update'] = 'successful'
+
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)
 
 
@@ -241,7 +246,7 @@ class ShepherdReportListView(LoginRequiredMixin, ListView):
         if 'shepherd_bypass' in self.request.GET:
             self.sheep_username = get_user_model().objects.get(username=self.request.GET['sheep_username'])
         else:
-            self.sheep_username = self.request.user.username
+            self.sheep_username = self.request.user
         return ShepherdReport.objects.filter(sender=self.sheep_username).order_by('-date')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -397,4 +402,7 @@ class ShepherdReportDetailView(LoginRequiredMixin, DetailView):
 
         context['detail'] = ShepherdReport.objects.get(id=kwargs['pk'], username=request.user)
         context['detail_update'] = 'successful'
+
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)

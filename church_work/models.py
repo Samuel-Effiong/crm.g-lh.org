@@ -25,9 +25,9 @@ class DataAnalysisManager(models.Manager):
     #     return super(DataAnalysisManager, self).get_queryset().filter(username=settings.AUTH_USER_MODEL)
 
     def date_series(self, user) -> pd.DatetimeIndex:
-        object = self.get_queryset().filter(username=user).values_list('date', flat=True)
+        obj = self.get_queryset().filter(username=user).values_list('date', flat=True)
 
-        return pd.to_datetime(object)
+        return pd.to_datetime(obj)
 
 
 # Create your models here.

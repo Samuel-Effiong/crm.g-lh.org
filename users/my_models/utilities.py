@@ -52,7 +52,7 @@ class Validators(object):
 def get_user_name(object, fname):
     _, ext = os.path.splitext(fname)
     username = object.username
-    return f"profile_pics/{username}_{datetime.date.today()}_{datetime.time.isoformat()}{ext}"
+    return f"profile_pics/{username}_{datetime.date.today()}_{datetime.datetime.now().time().isoformat()}{ext}"
 
 
 def convert_image_to_webp(image):
@@ -101,7 +101,7 @@ def convert_to_format(data, category, format):
 
         df = pd.DataFrame(data)
 
-        df.to_clipboard()
+        # df.to_clipboard()
         df.to_excel(response, category)
     elif format == 'text':
         response = HttpResponse(
@@ -112,7 +112,7 @@ def convert_to_format(data, category, format):
 
         df = pd.DataFrame(data)
 
-        df.to_clipboard()
+        # df.to_clipboard()
         df.to_csv(response)
     elif format == 'html':
         response = HttpResponse(
@@ -123,7 +123,7 @@ def convert_to_format(data, category, format):
 
         df = pd.DataFrame(data)
 
-        df.to_clipboard() 
+        # df.to_clipboard() 
         df.to_html(response)
 
     elif format == 'image':

@@ -35,7 +35,7 @@
                        </div>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body" id="detail_data">
 
                         {% if detail_update == 'successful' %}
 
@@ -183,7 +183,12 @@
                                 <div class="modal-body">
                                     <div class="card">
                                         <div>
-                                            <form method="POST" enctype="multipart/form-data">
+                                            <form
+                                                    hx-post=""
+                                                    hx-trigger="submit"
+                                                    hx-target="#detail_data"
+                                                    hx-swap="innerHTML"
+                                            >
 
                                                 {% csrf_token %}
 
@@ -363,7 +368,7 @@
 
                                                 {% endif %}
                                                 <div class="modal-footer" style="margin-top: 20px;">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" id="close_detail_modal" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" id="save_update_button" class="btn btn-primary">Save changes</button>
                                                 </div>
                                             </form>

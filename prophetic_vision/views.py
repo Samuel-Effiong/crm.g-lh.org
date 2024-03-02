@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, JsonResponse
 
 from .models import PropheticVision
@@ -112,4 +112,7 @@ class PropheticVisionDetailView(LoginRequiredMixin, DetailView):
 
         context['detail'] = PropheticVision.objects.get(id=kwargs['pk'])
         context['detail_update'] = 'successful'
+
+        if request.htmx:
+            return render(request, 'dashboard/special-pages/partial_html/detail.html', context)
         return self.render_to_response(context)

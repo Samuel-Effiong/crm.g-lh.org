@@ -1,0 +1,138 @@
+{% load static %}
+{% load extra_tags %}
+
+<div class="table-responsive" id="htmx_data_table">
+  <table id="datatable" class="table table-striped" data-toggle="data-table">
+     <thead>
+        <tr>
+            {% if category == 'Bible Reading' %}
+                <th>Bible Passage</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Date</th>
+            {% elif category == 'Prayer Marathon' %}
+                <th>Comment</th>
+                <th>Date</th>
+            {% elif category == 'Church Work' %}
+                <th>Details</th>
+                <th>Work Category</th>
+                <th>Hours Spent</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Date</th>
+            {% elif category == 'Evangelism' %}
+                <td>Field of Visit</td>
+                <td>No. led to Christ / Week</td>
+                <td>No Followed up</td>
+                <td>No of Holy Spirit Baptism</td>
+                <td>No of People Prayed</td>
+            {% elif category == 'Prophetic Vision' %}
+                <td>Description</td>
+                <td>Date</td>
+                <td>Body</td>
+            {% elif category == 'Shepherd Report' %}
+                <td>Date</td>
+                <td>Books Read </td>
+                <td>Church Work</td>
+            {% endif %}
+        </tr>
+     </thead>
+     <tbody>
+        {% for item in lists %}
+            {% if category == 'Bible Reading' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}">{{ item.bible_passage }}</a></td>
+                    <td>{{ item.comment|truncatewords:"5" }}</td>
+                    {% if item.status == 'completed' %}
+                        <td><p class="text-success" style="font-size: 12px">Completed</p></td>
+                    {% elif item.status == 'in_progress' %}
+                        <td><p class="text-warning" style="font-size: 12px">In Progress</p></td>
+                    {% elif item.status == 'not_started' %}
+                        <td><p class="text-danger" style="font-size: 12px">Not Started</p></td>
+                    {% endif %}
+                    <td>{{ item.date }}</td>
+                </tr>
+            {% elif category == 'Prayer Marathon' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.comment|truncatewords:"10" }}</a></td>
+                    <td>{{ item.date }}</td>
+                </tr>
+            {% elif category == 'Church Work' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}">{{ item.details|truncatewords:"5" }}</a> </td>
+                    <td>{{ item.work_category|format_text }}</td>
+                    <td>{{ item.hours_spent }}</td>
+                    <td>{{ item.start_time|my_time_filter }}</td>
+                    <td>{{ item.end_time|my_time_filter }}</td>
+                    <td>{{ item.date }}</td>
+                </tr>
+            {% elif category == 'Evangelism' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.field_of_visit }}</a></td>
+                    <td>{{ item.no_led_to_christ }}</td>
+                    <td>{{ item.follow_up }}</td>
+                    <td>{{ item.holy_spirit_baptism }}</td>
+                    <td>{{ item.no_of_people_prayed }}</td>
+                </tr>
+            {% elif category == 'Prophetic Vision' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.description|truncatewords:"7" }}</a></td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.body|truncatewords:"5" }}</td>
+                </tr>
+            {% elif category == 'Shepherd Report' %}
+                <tr>
+                    <td><a href="{{ item.get_absolute_url }}{% if shepherd_bypass %}?shepherd_bypass=True{% endif %}">{{ item.date }} </a></td>
+                    <td>{{ item.books_read }} </td>
+                    <td>{{ item.church_work }} </td>
+                </tr>
+            {% endif %}
+        {% empty %}
+            {% if category == 'Shepherd Report' %}
+                {% if user.level == 'chief_shep' %}
+                    <td colspan="3">
+                        <em>Hello, We don't have the technology to send reports to God...yet</em><br>
+                        <p><i>But you can click <a target="_blank" href="{% url 'pastoring:shepherd-reports' %}">here</a> to read others reports...while you wait</i></p>
+                    </td>
+                    <td></td>
+                    <td></td>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+     </tbody>
+     <tfoot>
+        <tr>
+            {% if category == 'Bible Reading' %}
+                <th>Bible Passage</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Date</th>
+            {% elif category == 'Prayer Marathon' %}
+                <th>Comment</th>
+                <th>Date</th>
+            {% elif category == 'Church Work' %}
+                <th>Details</th>
+                <th>Work Category</th>
+                <th>Hours Spent</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Date</th>
+            {% elif category == 'Evangelism' %}
+                <td>Field of Visit</td>
+                <td>No. led to Christ / Week</td>
+                <td>No Followed up</td>
+                <td>No of Holy Spirit Baptism</td>
+                <td>No of People Prayed</td>
+            {% elif category == 'Prophetic Vision' %}
+                <td>Description</td>
+                <td>Date</td>
+                <td>Body</td>
+            {% elif category == 'Shepherd Report' %}
+                <td>Date</td>
+                <td>Books Read </td>
+                <td>Church Work</td>
+            {% endif %}
+        </tr>
+     </tfoot>
+  </table>
+</div>

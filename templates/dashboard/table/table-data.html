@@ -43,7 +43,7 @@
                            {% endif %}
                        {% endif %}
                    </p>
-                   <div class="table-responsive">
+                   <div class="table-responsive" id="htmx_data_table">
                       <table id="datatable" class="table table-striped" data-toggle="data-table">
                          <thead>
                             <tr>
@@ -258,7 +258,12 @@
                                 </div>
                             {% elif category == 'Church Work' %}
                                 <div>
-                                    <form method="POST" class="row g-3 needs-validation" novalidate>
+                                    <form
+                                          hx-post="{% url 'church_work:list' %}"
+                                          hx-trigger="submit"
+                                          hx-target="#htmx_data_table"
+                                          hx-swap="outerHTML"
+                                    >
                                         <div class="col-12">
                                             <label class="form-check-label" for="invalidCheck">
                                                 Work Category

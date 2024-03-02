@@ -70,9 +70,42 @@ STRICT_REPORT = (
 
 
 GRADUATE_STATUS_CHOICES = (
-    ('undergraduate', 'Undergraduate'),
-    ('graduate', 'Graduate'),
+    ('None', 'None'),
+    ('Undergraduate', 'Undergraduate'),
+    ('Graduate', 'Graduate'),
 )
+
+
+MARITAL_STATUS_CHOICES = (
+    ('Single', 'Single'),
+    ('Married', 'Married'),
+    ('Divorced', 'Divorced'),
+    ('Widow', 'Widow'),
+)
+
+ 
+EMPLOYMENT_STATUS_CHOICES = (
+    ('Employed', 'Employed'),
+    ('Employed but still looking for another job', 'Employed but still looking for another job'),
+    ('Under Employed', 'Under Employed'),
+    ('Unemployed', 'Unemployed'),
+)
+
+#
+# SKILLS_CHOICES = (
+#     ('Welding', 'Welding'),
+#     ('Electrical Installation and Maintainance', 'Electrical Installatin and Maintenance'),
+#     ('Plumbing', 'Plumbing'),
+#     ('Carpentry', 'Carpentry'),
+#     ('Masonry', 'Masonry'),
+#     ('Auto Mechanics', 'Auto Mechanics'),
+#     ('HVAC (Heating, Ventilation, and Air Conditioning) Technicians', 'HVAC (Heating, Ventilation, and Air Conditioning) Technicians'),
+#     ('Painting and Decoration', 'Painting and Decoration'),
+#     ('Tiling and Flooring', 'Tiling and Flooring'),
+#     ('Catering and Culinary Skills', 'Catering and Culinary Skills'),
+#     ('Tailoring and Fashion Design', 'Tailoring and Fashion Design'),
+#     ('Hairdressing and Barbering', 'Hairdressing and Barbering')
+# )
 
 
 # Create your models here.
@@ -215,6 +248,8 @@ class CustomUser(AbstractUser):
     occupation = models.CharField(_('Occupation'), max_length=100, blank=True, null=True)
     address = models.TextField(_("Address"), blank=True, null=True)
     skills = models.TextField(_('Skills'), blank=True, null=True)
+    marital_status = models.CharField(_('Marital Status'), max_length=10, null=True, blank=True, choices=MARITAL_STATUS_CHOICES)
+    employment_status = models.CharField(_('Employment Status'), max_length=50, blank=True, null=True, choices=EMPLOYMENT_STATUS_CHOICES)
 
     # BASIC MEDICAL INFORMATION
     blood_group = models.CharField(_("Blood Group"), max_length=10, choices=BLOOD_GROUP_CHOICES)
@@ -285,7 +320,6 @@ class CustomUser(AbstractUser):
 
     def set_date_of_birth(self, dob):
         dob = Validators.validate_prevent_future_date(value=dob)
-
         self.date_of_birth = dob
 
     def get_iso_date_of_birth(self):

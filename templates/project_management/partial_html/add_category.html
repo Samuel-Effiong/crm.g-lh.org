@@ -5,9 +5,23 @@
             <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">{{ department_category.category_name }}</h5>
 
-                <button type="button" class="btn btn-outline-danger mt-2 p-2" onclick="delete_category('{{ department_category.pk }}')">
-                    <i class="ri-alert-line"></i>Delete
-                </button>
+                <form
+                    hx-post="{% url 'project_management:project-admin-setting-department-detail' department.department_name department.pk %}?settings=delete_category"
+                    hx-trigger="submit"
+                    hx-target="#category_space_{{category.pk}}"
+                    hx-swap="delete"
+                    hx-confirm="Are you sure you want to delete {{ category.category_name }}"
+                    hx-indicator="#springBouceLoader"
+                >
+                    {% csrf_token %}
+                    <div style="display: none;">
+                        <input type="text" name="category_pk" value="{{ category.pk }}">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-danger mt-2 p-2">
+                        <i class="ri-alert-line"></i>Delete
+                    </button>
+                </form>
             </div>
             <p class="mb-1">{{ department_category.category_objective }}</p>
         </a>
