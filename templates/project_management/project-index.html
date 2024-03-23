@@ -174,7 +174,7 @@
                             <div class="col-lg-6">
                                 <div class="form-group mb-3">
                                     <label for="category">Category *</label>
-                                    <select name="category" class="selectpicker form-control" id="category" data-style="py-0" required>
+                                    <select name="category" class="selectpicker form-control" id="category" data-style="py-0">
                                         {% for category in department_categories %}
                                             <option value="{{ category.category_name }}">{{ category.category_name }}</option>
                                         {% empty %}
@@ -189,10 +189,10 @@
                                     <input type="date" class="form-control" id="due_date" name="due_date" value="" required>
                                 </div>
                             </div>
-                            <div class="col-lg-12">
+                            <div class="col-lg-12" id="members_control">
                                 <div class="form-group mb-3">
                                     <label for="members">Assign Members</label>
-                                    <select name="members" class="selectpicker form-control" id="members" data-style="py-0" multiple required>
+                                    <select name="members" class="selectpicker form-control" id="members" data-style="py-0" multiple>
                                         {% for member in department_members %}
                                             <option value="{{ member.member_name.username }}">{{ member.member_name.get_full_name }}</option>
                                         {% empty %}
@@ -201,6 +201,31 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="col-lg-12" id="units_control" style="display: none;">
+                                <div class="form-group mb-3">
+                                    <label for="units">Assign Units</label>
+                                    <select name="units" class="selectpicker form-control" data-style="py-0" id="units">
+                                        {% for unit in department.unit_set.all %}
+                                            <option value="{{ unit.pk }}">{{ unit.name }}</option>
+                                        {% empty %}
+                                            <option value="" disabled>No Unit</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="custom-control custom-switch custom-switch-text custom-switch-color custom-control-inline">
+                                    <div class="custom-switch-inner">
+                                       <input type="checkbox" class="custom-control-input bg-primary" name="use_units_toggle_button" id="use_units_toggle_button" onchange="toggle_units_selection()">
+                                       <label class="custom-control-label" for="use_units_toggle_button" data-on-label="Yes" data-off-label="No"></label>
+                                       <span class="mb-0">Toggle to assign by Units instead</span>
+                                    </div>
+                                 </div>
+                            </div>
+                            
+                            
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
                                     <button type="submit" class="btn btn-primary mr-3">Save</button>
@@ -219,4 +244,20 @@
 
 {% block extra_js %}
     <script src="{% static 'custom/custom.js' %}"></script>
+    <script>
+        const toggle_units_selection = () => {
+            const unit_toggle = document.getElementById('use_units_toggle_button');
+            const units_input = document.getElementById('units_control');
+            const members_input = document.getElementById('members_control');
+
+            if (unit_toggle.checked) {
+                units_input.style.display = 'block';
+                members_input.style.display = 'none';
+            }
+            else {
+                units_input.style.display = 'none';
+                members_input.style.display = 'block';
+            }
+        }
+    </script>
 {% endblock extra_js %}

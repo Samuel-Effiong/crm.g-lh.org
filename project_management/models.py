@@ -31,7 +31,7 @@ class DepartmentMemberManager(models.Manager):
 
         return len(member) > 0
 
-
+ 
 # Create your models here.
 class DepartmentMember(models.Model):
     """A user that is a member of a department
@@ -175,7 +175,7 @@ class Department(models.Model):
     def is_leader(self, member: DepartmentMember) -> bool:
         return self.leader == member
 
-    def is_member(self, member: get_user_model()) -> bool:
+    def is_member(self, member) -> bool:
         department_member = self.member_names.all().filter(member_name=member)
 
         if department_member:
@@ -335,7 +335,7 @@ class DepartmentProject(models.Model):
     project_name = models.CharField(max_length=1000, unique=True)
     project_description = models.TextField()
 
-    department_category = models.ForeignKey(DepartmentCategory, on_delete=models.CASCADE)
+    department_category = models.ForeignKey(DepartmentCategory, on_delete=models.CASCADE, null=True, blank=True)
     project_members = models.ManyToManyField(DepartmentMember, blank=True)
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
@@ -587,6 +587,9 @@ class Unit(models.Model):
     @admin.display(description="Number of Sub Units")
     def get_number_of_subunit(self):
         return self.sub_units.count()
+    
+    def get_number_of_unit_members(self):
+        return self.members.count()
 
 
 class SubUnitManager(models.Manager):

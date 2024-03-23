@@ -91,6 +91,17 @@ EMPLOYMENT_STATUS_CHOICES = (
     ('Unemployed', 'Unemployed'),
 )
 
+CHURCH_OUTPOST_CHOICES = (
+    ('Port Harcourt', 'Port Harcourt'),
+    ('Lagos', 'Lagos'),
+    ('Ikot Ekpene', 'Ikot Ekpene'),
+    ('Abuja', 'Abuja'),
+    ('Enugu', 'Enugu'),
+    ('Calabar', 'Calabar'),
+    ('Uyo', 'Uyo'),
+    ('None', 'None')
+)
+
 #
 # SKILLS_CHOICES = (
 #     ('Welding', 'Welding'),
@@ -260,6 +271,7 @@ class CustomUser(AbstractUser):
     lga = models.CharField(_("LGA"), max_length=300, blank=True, null=True)
     state = models.CharField(_("State"), max_length=100, blank=True, null=True)
     country = models.CharField(_("Country"), max_length=100, blank=True, null=True)
+    church_outpost = models.CharField(_("Church Outpost"), max_length=20, blank=True, null=True, choices=CHURCH_OUTPOST_CHOICES, default='None')
 
     # SCHOOL INFORMATION
     course_of_study = models.CharField(_("Course of Study"), max_length=255, blank=True, null=True)
@@ -287,8 +299,8 @@ class CustomUser(AbstractUser):
     last_active_date = models.DateField(_("Last active date"), default=timezone.now)
 
     # SPECIAL KNOWLEDGE
-    shoe_size = models.CharField(_("Shoe Size"), max_length=20, blank=True, null=True)
-    cloth_size = models.CharField(_("Cloth Size"), max_length=20, blank=True, null=True)
+    shoe_size = models.CharField(_("Shoe Size"), max_length=500, blank=True, null=True)
+    cloth_size = models.CharField(_("Cloth Size"), max_length=500, blank=True, null=True)
     level = models.CharField(_('Level'), max_length=15, default='new_mem', choices=LEVEL_CHOICES)
 
     strict_report = models.CharField(max_length=20, default='None', choices=STRICT_REPORT)

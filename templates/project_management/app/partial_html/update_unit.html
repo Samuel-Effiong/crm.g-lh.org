@@ -1,0 +1,71 @@
+
+{% if status %}
+    <div class="d-flex justify-content-between text-primary" style="cursor: pointer;" data-target="#display_unit_information" data-toggle="modal"
+        onclick="document.getElementById('display_unit_name').value='{{ unit.name }}'; document.getElementById('display_unit_objective').value='{{ unit.objective}}'; document.getElementById('update_unit_pk').value='{{ unit.pk }}'; document.getElementById('update_unit_form').setAttribute('hx-target', '#unit_detail_space_{{ unit.pk}}') "
+        hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_leader&unit_pk={{ unit.pk }}"
+        hx-target="#display_unit_leader"
+        hx-swap="outerHTML"
+        hx-indicator="#springBouceLoader"
+    >
+        <p class="h4">{{ unit.name }}</p>
+        <button type="button" class="btn btn-outline-danger" data-target="#remove-unit" data-toggle="modal" onclick="document.getElementById('removed_unit').value = '{{ unit.pk }}'; document.getElementById('removed_unit_name').textContent = '{{ unit.unit_name|safe}}'">
+            <i class="ri-alert-fill"></i>
+        </button>
+    </div>
+    <p>
+        {{ unit.objective }}
+    </p>
+
+    <div class="d-flex justify-content-between">
+        <div>
+            <small>
+                <b>Unit leader: </b>
+                <span>{{ unit.unit_leader.member_name.get_full_name }}</span>
+            </small>
+        </div>
+        <div>
+            <small style="color: blue; cursor: pointer;" data-target="#display_unit_member" data-toggle="modal"
+                hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_member&unit_pk={{ unit.pk }}"
+                hx-trigger="click"
+                hx-target="#unit_member_space"
+                hx-swap="innerHTML"
+                hx-indicator="#springBouceLoader"
+
+                onclick="document.getElementById('unit_to_add_member').value = '{{ unit.pk}}';"
+            >
+                <b>No of Unit Member: </b>
+                <span>{{ unit.get_number_of_unit_members }}</span>
+            </small>
+        </div>
+    </div>
+
+    <script>
+
+        document.getElementById('alert_parent').insertAdjacentHTML(
+            'afterbegin', 
+            `
+            <div class="alert text-white bg-success col-lg-12" style="display: flex;" role="alert">
+                <div class="iq-alert-text">Unit <b>successfully</b> updated!</div>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="ri-close-line"></i>
+                </button>
+            </div>
+            `
+        );
+    </script>
+
+{% else %}
+    <script>
+        document.getElementById('alert_parent').insertAdjacentHTML(
+            'afterbegin', 
+            `
+            <div class="alert text-white bg-danger col-lg-12" style="display: flex;" role="alert">
+                <div class="iq-alert-text">{{ failure_message }}</div>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="ri-close-line"></i>
+                </button>
+            </div>
+            `
+        );
+    </script>
+{% endif %}

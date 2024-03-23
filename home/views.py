@@ -290,6 +290,7 @@ class Profile(LoginRequiredMixin, TemplateView):
             user.lga = request.POST['lga'].strip()
             user.state = request.POST['state'].strip()
             user.country = request.POST['country'].strip()
+            user.church_outpost = request.POST['church_outpost'].strip()
 
             # SCHOOL INFORMATION
             user.course_of_study = request.POST['course_of_study'].strip()

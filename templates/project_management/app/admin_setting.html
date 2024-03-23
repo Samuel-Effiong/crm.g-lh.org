@@ -63,16 +63,12 @@
                         hx-trigger="submit"
                         hx-target="#diaconate_list"
                         hx-swap="beforeend"
+                        hx-indicator="#springBouceLoader"
                     >
                         {% csrf_token %}
 
-                        {% include 'includes/server_status_warning.html' with category='add_diaconate' %}
-
-
-                        <div class="row">
-                            <div class="htmx-indicator" style="position:absolute; width: 100%; text-align: center">
-                                <img src="{% static 'assets/images/loading.gif' %}" width="100" alt="loading gif">
-                            </div>
+                        <div class="row" id="alert_parent_add_diaconate">
+                            
                             <div class="form-group col-12 mb-3">
                                 <label for="diaconate_name">Name</label>
                                 <input type="text" id="diaconate_name" name="diaconate_name" class="form-control" required
@@ -131,9 +127,7 @@
                     >
                         {% csrf_token %}
 
-                        {% include 'includes/server_status_warning.html' with category='add_department' %}
-
-                        <div class="row">
+                        <div class="row" id="alert_parent_add_department">
                             <div style="display:none;">
                                 <input type="text" name="department_diaconate_name" id="department_diaconate_name">
                             </div>
@@ -145,7 +139,7 @@
 
                             <div class="form-group">
                                 <label for="department_short_name">Department Abbrev. Name</label>
-                                <input type="text" id="department_short_name" name="department_short_name" class="form-control">
+                                <input type="text" id="department_short_name" name="department_short_name" class="form-control" required>
                             </div>
 
                             <div class="form-group">

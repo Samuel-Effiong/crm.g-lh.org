@@ -140,6 +140,7 @@ let edit_profile = (url) => {
         let lga = document.querySelector('#lga').value;
         let state = document.querySelector('#state').value;
         let country = document.querySelector('#country').value;
+        let church_outpost = document.querySelector('#church_outpost').value;
 
         // SCHOOL INFORMATION
         let course_of_study = document.querySelector('#course_of_study').value;
@@ -193,6 +194,7 @@ let edit_profile = (url) => {
         formData.append('lga', lga);
         formData.append('state', state);
         formData.append('country', country);
+        formData.append('church_outpost', church_outpost);
 
         // SCHOOL INFORMATION
         formData.append('course_of_study', course_of_study);
@@ -247,8 +249,6 @@ let edit_profile = (url) => {
                     display.style.display = 'block';
 
                     //    UPDATE THE WEBSITE WITH THE UPLOADED INFORMATION
-
-
                     // BIO DATA
                     for (let i=1; i <= 2; i++) {
                         if (files.length > 0) {
@@ -279,6 +279,7 @@ let edit_profile = (url) => {
                     document.querySelector('#displayLga').textContent = lga;
                     document.querySelector('#displayState').textContent = state;
                     document.querySelector('#displayCountry').textContent = country;
+                    document.querySelector('#displayChurchOutpost').textContent = church_outpost;
 
                     // SCHOOL INFORMATION
                     document.querySelector('#displayCourseOfStudy').textContent = course_of_study;
@@ -340,9 +341,11 @@ let remove_profile_pic = (default_image) => {
         preview_img.removeAttribute('src');
     })
 }
+
 const _load_celeb_image = (id, profile_pic) => {
     document.getElementById(id).src = profile_pic
 }
+
 async function load_celeb_image(id, profile_pic) {
     await _load_celeb_image(id, profile_pic)
 }

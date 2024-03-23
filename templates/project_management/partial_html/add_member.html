@@ -24,23 +24,29 @@
             <button type="submit" class="btn btn-outline-danger">Remove</button>
         </form>
     </li>
+
 {% endif %}
 
 <script>
-    (function () {
-        const success_element = document.getElementById('{{ category }}_success_status');
-        const failure_element = document.getElementById('{{ category }}_failure_status');
-        const failure_message = document.querySelector('#{{ category }}_failure_status #message_board');
-        const settings_mode = document.getElementById('{{ category }}_settings_mode');
+    document.getElementById('alert_parent_add_department_member').insertAdjacentHTML(
+        'afterbegin',
 
+        `
         {% if status %}
-            success_element.style.display = 'block';
-            failure_element.style.display = 'none';
-            settings_mode.textContent = 'New Member'
+            <div class="alert text-white bg-success col-lg-12" style="display: flex;" role="alert">
+                <div class="iq-alert-text">{{ department.department_name }} <b>successfully</b> updated!</div>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="ri-close-line"></i>
+                </button>
+            </div>
         {% else %}
-            failure_element.style.display = 'block';
-            failure_message.textContent = '{{ error_message }}';
-            success_element.style.display = 'none';
+            <div class="alert text-white bg-danger col-lg-12" style="display: flex;" role="alert">
+                <div class="iq-alert-text">{{ error_message }}</div>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="ri-close-line"></i>
+                </button>
+            </div>
         {% endif %}
-    })()
+        `
+    )
 </script>

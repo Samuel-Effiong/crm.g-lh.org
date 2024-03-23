@@ -256,15 +256,25 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         department_name = kwargs['department']
-        project_name = request.POST['project_name']
-        project_description = request.POST['project_description']
-        category = request.POST['category']
-        due_date = request.POST['due_date']
+        project_name = request.POST.get('project_name', None)
+        project_description = request.POST.get('project_description', None)
+        category = request.POST.get('category', None)
+        due_date = request.POST.get('due_date', None)
         members = request.POST.getlist('members')
+        unit = request.POST.get('units', None)
+        use_units_toggle_button = request.POST.get('use_units_toggle_button', None)
 
         department = Department.objects.get(department_name=department_name)
-        members = [DepartmentMember.objects.get(member_name__username=mem, department_name=department) for mem in members]
-        department_category = DepartmentCategory.objects.get(category_name=category, department_name=department)
+
+        if not use_units_toggle_button:
+            members = [DepartmentMember.objects.get(member_name__username=mem, department_name=department) for mem in members]
+        else:
+            if unit:
+                unit = Unit.objects.get(id=unit)
+                members = unit.members.all()
+
+        
+        department_category = DepartmentCategory.objects.get(category_name=category, department_name=department) if category else None    
 
         department_project = DepartmentProject.objects.create(
             department=department,
@@ -428,7 +438,49 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                 or self.request.user.level == 'chief_shep'
                 or is_member(self.request.user)):
 
-            return super().get(request, *args, **kwargs)
+                if 'mode' in request.GET:
+                    department = kwargs['department']
+                    department = Department.objects.get(department_name=department)
+                    context = {}
+
+                    if request.GET['mode'] == 'display_unit_member':
+                        pk = request.GET['unit_pk']
+
+                        try:
+                            department_unit = Unit.objects.get(pk=pk)
+                            context['status'] = True
+                            context['department'] = department
+                            context['department_unit'] = department_unit
+
+                        except Unit.DoesNotExist as e:
+                            context['status'] = False    
+                        return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
+                    
+                    elif request.GET['mode'] == 'remove_unit_member':
+                        department_unit = request.GET['department_unit_pk']
+                        member = request.GET['member_pk']
+                    
+                        try:
+                            department_unit = Unit.objects.get(pk=department_unit)
+                            member = DepartmentMember.objects.get(pk=member)
+                            department_unit.members.remove(member)
+
+                            context['status'] = True
+                        except (Unit.DoesNotExist, DepartmentMember.DoesNotExist):
+                            context['status'] = False
+
+                        return HttpResponse({})
+                    elif request.GET['mode'] == 'display_unit_leader':
+                        unit_pk = request.GET['unit_pk']
+
+                        department_unit = Unit.objects.get(pk=unit_pk)
+                        context['status'] = True
+                        context['department_unit'] = department_unit
+
+                        return render(request, 'project_management/app/partial_html/display_unit_leader.html', context)
+                    
+                return super().get(request, *args, **kwargs)
+                
         return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
 
     def get_context_data(self, **kwargs):
@@ -489,37 +541,48 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                 unit_name = request.POST.get('unit_name', None).strip()
                 unit_objective = request.POST.get('unit_objective').strip()
 
-                unit_leader = request.POST.get('unit_leader')
-                unit_leader = DepartmentMember.objects.get(id=unit_leader)
+                unit_leader = request.POST.get('unit_leader', None)
+                if unit_leader:
+                    unit_leader = DepartmentMember.objects.get(id=unit_leader)
 
                 unit_members = request.POST.getlist('unit_members')
-                unit_members = [DepartmentMember.objects.get(id=member) for member in unit_members]
 
-                department_unit = Unit.objects.create(
-                    name=unit_name, info=unit_objective,
-                    unit_leader=unit_leader,
-                    objective=unit_objective
-                )
-                department_unit.members.add(*unit_members)
+                if unit_members:
+                    unit_members = [DepartmentMember.objects.get(id=member) for member in unit_members if int(member) != unit_leader.pk]
 
-                # add leader to the unit in case the leader is not selected or if 
-                # it is selected refrain from adding again
-                # if department_unit.members.contain
+                try:
+                    with transaction.atomic():
+                        department_unit = Unit.objects.create(
+                            name=unit_name,
+                            unit_leader=unit_leader,
+                            objective=unit_objective,
+                            unit_department=department
+                        )
+                        if unit_leader:
+                            department_unit.members.add(unit_leader)
+                        if unit_members:
+                            department_unit.members.add(*unit_members)
+
+                except IntegrityError as e:
+                    pass
 
             elif settings == 'member':
                 family_members = request.POST.get('family_members', None).strip()
 
                 if family_members:
                     family_member_list = [member for member in family_members.split(',') if member]
-
-                    new_members = [
-                        DepartmentMember.objects.create(
-                            member_name=get_user_model().objects.get_user_from_full_name(name),
-                            department_name=department
-                        )
-                        for name in family_member_list if name
-                    ]
-                    department.member_names.add(*new_members)
+                    try: 
+                        with transaction.atomic():
+                            new_members = [
+                                DepartmentMember.objects.create(
+                                    member_name=get_user_model().objects.get_user_from_full_name(name),
+                                    department_name=department
+                                )
+                                for name in family_member_list if name
+                            ]
+                            department.member_names.add(*new_members)
+                    except IntegrityError as e:
+                        pass
 
             elif settings == 'remove_member':
                 removed_member = request.POST.get('removed_member', None).strip()
@@ -539,9 +602,65 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
 
                 if removed_category:
                     department_category = DepartmentCategory.objects.get(id=removed_category)
-                    department.department_categories.remove(department_category)
-
                     department_category.delete()
+
+            elif settings == 'remove_unit':
+                removed_unit = request.POST.get('removed_unit', None).strip()
+
+                if removed_unit:
+                    department_unit = Unit.objects.get(id=removed_unit)
+                    department_unit.delete()
+
+            elif settings == 'add_unit_member':
+                # Partial Html
+                department_unit = request.POST.get('unit_to_add_member')
+                department_unit = Unit.objects.get(pk=department_unit)
+
+                member = request.POST.get('add_member_to_unit')
+
+                if member:
+                    member = DepartmentMember.objects.get(pk=member)
+
+                    if not department_unit.members.contains(member):
+                        department_unit.members.add(member)
+
+                context = {
+                    'status': True,
+                    'department': department,
+                    'department_unit': department_unit
+                }
+
+                return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
+
+            elif settings == 'update_unit_information':
+                unit_pk = request.POST.get('update_unit_pk', None)
+                unit = Unit.objects.get(id=unit_pk)
+
+                new_name = request.POST.get('display_unit_name', None)
+                new_objective = request.POST.get('display_unit_objective', None)
+
+                new_leader = request.POST.get('display_unit_leader', None)
+                new_leader = DepartmentMember.objects.get(id=new_leader)
+                context = {}
+
+                try:
+                    with transaction.atomic():
+
+                        unit.name = new_name
+                        unit.objective = new_objective
+                        unit.unit_leader = new_leader
+
+                        unit.save()
+                except IntegrityError as e:
+                    message = str(e)
+                    context['status'] = False
+                    context['failure_message'] = message
+                else:
+                    context['status'] = True
+                    context['unit'] = unit
+                    context['department'] = department
+
+                return render(request, 'project_management/app/partial_html/update_unit.html', context)
 
             elif settings == 'experience_score':
                 department_member = request.POST.get('experience_id', None)
@@ -715,7 +834,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
             except IntegrityError as e:
                 if request.htmx:
                     context['status'] = False
-                    context['error_message'] = str(e)
+                    context['error_message'] = f"{diaconate_name} already exist"
                     context['category'] = settings
 
                     return render(request, 'project_management/partial_html/add_diaconate.html', context)
@@ -809,7 +928,7 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
             except IntegrityError as e:
                 if request.htmx:
                     context['status'] = False
-                    context['error_message'] = str(e)
+                    context['error_message'] = f"{request.POST.get('department_short_name')} already exist"
                     context['category'] = settings
 
                     return render(request, 'project_management/partial_html/add_department.html', context)
@@ -908,6 +1027,7 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
                     context['status'] = True
                     context['member'] = department_member
                     context['category'] = settings
+                    context['department'] = department
                     return render(request, 'project_management/partial_html/add_member.html', context)
             else:
                 if request.htmx:
@@ -969,10 +1089,18 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
             department_member = request.POST.get('department_member_pk', None)
             department_member = DepartmentMember.objects.get(pk=department_member)
 
-            department.member_names.remove(department_member)
+            # if it is a leader that is been removed, remove the leader from position
+            if department_member == department.leader:
+                department.leader = None
+                department.save()
+            elif department_member == department.sub_leader:
+                department.sub_leader = None
+                department.save()
+
             department_member.delete()
             
             return JsonResponse({}, safe=True)
+        
         elif settings == 'delete_department':
             diaconate = department.department_diaconate
 

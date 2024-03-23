@@ -1,0 +1,8 @@
+
+{% if status %}
+    <select name="display_unit_leader" id="display_unit_leader" class=" custom-control custom-select">
+        {% for member in department_unit.members.all %}
+            <option value="{{ member.pk }}" {% if member == department_unit.unit_leader %}selected{% endif %}>{{ member.member_name.get_full_name }}</option>
+        {% endfor %}                                        
+    </select>
+{% endif %}

@@ -175,9 +175,7 @@
 
                         {% csrf_token %}
 
-                        {% include 'includes/server_status_warning.html' with category='add_category' %}
-
-                        <div class="row">
+                        <div class="row" id="alert_parent_add_department_category">
 
                             <div class="form-group col-12 mb-3">
                                 <label for="category_name">Category Name</label>
@@ -217,9 +215,7 @@
                             hx-indicator="#springBouceLoader"
                     >
                         {% csrf_token %}
-                        {% include 'includes/server_status_warning.html' with category='add_department_member' %}
-
-                        <div class="row">
+                        <div class="row" id="alert_parent_add_department_member">
 
                             <div class="form-group col-12">
                                 <label for="department_member_name">Member Name</label>
@@ -259,9 +255,8 @@
                             hx-indicator="#springBouceLoader"
                     >
                         {% csrf_token %}
-                        {% include 'includes/server_status_warning.html' with category='update_member_details' %}
 
-                        <div class="row">
+                        <div class="row" id="alert_parent_update_department_details">
                             <div class="form-group col-12 mb-3">
                                 <label for="update_department_name_input">Department Name</label>
                                 <input type="text" id="update_department_name" name="update_department_name" class="form-control" value="{{ department.department_long_name }}">

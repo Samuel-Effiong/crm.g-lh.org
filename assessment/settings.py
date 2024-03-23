@@ -72,6 +72,18 @@ SECRET_KEY = 'django-insecure-$$)9)auejpw&6d_p+sw-x)x8gwga^u1it$@p6rk^9e^cs&n&xq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# AUTHENTICATION_BACKENDS = [
+#     # Needed to login by username in Django admin, regardless of allauth
+#     'django.contrib.auth.backends.ModelBackend',
+
+#     # 'allauth' specific authentication methods, such as login by email
+#     'allauth.account.auth_backends.AuthenticationBackend',
+# ]
+
+# LOGIN_REDIRECT_URL = '/'
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_REQUIRED = True
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -80,6 +92,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.humanize',
+
+    'django.contrib.sites',
+    'allauth', 
+    'allauth.account',
+    'allauth.socialaccount', 
+    'allauth.socialaccount.providers.github',
     
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
@@ -122,7 +140,7 @@ INSTALLED_APPS = [
     'prophetic_vision',
     'pastoring',
     'project_management',
-    
+    'bot',    
 ]
 
 
@@ -139,6 +157,7 @@ if DEBUG:
 else:
     ALLOWED_HOSTS = ['173.82.212.74', 'crm.g-lh.org', 'g-lh.org']
 
+SITE_ID = 1
 
 # Application definition
 
@@ -154,6 +173,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
+    "allauth.account.middleware.AccountMiddleware"
 ]
 
 # if DEBUG:
@@ -306,3 +326,22 @@ WAGTAILADMIN_RICH_TEXT_EDITORS = {
         'WIDGET': 'some.external.RichTextEditor',
     }
 }
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        # For each OAuth based provider, either add a 'SocialApp'
+        # ('socialaccount' app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': '4d8acb5b9125ea3b58d0',
+            'secret': '07962157ab575758fb552a5ed31d0ea924815825',
+            'key': ''
+        }
+    }
+}
+
+
+EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+MAILJET_API_KEY = 'fda68dd96dae5cc2649d601e7c159323'
+MAILJET_API_SECRET = "284265ef143ac800f04599b1a5b52707"

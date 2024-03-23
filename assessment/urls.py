@@ -23,7 +23,6 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-# from home.tasks import system_wide_tasks
 
 
 # Send signal every 12 hours
@@ -44,6 +43,8 @@ urlpatterns = [
     path('documents/', include(wagtaildocs_urls)),
     path('pages/', include(wagtail_urls)),
 
+    path('bot/', include('bot.urls')),
+    path('accounts/', include('allauth.urls')),
     path('', include('home.urls')),
 ]
 

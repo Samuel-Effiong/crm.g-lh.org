@@ -408,16 +408,45 @@
                             <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
                                 <ul class="list-group list-group-flush col-12">
                                     {% for unit in department_units %}
-                                        <li class="list-group-item col-12">
-                                            <div class="d-flex justify-content-between">
+                                        <li class="list-group-item col-12" id="unit_detail_space_{{ unit.pk }}">
+                                            <div class="d-flex justify-content-between text-primary" style="cursor: pointer;" data-target="#display_unit_information" data-toggle="modal"
+                                                onclick="document.getElementById('display_unit_name').value='{{ unit.name }}'; document.getElementById('display_unit_objective').value='{{ unit.objective}}'; document.getElementById('update_unit_pk').value='{{ unit.pk }}'; document.getElementById('update_unit_form').setAttribute('hx-target', '#unit_detail_space_{{ unit.pk}}') "
+                                                hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_leader&unit_pk={{ unit.pk }}"
+                                                hx-target="#display_unit_leader"
+                                                hx-swap="outerHTML"
+                                                hx-indicator="#springBouceLoader"
+                                            >
                                                 <p class="h4">{{ unit.name }}</p>
-                                                <button type="button" class="btn btn-outline-danger" data-target="#remove-unit" data-toggle="modal">
+                                                <button type="button" class="btn btn-outline-danger" data-target="#remove-unit" data-toggle="modal" onclick="document.getElementById('removed_unit').value = '{{ unit.pk }}'; document.getElementById('removed_unit_name').textContent = '{{ unit.unit_name|safe}}'">
                                                     <i class="ri-alert-fill"></i>
                                                 </button>
                                             </div>
                                             <p>
-                                                {{ unit.info }}
+                                                {{ unit.objective }}
                                             </p>
+
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <small>
+                                                        <b>Unit leader: </b>
+                                                        <span>{{ unit.unit_leader.member_name.get_full_name }}</span>
+                                                    </small>
+                                                </div>
+                                                <div>
+                                                    <small style="color: blue; cursor: pointer;" data-target="#display_unit_member" data-toggle="modal"
+                                                        hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_member&unit_pk={{ unit.pk }}"
+                                                        hx-trigger="click"
+                                                        hx-target="#unit_member_space"
+                                                        hx-swap="innerHTML"
+                                                        hx-indicator="#springBouceLoader"
+
+                                                        onclick="document.getElementById('unit_to_add_member').value = '{{ unit.pk}}';"
+                                                    >
+                                                        <b>No of Unit Member: </b>
+                                                        <span>{{ unit.get_number_of_unit_members }}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </li>
                                     {% endfor %}
                                     <button type="button" class="btn btn-primary p-2" data-target="#add-unit" data-toggle="modal">Add Unit</button>
@@ -674,6 +703,156 @@
         </div>
     </div>
 
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-unit">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_unit" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12 mb-3" style="display: none">
+                                <input type="text" id="removed_unit" name="removed_unit">
+                            </div>
+
+                            <div class="col-lg-12 mb-3">
+                                <h6><i>
+                                    Are you sure you want to remove
+                                    <span id="removed_unit_name" class="text-danger font-size-20"></span>
+                                    from {{ department }} Unit?. <span class="text-danger">It cannot be restored.</span>
+                                </i></h6>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>
+                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="display_unit_member">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="display_unit_member_title">Unit Members</h3>
+                </div>
+                <div class="modal-body" id="unit_member_space">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for members in unit_members %}
+                                <tr>
+                                    <td></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer" style="display: block;">
+                    <form
+                        hx-post="{% url 'project_management:project-settings' department.department_name %}?settings=add_unit_member"
+                        hx-trigger="submit"
+                        hx-target="#unit_member_space"
+                        hx-swap="innerHTML"
+                        hx-indicator="#springBouceLoader"
+                    >
+                        {% csrf_token %}
+                        <div style="display: none;">
+                            <input type="text" name="unit_to_add_member" id="unit_to_add_member">
+                        </div>
+
+                        {% if department_members %}
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button class="btn btn-primary" type="submit">Add</button>
+                                </div>
+                                <select name="add_member_to_unit" class="custom-select">
+                                {% for member in department_members %}
+                                    <option value="{{ member.pk }}">{{ member.member_name.get_full_name }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger" role="alert">
+                                <div class="iq-alert-text">
+                                    <b class="alert-link">No member</b> available in this department
+                                </div>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="display_unit_information">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="display_unit_information_title">Unit</h3>
+                </div>
+                <div class="modal-body" id="unit_information_space">
+                    <form id="update_unit_form"
+                        hx-post="{% url 'project_management:project-settings' department.department_name %}?settings=update_unit_information"
+                        hx-trigger="submit"
+                        hx-target="" {# will be set by javascript #}
+                        hx-swap="innerHTML"
+                        hx-indicator="#springBouceLoader"
+                    >
+                        {% csrf_token %}
+                        <div class="row" id="alert_parent">
+                            <div class="col-lg-12" style="display: none;">
+                                <input type="text" name="update_unit_pk" id="update_unit_pk">
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_name" class="h5">Name:</label>
+                                    <input type="text" name="display_unit_name" id="display_unit_name" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_objective" class="h5">Objective:</label>
+                                    <textarea name="display_unit_objective" id="display_unit_objective" class="form-control" cols="30" rows="10"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_leader" class="h5">Leader:</label>
+                                    <select name="display_unit_leader" id="display_unit_leader" class=" custom-control custom-select">
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 {% endblock modal %}
 
 {% block extra_js %}
@@ -683,5 +862,6 @@
         let searchIndex = {{ family_members|jsonify }};
     </script>
     <script src="{% static 'custom/autocomplete/auto_complete.js' %}"></script>
-    {#    <script src="{% static 'custom/custom.js' %}"></script>#}
+    
+
 {% endblock extra_js %}

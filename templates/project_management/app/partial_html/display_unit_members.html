@@ -1,0 +1,42 @@
+{% if status %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in department_unit.members.all %}
+                <tr id="department_unit_detail_{{ member.pk }}">
+                    <td>
+                        <div class="d-flex justify-content-between">
+                            <p>{{ member.member_name.get_full_name }}</p>
+                            <button type="button" class="btn btn-primary"
+                                hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=remove_unit_member&department_unit_pk={{ department_unit.pk }}&member_pk={{ member.pk }}"
+                                hx-target="#department_unit_detail_{{ member.pk }}"
+                                hx-trigger="click"
+                                hx-swap="delete"
+                                hx-indicator="#springBouceLoader"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>None available</td>
+            </tr>
+        </tbody>
+    </table>
+{% endif %}
