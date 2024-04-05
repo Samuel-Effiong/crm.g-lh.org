@@ -16,7 +16,7 @@ class PermissionInline(admin.StackedInline):
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     list_display = ('get_full_name', 'level', 'shepherd', 'sub_shepherd', 'get_user_age')
-    list_filter = ('gender', 'level', 'country', 'state', 'lga', 'course_of_study', 'occupation',
+    list_filter = ('gender', 'level', 'church_outpost', 'country', 'state', 'lga', 'course_of_study', 'occupation',
                    'skills', 'graduate_status', 'marital_status', 'employment_status')
     search_fields = ('first_name', 'last_name', 'country', 'state',)
     date_hierarchy = 'date_of_birth'
@@ -42,7 +42,7 @@ class CustomUserAdmin(UserAdmin):
             'classes': ('collapse',)
         }),
         ("Residential Information", {
-            'fields': ('lga', 'state', 'country',),
+            'fields': ('lga', 'state', 'country', 'church_outpost',),
             'classes': ('collapse',)
         }),
         ("School Information", {

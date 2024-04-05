@@ -19,7 +19,12 @@
                         <h4 class="card-title">
                             <div class="d-flex justify-content-between">
                                 {{object.table_name_plural}} Table
-                                <button type="button" class="btn btn-primary p-2" data-target="#add_to_database" data-toggle="modal">Add</button>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="text" name="download_custom_database" value="True" style="display: none;">        
+                                    <button type="submit" class="btn btn-secondary p-2 pl-3 pr-3" onclick="download_custom_database()" data-bs-toggle="tooltip" data-bs-placement="top" title="Download {{ object.table_name }} table">Download</button>    
+                                    <button type="button" class="btn btn-primary p-2 pl-5 pr-5" data-target="#add_to_database" data-toggle="modal" onclick="download_database(this)">Add</button>
+                                </form>
                             </div>
                         </h4>
                         </div>
@@ -58,7 +63,7 @@
                         </table>
 
                         <div class="d-flex justify-content-center col-12">                        
-                            <button type="button" class="btn btn-primary p-2" data-target="#add_to_database" data-toggle="modal">Add</button>
+                            <button type="button" class="btn btn-primary p-2 pl-5 pr-5" data-target="#add_to_database" data-toggle="modal">Add</button>
                         </div>
                     </div>
                 </div>
@@ -217,6 +222,10 @@
                 .then(data => {
                     window.location.reload();
                 })
+        }
+
+        const download_custom_database = () => {
+            const test = '';
         }
     </script>
 {% endblock extra_js %}

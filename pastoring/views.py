@@ -581,7 +581,7 @@ class ShepherdReportView(LoginRequiredMixin, TemplateView):
         if 'chief_shep_bypass' in self.request.GET:
             chief_shep_bypass = True
             shepherd_username = self.request.GET['shepherd_username']
-            shepherd = Shepherd.objects.get(name__username=shepherd_username)
+            shepherd = Shepherd.objects.get(id=shepherd_username)
         else:
             chief_shep_bypass = False
 

@@ -110,7 +110,7 @@ class ShepherdReportManager(models.Manager):
             no_of_missed_weeks, diligence = self.missed_weeks(reports)
             analysis[sheep]['no_of_missed_weeks'] = no_of_missed_weeks
             analysis[sheep]['diligence'] = diligence
-            analysis[sheep]['full_name'] = get_user_model().objects.get(username=sheep).get_full_name()
+            analysis[sheep]['full_name'] = get_user_model().objects.get(id=sheep).get_full_name()
 
         return analysis
 
@@ -140,7 +140,7 @@ class ShepherdReportManager(models.Manager):
                 analysis[shepherd]['no_of_reports'] = len(reports)
                 analysis[shepherd]['male'] = round((male_report * 100) / len(reports))
                 analysis[shepherd]['female'] = round((female_report * 100) / len(reports))
-                analysis[shepherd]['full_name'] = Shepherd.objects.get(name__username=shepherd).name.get_full_name()
+                analysis[shepherd]['full_name'] = Shepherd.objects.get(id=shepherd).name.get_full_name()
             return analysis
         else:
             return sheep_reports
@@ -154,7 +154,7 @@ class ShepherdReportManager(models.Manager):
             sheep_reports = self.get_queryset().filter(receiver=shepherd, date__year=timezone.now().year)
 
         if sheep_reports:
-            full_names = {report.sender.username: report.sender.get_full_name() for report in sheep_reports}
+            full_names = {report.sender.id: report.sender.get_full_name() for report in sheep_reports}
             sheep_freq = sheep_reports.values_list('sender', flat=True)
             diligent_sheep = pd.value_counts(sheep_freq).head()
         else:

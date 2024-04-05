@@ -52,8 +52,8 @@ class Validators(object):
 def get_user_name(object, fname):
     _, ext = os.path.splitext(fname)
     username = object.username
-    return f"profile_pics/{username}_{datetime.date.today()}_{datetime.datetime.now().time().isoformat()}{ext}"
-
+    return f"profile_pics/{object.get_full_name()}/{username}_{datetime.date.today()}_{datetime.datetime.now().time().isoformat()}{ext}"
+ 
 
 def convert_image_to_webp(image):
     # Open the image using Pillow
@@ -85,23 +85,16 @@ def convert_to_format(data, category, format):
     a single instance else it contain a multiple instance
     """
     if format == 'pdf':
-        # from reportlab.pdfgen import canvas
-
-        # if category == 'Sheep Detail View':
-        #     pass
-        # else:
-        #     pass
+        
         response = None
     elif format == 'excel':
         response = HttpResponse( 
             content_type='application/vnd.ms-excel',
             charset='utf-8',
-        )
+        ) 
         response['Content-Disposition'] = f'attachment; filename="{category}.xlsx"'
 
         df = pd.DataFrame(data)
-
-        # df.to_clipboard()
         df.to_excel(response, category)
     elif format == 'text':
         response = HttpResponse(
@@ -111,8 +104,6 @@ def convert_to_format(data, category, format):
         response['Content-Disposition'] = f'attachment; filename="{category}.csv"'
 
         df = pd.DataFrame(data)
-
-        # df.to_clipboard()
         df.to_csv(response)
     elif format == 'html':
         response = HttpResponse(
@@ -122,8 +113,6 @@ def convert_to_format(data, category, format):
         response['Content-Disposition'] = f'attachment;filename="{category}.html"'
 
         df = pd.DataFrame(data)
-
-        # df.to_clipboard() 
         df.to_html(response)
 
     elif format == 'image':

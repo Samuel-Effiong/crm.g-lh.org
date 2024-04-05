@@ -102,22 +102,6 @@ CHURCH_OUTPOST_CHOICES = (
     ('None', 'None')
 )
 
-#
-# SKILLS_CHOICES = (
-#     ('Welding', 'Welding'),
-#     ('Electrical Installation and Maintainance', 'Electrical Installatin and Maintenance'),
-#     ('Plumbing', 'Plumbing'),
-#     ('Carpentry', 'Carpentry'),
-#     ('Masonry', 'Masonry'),
-#     ('Auto Mechanics', 'Auto Mechanics'),
-#     ('HVAC (Heating, Ventilation, and Air Conditioning) Technicians', 'HVAC (Heating, Ventilation, and Air Conditioning) Technicians'),
-#     ('Painting and Decoration', 'Painting and Decoration'),
-#     ('Tiling and Flooring', 'Tiling and Flooring'),
-#     ('Catering and Culinary Skills', 'Catering and Culinary Skills'),
-#     ('Tailoring and Fashion Design', 'Tailoring and Fashion Design'),
-#     ('Hairdressing and Barbering', 'Hairdressing and Barbering')
-# )
-
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):

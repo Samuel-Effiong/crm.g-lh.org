@@ -1,6 +1,8 @@
 from typing import Any, Dict
 from datetime import datetime
 
+import pandas as pd
+
 from django_htmx.http import HttpResponseClientRedirect
 
 from django.db import models, transaction, IntegrityError
@@ -25,6 +27,7 @@ from .models import (
 from users.models import Shepherd, SubShepherd
 
 from home.models import Notification
+from users.my_models.utilities import convert_to_format
 
 
 title = 'GLH-FAM'
@@ -934,6 +937,11 @@ class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
                     return render(request, 'project_management/partial_html/add_department.html', context)
                 else:
                     return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
+        
+        elif settings == 'delete_diaconate':
+            diaconate_id = request.POST['diaconate_id']
+            diaconate = Diaconate.objects.get(id=diaconate_id)
+            diaconate.delete()
 
         return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
 
@@ -1220,11 +1228,21 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
         # Now in this dynamic database we don't have any
         # idea what is going to be in the POST request
 
-        database_action = request.POST['database_action']
-        database_table = self.get_object()
-
         department = kwargs['department']
         pk = kwargs['pk']
+        database_table = self.get_object()
+
+        if 'download_custom_database' in request.POST:
+            table_fields = database_table.fields.all()
+
+            data_records = {
+                field.name: list(field.values.all().values_list('value', flat=True)) for field in table_fields 
+            }
+            response = convert_to_format(data_records, f"{database_table.table_name}", 'excel')
+
+            return response
+
+        database_action = request.POST['database_action']
 
         if database_action == 'add_row':
             table_fields = database_table.fields.all()

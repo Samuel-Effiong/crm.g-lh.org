@@ -244,7 +244,7 @@ class ShepherdReportListView(LoginRequiredMixin, ListView):
     def get_queryset(self) -> QuerySet[Any]:
         username = self.request.user
         if 'shepherd_bypass' in self.request.GET:
-            self.sheep_username = get_user_model().objects.get(username=self.request.GET['sheep_username'])
+            self.sheep_username = get_user_model().objects.get(id=self.request.GET['sheep_username'])
         else:
             self.sheep_username = self.request.user
         return ShepherdReport.objects.filter(sender=self.sheep_username).order_by('-date')

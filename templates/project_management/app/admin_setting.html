@@ -28,7 +28,11 @@
                         <div id="Collapse{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#Users{{ forloop.counter }}">
                           <div class="accordion-body">
                               <p class="card-text mb-2">{{ office.info }}</p>
-                              <button type="button" class="btn btn-primary p-2 mb-4" data-target="#add_department" data-toggle="modal" onclick="document.getElementById('department_diaconate_name').value = '{{ office.name }}'; document.getElementById('department_form').setAttribute('hx-target', '#diaconate_{{ office.pk }}');">Add Department</button>
+                              <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-primary p-2 mb-4" data-target="#add_department" data-toggle="modal" onclick="document.getElementById('department_diaconate_name').value = '{{ office.name }}'; document.getElementById('department_form').setAttribute('hx-target', '#diaconate_{{ office.pk }}');">Add Department</button>
+                                <button type="button" class="btn btn-outline-danger p-2 mb-4" data-target="#delete_diaconate" data-toggle="modal" onclick="document.getElementById('diaconate_id').value = '{{ office.pk }}'; document.getElementById('delete_diaconate_name').textContent = '{{ office.name }}';">Delete Diaconate</button>
+                              </div>
+                              
                               <ul class="list-group list-group-flush m-0" id="diaconate_{{ office.pk }}">
                                   {% for department in office.departments.all %}
                                       <li class="list-group-item">
@@ -184,6 +188,42 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_diaconate">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title">Confirm Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-3">
+                            <p><i>
+                                Are you sure you want to delete <span id="delete_diaconate_name" class="text-danger"></span> Diaconate?
+                            </i></p>
+                        </div>
+                        
+                        <div class="col-lg-12">
+                            <form action="{% url 'project_management:project-admin-settings' %}?settings=delete_diaconate" method="post">
+                                {% csrf_token %}
+                                
+                                <div class="form-group col-12 mb-3" style="display: none;">
+                                    <input type="text" id="diaconate_id" name="diaconate_id" class="form-control">
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                        <button type="submit" class="btn btn-outline-danger mr-3">Continue</button>
+                                        <div class="btn btn-success" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock modal %}
 
 {% block extra_js %}
@@ -192,154 +232,6 @@
     <script>
         let searchIndex = {{ family_members|jsonify }}
 
-        const configure_modal_according_to_mode = (department_name, admin_mode, old_value) => {
-            document.querySelector('#update_department_details_modal').value = department_name;
-            document.querySelector('#admin_mode').value = admin_mode;
-
-            if (admin_mode === 'update_department_long_name' || admin_mode === 'update_department_name') {
-                document.querySelector('#update_department_name_input').style.display = 'block';
-                document.querySelector('#update_leaders_name_input').style.display = 'none';
-                document.querySelector('#update_department_objective_input').style.display = 'none';
-
-                document.querySelector('#new_name_value').value = old_value;
-            }
-            else if (admin_mode === 'update_department_objective') {
-                document.querySelector('#update_department_name_input').style.display = 'none';
-                document.querySelector('#update_leaders_name_input').style.display = 'none';
-                document.querySelector('#update_department_objective_input').style.display = 'block';
-
-                document.querySelector('#update_department_objective').value = old_value;
-
-            }
-            else if (admin_mode === 'update_department_leader' || admin_mode === 'update_department_sub_leader') {
-                document.querySelector('#update_department_name_input').style.display = 'none';
-                document.querySelector('#update_leaders_name_input').style.display = 'block';
-                document.querySelector('#update_department_objective_input').style.display = 'none';
-
-                document.querySelector('#update_leader_name').value = old_value;
-            }
-        }
-
-        const update_department_details = () => {
-        {#    update the form in the modal box #}
-            const department_name = document.querySelector('#update_department_details_modal').value;
-            const admin_mode = document.querySelector('#admin_mode').value;
-
-            let new_value;
-
-            if (admin_mode === 'update_department_long_name' || admin_mode === 'update_department_name') {
-                new_value = document.querySelector('#new_name_value').value;
-            }
-            else if (admin_mode === 'update_department_leader' || admin_mode === 'update_department_sub_leader') {
-                new_value = document.querySelector('#update_leader_name').value;
-            }
-            else if (admin_mode === 'update_department_objective') {
-                new_value = document.querySelector('#update_department_objective').value;
-            }
-
-            let url = "{% url 'project_management:project-admin-settings' %}";
-            url = `${url}?update_department&department_name=${department_name}&admin_mode=${admin_mode}&new_value=${new_value}`;
-
-            console.log(url);
-
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data['confirm']) {
-                        console.log('love');
-                        console.log('admin_mode', admin_mode);
-
-                        if (admin_mode === 'update_department_long_name'){
-                            document.getElementById('db_department_long_name').textContent = data['value'];
-                            document.getElementById('db_department_long_name_2').textContent = data['value'];
-                        }
-                        else if (admin_mode === 'update_department_name') {
-                            document.getElementById('db_department_name').textContent = data['value'];
-                            document.getElementById(`tab_heading_${department_name}`).textContent = data['value'];
-                            document.getElementById('db_department_name_2').textContent = data['value']
-                        }
-                        else if (admin_mode === 'update_department_leader') {
-                            leader = document.getElementById('db_department_leader')
-                            leader.textContent = data['value'];
-                        }
-                        else if (admin_mode === 'update_department_sub_leader') {
-                            document.getElementById('db_department_sub_leader').textContent = data['value'];
-                        }
-                        else if (admin_mode === 'update_department_objective') {
-                            document.getElementById('db_department_objective').textContent = data['value'];
-                        }
-                        document.querySelector('#dismiss_modal').click();
-                    }
-                    else {
-                        console.log('Error');
-                    }
-                })
-        }
-
-        const delete_department = () => {
-            const department_name = document.getElementById('delete_department_name').textContent;
-
-            let url = "{% url 'project_management:project-admin-settings' %}";
-            url = `${url}?delete_department&department_name=${department_name}`;
-
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data['confirm']) {
-                        window.location.reload();
-                    }
-                })
-        }
-
-        const delete_member = (member, department) => {
-            let url = "{% url 'project_management:project-admin-settings' %}";
-            url = `${url}?delete_member&member_name=${member}&department_name=${department}`;
-
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data['confirm']) {
-                        window.location.reload();
-                    }
-                })
-        }
-
-        const delete_category = (category, department) => {
-            let url = "{% url 'project_management:project-admin-settings' %}";
-            url = `${url}?delete_category&category_name=${category}&department_name=${department}`;
-
-            fetch(url, {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data['confirm']) {
-                        window.location.reload();
-                    }
-                })
-        }
     </script>
     <script src="{% static 'custom/autocomplete/auto_complete.js' %}"></script>
 {% endblock extra_js %}

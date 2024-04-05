@@ -319,7 +319,7 @@ class DepartmentProjectManager(models.Manager):
         return percentage
 
 
-class DepartmentProject(models.Model):
+class DepartmentProject(models.Model): 
     PRIORITY_CHOICES = (
         ('High', 'High'),
         ('Medium', 'Medium'),

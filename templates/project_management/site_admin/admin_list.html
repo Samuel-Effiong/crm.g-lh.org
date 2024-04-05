@@ -280,7 +280,10 @@
                         <div class="row">
                             <div class="card col-12">
                                 <div class="card-header">
-                                    <div class="card-title">{{ title }}</div>
+                                    <div class="card-title d-flex justify-content-between">
+                                        <p>{{ title }}</p>
+                                        <button type="button" class="btn btn-primary">Add {{ sub_category }}</button>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <p>Use the Django admin interface for more advanced features</p>
@@ -429,7 +432,6 @@
         <!-- Wrapper End-->
 
     {% block modal %}
-
         <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new_table">
             <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
@@ -522,6 +524,8 @@
             </div>
         </footer>
     {% endblock footer %}
+
+
 
     <!-- Backend Bundle JavaScript -->
     <script src="{% static 'assets_project_management/js/backend-bundle.min.js' %}"></script>

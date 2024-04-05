@@ -10,7 +10,10 @@
         <div id="Collapse{{ counter }}" class="accordion-collapse collapse" data-bs-parent="#Users{{ counter }}">
           <div class="accordion-body">
               <p class="card-text mb-2">{{ office.info }}</p>
-              <button type="button" class="btn btn-primary p-2 mb-4" data-target="#add_department" data-toggle="modal" onclick="document.getElementById('department_diaconate_name').value = '{{ office.name }}'">Add Department</button>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary p-2 mb-4" data-target="#add_department" data-toggle="modal" onclick="document.getElementById('department_diaconate_name').value = '{{ office.name }}'; document.getElementById('department_form').setAttribute('hx-target', '#diaconate_{{ office.pk }}');">Add Department</button>
+                <button type="button" class="btn btn-outline-danger p-2 mb-4" data-target="#delete_diaconate" data-toggle="modal" onclick="document.getElementById('diaconate_id').value = '{{ office.pk }}'; document.getElementById('delete_diaconate_name').textContent = '{{ office.name }}';">Delete Diaconate</button>
+              </div>
               <ul class="list-group list-group-flush m-0">
                   {% for department in office.departments.all %}
                       <li class="list-group-item">
