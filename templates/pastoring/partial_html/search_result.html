@@ -1,10 +1,38 @@
 {% if status %}
     <div class="d-flex justify-content-end">
+
         <form method="post" action="{% url 'pastoring:search-interface' %}?download=True&gender_filter={{ gender_filter }}&graduate_status_filter={{ graduate_status_filter }}&employment_status_filter={{ employment_status_filter }}&marital_status_filter={{ marital_status_filter }}&skill_filter={{ skill_filter }}&course_filter={{ course_filter }}">
             {% csrf_token %}
-            <button class="btn btn-secondary mb-4" type="submit" id="download_filtered_profile">
+
+            <div class="modal fade" id="select_column_to_download" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="select_column_to_download_title" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="select_column_to_download_title">Select Columns to Download</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+
+                        {% for col in user_columns %}
+                            <div class="p-3 form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="{{ col }}" id="{{ col }}">
+                                <label class="form-check-label pl-2" for="{{ col }}">{{ col }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary mb-4" type="button" data-bs-target="#select_column_to_download" data-bs-toggle="modal">
                 Download
             </button>
+
         </form>
     </div>
 

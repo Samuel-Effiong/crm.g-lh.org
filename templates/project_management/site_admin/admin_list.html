@@ -278,11 +278,22 @@
                 <div class="container-fluid">
                     {% block content %}
                         <div class="row">
+                            {% if status %}
+                                <div class="col-12">
+                                    <div class="alert text-white {% if uploaded == 'success' %}bg-success{% else %}bg-danger{% endif %} col-lg-12" style="display: flex;" role="alert">
+                                        <div class="iq-alert-text">{{ message }}</div>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <i class="ri-close-line"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+
                             <div class="card col-12">
                                 <div class="card-header">
                                     <div class="card-title d-flex justify-content-between">
                                         <p>{{ title }}</p>
-                                        <button type="button" class="btn btn-primary">Add {{ sub_category }}</button>
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add_modal" >Add {{ sub_category }}</button>
                                     </div>
                                 </div>
                                 <div class="card-body">
@@ -432,8 +443,8 @@
         <!-- Wrapper End-->
 
     {% block modal %}
-        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="new_table">
-            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add_modal">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header d-block text-center pb-3 border-bottom">
                         <h3 class="modal-title" id="exampleModalCenterTitle03">New Table</h3>
@@ -443,27 +454,84 @@
                             <div class="col-lg-12">
                                 <form method="post">
                                     {% csrf_token %}
-                                    <div class="form-group mb-3">
-                                        <label for="table_name">Table Name</label>
-                                        <input type="text" name="table_name" class="form-control" autocomplete="off" required/>
-                                    </div>
+                                    {% if sub_category == 'Users' %}
+                                        <div class="form-group mb-3">
+                                            <label for="first_name">First Name:</label>
+                                            <input type="text" name="first_name" class="form-control" required/>
+                                        </div>
 
-                                    <div class="form-group mb-3">
-                                        <label for="table_name_plural">Table Name (Plural)</label>
-                                        <input type="text" name="table_name_plural" class="form-control" autocomplete="off" required/>
-                                    </div>
+                                        <div class="form-group mb-3">
+                                            <label for="last_name">Last Name:</label>
+                                            <input type="text" name="last_name" class="form-control" required/>
+                                        </div>
 
-                                    <div class="form-group">
-                                        <label for="table_description">Table Description</label>
-                                        <textarea class="form-control" name="table_description" id="table_description" rows="3" required></textarea>
-                                    </div>
+                                        <div class="form-group mb-3">
+                                            <label for="username">Username:</label>
+                                            <input type="text" name="username" class="form-control" required/>
+                                        </div>
 
-                                    {% include 'custom_html/dynamic_table.html' %}
+                                        <div class="form-group mb-3">
+                                            <label for="email">Email:</label>
+                                            <input type="email" name="email" class="form-control" required/>
+                                        </div>
 
-                                    <div class="form-group" style="display: none;">
-                                        <input type="text" class="form-control" id="field_id" value="1" name="field_id" autocomplete="off">
-                                    </div>
+                                        <div class="form-group mb-3">
+                                            <label for="password">Password:</label>
+                                            <input type="text" name="password" class="form-control" required/>
+                                        </div>
 
+                                        <div class="form-group mb-3">
+                                            <label for="phone_number">Phone Number:</label>
+                                            <input type="tel" name="phone_number" class="form-control" required/>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">Gender:</label>
+                                            <select name="gender" id="gender" class="form-select form-control mb-3 shadow-none">
+                                                <option value="F">Female</option>
+                                                <option value="M">Male</option>
+                                            </select>
+                                        </div>
+
+                                    {% elif sub_category == 'Shepherd' or sub_category == 'Sub Shepherd' %}
+                                        <div class="form-group mb-3">
+                                            <label for="name">Name</label>
+                                            <input type="text" name="name" class="form-control" required/>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label>Name</label>
+                                            <select class="form-control form-control-lg" name="name">
+                                               {% for fam in family_members %}
+                                                   <option value="{{ fam.pk }}">{{ fam.get_full_name }}</option>
+                                               {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label for="no_of_sheep">No of Sheep</label>
+                                            <input type="number" name="no_of_sheep" class="form-control" required/>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label for="date_of_appointment">Date of Appointment</label>
+                                            <input type="date" name="date_of_appointment" class="form-control" required/>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label>Callings</label>
+                                            <select class="form-control form-control-lg" name="callings">
+                                               <option value="unknown">Unknown</option>
+                                               <option value="apostle">Apostle/option>
+                                               <option value="prophet">Prophet</option>
+                                               <option value="evangelist">Evangelist</option>
+                                               <option value="teacher">Teacher</option>
+                                               <option value="pastor">Pastor</option>
+                                            </select>
+                                        </div>
+                                    {% elif subm_category == 'Members Schedule' %}
+                                    {% endif %}
+                                    
                                     <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
                                         <button type="submit" class="btn btn-outline-danger mr-3 p-2">Create</button>
                                         <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
@@ -475,36 +543,6 @@
                 </div>
             </div>
         </div>
-
-
-        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_table">
-            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal" role="document">
-                <div class="modal-content">
-                    <div class="modal-header d-block text-center pb-3 border-bottom">
-                        <h3 class="modal-title" id="exampleModalCenterTitle03">Delete Table</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-lg-12">
-
-                                <div class="mt-3 pb-3">
-
-                                    <p>
-                                        Are you sure you want to delete <span class="h4 text-danger" id="table_name"></span>
-                                    </p>
-                                </div>
-
-                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
-                                    <button type="submit" id="confirm_delete" class="btn btn-outline-danger mr-3 p-2" onclick="delete_confirmed()">Delete</button>
-                                    <button type="button" class="btn btn-primary p-2" data-dismiss="modal">Cancel</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     {% endblock modal %}
 
     {% block footer %}

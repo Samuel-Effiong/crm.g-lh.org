@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseNotFound
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login, logout
@@ -27,6 +27,7 @@ from users.my_models.users import GENOTYPE_CHOICES, BLOOD_GROUP_CHOICES
 from users.my_models.utilities import convert_image_to_webp
 
 from project_management.models import DepartmentMember
+from pastoring.models import UrlShortener
 
 
 developers = "God's Lighthouse Developers Team (GDevT)"
@@ -818,3 +819,30 @@ class ChartBibleReading(LoginRequiredMixin, TemplateView):
         context['unique_counts'] = [int(x) for x in df['unique_counts']]
 
         return JsonResponse(context, safe=False)
+
+
+
+# ######################################################
+
+# SHORT LINKS
+
+def short_links(request):
+
+    shortened_url = request.get_full_path()[1:]
+
+    try:
+        url = UrlShortener.objects.get(shortened_url=shortened_url) 
+        url.click_count += 1
+        url.save()
+
+        if not url.is_active:
+            raise UrlShortener.DoesNotExist
+        if url.expires_at:
+            if url.expires_at < timezone.now():
+                raise UrlShortener.DoesNotExist
+    except UrlShortener.DoesNotExist as e:
+        return HttpResponseNotFound()
+
+    return HttpResponseRedirect(redirect_to=url.original_url)
+
+# #######################################################

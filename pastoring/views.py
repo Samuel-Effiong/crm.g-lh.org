@@ -14,6 +14,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonRespons
 from django.http import HttpRequest, HttpResponse
 
 from django.views.generic.base import TemplateView, View
+from django.db import IntegrityError, transaction
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
@@ -29,7 +30,7 @@ from prophetic_vision.models import PropheticVision
 
 from home.models import Notification
 
-from .models import (Testimony, PropheticWord, Blog, Sermon)
+from .models import (Testimony, PropheticWord, Blog, Sermon, UrlShortener)
 
 developers = "God's Lighthouse Developers Team (GDevT)"
 title = 'GLH-FAM'
@@ -666,7 +667,11 @@ class SearchInterfaceView(LoginRequiredMixin, TemplateView):
         context['employment_status_filter'] = 'All'
         context['marital_status_filter'] = 'All'
         context['skill_filter'] = 'All'
+        context['course_filter'] = 'All'
 
+        user_columns = self.request.user.to_dict().keys()
+        # user_columns = [" ".join(col.split("_")) for col in user_columns]
+        context['user_columns'] = user_columns
         return context
 
     def post(self, request, *args, **kwargs):
@@ -706,18 +711,23 @@ class SearchInterfaceView(LoginRequiredMixin, TemplateView):
             search_result = search_result.filter(course_of_study=course)
 
         if is_download:
-            fields = [
-                'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
-                'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
-                'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
-                'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
-                'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
-                'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
-                'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
-                'cloth_size', 'level'
-            ]
+            fields = list(request.POST.keys())
+            fields.remove('csrfmiddlewaretoken')
+
+            # if the list is empty, still download everything
+            if len(fields) == 0:
+                fields = [
+                    'first_name', 'last_name', 'username', 'gender', 'date_of_birth',
+                    'about', 'phone_number', 'email', 'occupation', 'address', 'skills',
+                    'blood_group', 'genotype', 'chronic_illness', 'lga', 'state', 'country',
+                    'course_of_study', 'years_of_study', 'current_year_of_study', 'final_year_status',
+                    'next_of_kin_full_name', 'next_of_kin_relationship', 'next_of_kin_phone_number',
+                    'next_of_kin_address', 'gift_graces', 'callings', 'reveal_calling_by_shepherd',
+                    'unit_of_work', 'shepherd', 'sub_shepherd', 'last_active_date', 'shoe_size',
+                    'cloth_size', 'level'
+                ]
             data = search_result.values(*fields)
-            response = convert_to_format(data, f"Search_result = Gender - {gender}; Graduate_status - {graduate_status}; employment_status - {employment_status}; marital_status - {marital_status}; skill - {skills}; course - {course}", 'excel')
+            response = convert_to_format(data, f"Profiles {datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}", 'excel')
             return response
 
         context['gender_filter'] = gender
@@ -1495,6 +1505,107 @@ class GeneratedNewsView(LoginRequiredMixin, TemplateView):
         }
 
         return JsonResponse(context)
+
+
+class ShortenedUrlsView(LoginRequiredMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'pastoring/workspace/url_shortener/url_shortener.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_staff and (
+                self.request.user.level == 'core_shep'
+                or self.request.user.level == 'chief_shep'):
+            if 'api' in request.GET:  # READ API
+                shortened_urls = UrlShortener.objects.filter(user=self.request.user)
+                shortened_urls = {'urls': [url.to_json() for url in shortened_urls]}
+
+                return JsonResponse(shortened_urls, safe=False)
+            elif 'delete' in request.GET:  # DELETE API
+                url = request.GET['delete']
+
+                try:
+                    url = UrlShortener.objects.get(original_url=url)
+                    url.delete()
+                    return JsonResponse({'confirmation': True})
+                except Exception as e:
+                    response = {
+                        'confirmation': False,
+                        'error_message': str(e)
+                    }
+                    return JsonResponse(response, safe=False)  
+            return super().get(request, *args, **kwargs)
+
+        return HttpResponseForbidden('You are not a Shepherd...please go back')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['category'] = 'Shortened Url'
+        context['title'] = title
+        context['user'] = self.request.user
+
+        # Get all the active notification for the user
+        pastoral_notifications = Notification.objects.filter(target=self.request.user, exposure_level='pastoral',
+                                                             is_activated=False)
+        all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
+                                                        is_activated=False)
+
+        active_notifications = list(pastoral_notifications) + list(all_notifications)
+        context['active_notifications'] = active_notifications
+        context['no_of_notifications'] = len(active_notifications)
+
+        # Get all the url shortened by this user
+        shortened_urls = UrlShortener.objects.filter(user=self.request.user)
+        context['shortened_urls'] = shortened_urls
+
+        # if submission of url is successful
+        submission = self.request.GET.get('submission', None)
+        if submission == 'false':
+            context['error_message'] = self.request.GET.get('error_message')
+
+        context['submission'] = submission
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+
+        if 'edit' in request.GET:
+            method = 'update'
+        else:
+            method = request.POST['method']
+
+        if method == 'add':  # ADD API
+            original_url = request.POST['addOriginalUrl']
+            short_url = request.POST['addShortUrl']
+
+            try:
+                url = UrlShortener.objects.create(
+                    original_url=original_url,
+                    shortened_url=short_url,
+                    user=request.user
+                )
+            except IntegrityError as e:
+                return HttpResponseRedirect(f"{reverse_lazy('pastoring:shorten_url')}?submission=false&error_message={e}")
+            
+            return HttpResponseRedirect(f"{reverse_lazy('pastoring:shorten_url')}?submission=true")
+
+        elif method == 'update':  # UPDATE API
+            url_id = request.POST['url_id']
+            original_url = request.POST['original_url']
+            short_url = request.POST['short_url']
+
+            try:
+                url = UrlShortener.objects.get(id=url_id)
+                url.original_url = original_url
+                url.shortened_url = short_url
+
+                url.save()
+            except Exception as e:
+                return JsonResponse({'confirm': False, 'error_message': str(e)})
+            
+            return JsonResponse({'confirm': True})
+
+
 
 
 #########################  END WORKSPACE  ##########################

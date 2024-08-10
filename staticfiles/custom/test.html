@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School of Ministry</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.section {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba
+    (0, 0, 0, 0.1);
+}
+
+.collapsible {
+    background-color: #777;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 16px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.collapsible .featured-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+}
+
+.active, .collapsible:hover {
+    background-color: #555;
+}
+
+.content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.content ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.content ul li {
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>School of Ministry</h1>
+        
+        <div class="grid-container">
+            <div class="section">
+                <button class="collapsible">
+                    Ministry of the Saint
+                    <img src="image.jpeg" alt="Ministry of the Saint" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Body Ministry</button>
+                    <div class="content">
+                        <ul>
+                            <li>What is Ministry?</li>
+                            <li>Ministry of the Body</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Gifts & Ministries in the Body</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Prophecy & Serving</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">The Four Focuses of the Church</button>
+                    <div class="content">
+                        <ul>
+                            <li>The Apostle's Teaching</li>
+                            <li>Koinonia</li>
+                            <li>Breaking of Bread</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Apostolic Christological Foundations
+                    <img src="image.jpeg" alt="Apostolic Christological Foundations" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">The Tabernacle of Moses</button>
+                    <div class="content">
+                        <ul>
+                            <li>The Outer Court</li>
+                            <li>The Holy Place</li>
+                            <li>The Holy of Holies</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Faith Toward God</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Test & Proof of Faith</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <button class="collapsible">
+                    School of Apostles
+                    <img src="image.jpeg" alt="School of Apostles" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Who is an Apostle?</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Test & Proof of Faith</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">False Apostles</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Test & Proof of Faith</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Last Day Apostolic Ministry</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Test & Proof of Faith</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Main Headings -->
+
+            <div class="section">
+                <button class="collapsible">
+                    Evangelistic Ministry
+                    <img src="image.jpeg" alt="Evangelistic Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Evangelism Methods</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Street Evangelism</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Effective Outreach</button>
+                    <div class="content">
+                        <ul>
+                            <li>Community Outreach</li>
+                            <li>Online Outreach</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Pastoral Ministry
+                    <img src="image.jpeg" alt="Pastoral Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Pastoral Care</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Shepherding the Flock</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Counseling</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Faith-Based Counseling</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Teaching Ministry
+                    <img src="image.jpeg" alt="Teaching Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Bible Study</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Deepening Understanding</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Doctrinal Teaching</button>
+                    <div class="content">
+                        <ul>
+                            <li>Foundational Doctrines</li>
+                            <li>Advanced Doctrines</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Worship Ministry
+                    <img src="image.jpeg" alt="Worship Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Leading Worship</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Principles of Worship</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Music Ministry</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Team Dynamics</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Prayer Ministry
+                    <img src="image.jpeg" alt="Prayer Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Intercessory Prayer</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Effective Prayer</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Prayer Groups</button>
+                    <div class="content">
+                        <ul>
+                            <li>Starting a Prayer Group</li>
+                            <li>Maintaining Engagement</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="collapsible">
+                    Discipleship Ministry
+                    <img src="image.jpeg" alt="Discipleship Ministry" class="featured-image">
+                </button>
+                <div class="content">
+                    <button class="collapsible">Making Disciples</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Mentoring</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="collapsible">Growing in Faith</button>
+                    <div class="content">
+                        <ul>
+                            <li>Introduction</li>
+                            <li>Building Faith</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
+});
+
+    </script>
+</body>
+</html>

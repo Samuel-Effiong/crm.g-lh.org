@@ -385,7 +385,7 @@ class CustomUser(AbstractUser):
     def to_dict(self):
         data = {
             'first_name': self.first_name,
-            'surname': self.last_name,
+            'last_name': self.last_name,
             'gender': self.gender,
             'date_of_birth': self.date_of_birth.isoformat(),
             'phone_number': self.phone_number,

@@ -1,7 +1,7 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from .views import (Home, Profile, Registration, Login, logout_user, CounterUpdate,
                     ChartBibleReading, CatalogView, TaskView, ComingSoonView,
-                    SuggestionComplaintView, RecoverPasswordView)
+                    SuggestionComplaintView, RecoverPasswordView, short_links)
 
 
 urlpatterns = [
@@ -37,5 +37,7 @@ urlpatterns = [
     path('pastoring/', include('pastoring.urls')),
     path('project-management/', include('project_management.urls')),
     path('site_admin/', include('site_admin.urls')),
+
+    re_path(r'^.*$', short_links, name='short-links')
 
 ]

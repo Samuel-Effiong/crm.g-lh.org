@@ -1,0 +1,117 @@
+
+{% extends 'pastoring/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block blue_background_heading %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'custom/shortened_url/shortened_url.css' %}">
+
+{% endblock %}
+
+{% block content %}
+    <div class="col-12">
+        <div class="card">
+            <header class="card-header">
+                <div id="toast-container-success"></div>
+                <div id="toast-container-failed"></div>
+
+                <h1 class="card-title">My Shortened URLs</h1>
+            </header>
+            <main class="card-body">
+                <div class="search-sort">
+                    <input type="text" id="searchInput" placeholder="Search URLs..." oninput="searchURLs()">
+                    <select id="sortSelect" onchange="sortURLs()">
+                        <option value="date">Sort by Date</option>
+                        <option value="original">Sort by Original URL</option>
+                        <option value="short">Sort by Shortened URL</option>
+                    </select>
+                    <button id="addUrlBtn" onclick="openAddModal()">Add New URL</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original URL</th>
+                            <th>Shortened URL</th>
+                            <th>Date Shortened</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="urlList">
+                        <!-- URL list items will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <button onclick="prevPage()" id="prevBtn" disabled>Previous</button>
+                    <span id="pageInfo">Page 1</span>
+                    <button onclick="nextPage()" id="nextBtn">Next</button>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+
+    <!-- Edit URL Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="toast-container-edit-modal"></div>
+            <h2>Edit URL</h2>
+            <form id="editForm">
+                <label for="editOriginalUrl">Original URL:</label>
+                <input type="url" id="editOriginalUrl" name="editOriginalUrl" required>
+                <label for="editShortUrl">Shortened URL:</label>
+
+                <div class="short-url-input">
+                    <span class="domain">crm.g-lh.org/ </span>
+                    <input type="text" id="editShortUrl" name="editShortUrl" placeholder="example" required>
+
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add URL Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2>Add New URL</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="method" value="add" style="display: none;">
+                <label for="addOriginalUrl">Original URL:</label>
+                <input type="url" id="addOriginalUrl" name="addOriginalUrl" required>
+
+                <label for="addShortUrl">Shortened URL:</label>
+
+                <div class="short-url-input">
+                    <span class="domain">crm.g-lh.org/ </span>
+                    <input type="text" id="addShortUrl" name="addShortUrl" placeholder="example" required>
+
+                </div>
+
+                <button type="submit">Add URL</button>
+
+                
+                
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+
+
+
+{% block javascript %}
+    <script src="{% static 'custom/shortened_url/shortened_url.js' %}"></script>
+    <script>
+        {% if submission == 'true' %}
+            handleUrlSuccess('Url successfully added', 'toast-container-success')
+        {% elif submission == 'false' %}
+            handleUrlError('`{{ error_message }}` error occured while adding url', 'toast-container-failed')
+        {% endif %}
+    </script>
+{% endblock javascript %}
+

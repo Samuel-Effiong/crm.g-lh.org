@@ -1297,3 +1297,4 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
 
 
 
+

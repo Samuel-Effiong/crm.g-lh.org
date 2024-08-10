@@ -1,6 +1,7 @@
 import os
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from wagtail.fields import RichTextField
 from wagtail.api import APIField
@@ -126,3 +127,30 @@ class Sermon(models.Model, Utility):
 
     def __str__(self) -> str:
         return self.title
+
+
+class UrlShortener(models.Model, Utility):
+    original_url = models.URLField(unique=True)
+    shortened_url = models.CharField(max_length=1000, unique=True)
+    created_at = models.DateField(auto_now_add=True)
+    expires_at = models.DateField(null=True, blank=True)
+    click_count = models.IntegerField(default=0)
+    user = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.shortened_url} -> {self.original_url}"
+    
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'original': self.original_url,
+            'short': self.shortened_url,
+            'date': self.created_at.isoformat(),
+            'expired_date': self.expires_at.isoformat() if self.expires_at else "",
+            'click_count': self.click_count,
+            'user': str(self.user),
+            'is_active': self.is_active
+        }
+
+        return data

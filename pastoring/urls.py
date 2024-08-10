@@ -6,7 +6,7 @@ from .views import (DashboardView, SheepSummaryDetailView, ShepherdSheepListView
 from .views import (CatalogView, AddCatalogView, FaultyCatalogView, TestimoniesView,
                     AddTestimonyView, PropheticWordsView, AddPropheticWordsView, 
                     BlogView, AddBlogView, SermonsView, AddSermonsView, GeneratedNewsView,
-                    SearchInterfaceView)
+                    SearchInterfaceView, ShortenedUrlsView)
 
 
 ###########  END WORKSPACE  ###########
@@ -45,6 +45,8 @@ urlpatterns = [
 
     path('sermons/', SermonsView.as_view(), name='sermons'),
     path('sermons/add/', AddSermonsView.as_view(), name='add-sermons'),
+
+    path('shorten-url/', ShortenedUrlsView.as_view(), name='shorten_url'),
 
     path('fetch/<str:field>/<str:value>/', FetchView.as_view(), name='fetch'),
 

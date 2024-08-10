@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (Testimony, PropheticWord, Sermon, Blog)
+from .models import (Testimony, PropheticWord, Sermon, Blog, UrlShortener)
 
 
 # Register your models here.
@@ -33,3 +33,8 @@ class SermonAdmin(admin.ModelAdmin):
     search_fields = ('title', )
     date_hierarchy = 'date'
 
+
+@admin.register(UrlShortener)
+class UrlShortenerAdmin(admin.ModelAdmin):
+    list_display = ('shortened_url', 'original_url', 'click_count', 'expires_at')
+    search_fields = ('shortened_url', 'original_url', )

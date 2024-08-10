@@ -8,24 +8,41 @@
 
 {% block content %}
     <div class="row">
+        {% if status %}
+            <div class="col-12">
+                <div class="alert text-white {% if uploaded == 'success' %}bg-success{% else %}bg-danger{% endif %} col-lg-12" style="display: flex;" role="alert">
+                    <div class="iq-alert-text">{{ message }}</div>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <i class="ri-close-line"></i>
+                    </button>
+                </div>
+            </div>
+        {% endif %}
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between">
+                <div class="card-header">
                     <div class="header-title">
-                        <h4 class="card-title">Change {{ sub_category }}: {{ object_detail }}</h4>
-                    </div>
+                        <form method="get">
+                            <div class="d-flex justify-content-between">
+                                <h4 class="card-title">Change {{ sub_category }}: {{ object_detail }}</h4>
+                                <input type="text" name="delete_action" value="True" style="display: none;">
+                                <button class="btn btn-danger" type="submit">Delete</button>
+                            </div>
+                        </form>
+                        
+                    </div> 
                 </div>
                 <div class="card-body">
                     <p>Only Required details will be available for editing.
                         Use django admin for access to all the details
                     </p>
 
-                    <form class="needs-validation was-validated" novalidate="">
+                    <form method="post">
                         {% csrf_token %}
 
                         {% if sub_category == 'Users' %}
                             <div class="form-row">
-                                <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="col-md-6 col-lg-6 mb-3">
                                     <label for="first_name">First name</label>
                                     <input type="text" name="first_name" class="form-control" id="first_name" value="{{ object_detail.first_name }}" required="">
                                     <div class="valid-feedback">
@@ -33,7 +50,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="col-md-6 col-lg-6 mb-3">
                                     <label for="last_name">Last name</label>
                                     <input type="text" name="last_name" class="form-control" id="last_name" value="{{ object_detail.last_name }}" required="">
                                     <div class="valid-feedback">
@@ -119,54 +136,12 @@
                                     </div>
                                 </div>
                             </div>
-                        {% elif sub_category == 'Sub Shepherd' %}
+                        {% elif sub_category == 'Shepherd' or sub_category == 'Sub Shepherd' %}
                             <div class="form-row">
 
                                 <div class="col-md-6 col-lg-4 mb-3">
                                     <label for="sub_shepherd">Name</label>
-                                    <select class="form-control form-control-lg">
-                                        {% for sub in sub_shepherd %}
-                                            <option value="{{ sub.pk }}" {% if sub.pk == object_detail.pk %}selected=""{% endif %}>{{ sub.get_subshepherd_full_name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <label for="subshepherd_no_of_sheep">No of Sheep</label>
-                                    <input type="number" name="subshepherd_no_of_sheep" class="form-control" min="0" id="subshepherd_no_of_sheep" value="{{ object_detail.no_of_sheep }}" required="">
-                                    <div class="invalid-feedback">
-                                        Must not be less than 0
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <label for="subshepherd_date_of_appointment">Date of Appointment</label>
-                                    <input type="date" name="subshepherd_date_of_appointment" class="form-control" id="subshepherd_date_of_appointment" value="{{ object_detail.date_of_appointment.isoformat }}" required="">
-                                    <div class="valid-feedback">
-                                        Valid!
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="subshepherd_calling">Calling</label>
-                                    <select class="form-control" name="calling" id="calling" required="">
-                                        <option value="unknown" {% if object_detail.calling == 'unknown' %}selected=""{% endif %}>Unknown</option>
-                                        <option value="apostle" {% if object_detail.calling == 'apostle' %}selected=""{% endif %}>Apostle</option>
-                                        <option value="prophet" {% if object_detail.calling == 'prophet' %}selected=""{% endif %}>Prophet</option>
-                                        <option value="evangelist" {% if object_detail.calling == 'evangelist' %}selected=""{% endif %}>Evangelist</option>
-                                        <option value="teacher" {% if object_detail.calling == 'teacher' %}selected=""{% endif %}>Teacher</option>
-                                        <option value="pastor" {% if object_detail.pastor == 'pastor' %}selected=""{% endif %}>Pastor</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Please select a valid gender.
-                                    </div>
-                                </div>
-                            </div>
-                        {% elif sub_category == 'Shepherd' %}
-                            <div class="form-row">
-
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <label for="sub_shepherd">Name</label>
-                                    <select class="form-control form-control-lg">
+                                    <select class="form-control form-control-lg" name="shepherd">
                                         {% for sub in shepherd %}
                                             <option value="{{ sub.pk }}" {% if sub.pk == object_detail.pk %}selected=""{% endif %}>{{ sub.get_shepherd_full_name }}</option>
                                         {% endfor %}
@@ -289,8 +264,6 @@
                         {% endif %}
 
                         <button class="btn btn-primary" type="submit">Save</button>
-                        <button class="btn btn-primary" type="submit">Save and add another</button>
-
                     </form>
                 </div>
             </div>
