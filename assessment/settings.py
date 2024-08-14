@@ -182,6 +182,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'assessment.urls'
 AUTH_USER_MODEL = 'users.CustomUser'
+APPEND_SLASH = True
 
 TEMPLATES = [
     {

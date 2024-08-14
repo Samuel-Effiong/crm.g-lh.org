@@ -14,7 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.generic import RedirectView
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,6 +24,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+from home.views import short_links
 
 
 # Send signal every 12 hours
@@ -33,6 +35,8 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # path('admin', RedirectView.as_view(url='/admin/', permanent=True)),
+
     path('api/', include('api.urls')),
     path('api-auth/', include('rest_framework.urls')),
 
@@ -46,8 +50,11 @@ urlpatterns = [
     path('bot/', include('bot.urls')),
     path('accounts/', include('allauth.urls')),
     path('', include('home.urls')),
+
+    re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin).*$', short_links, name='short-links')
 ]
 
 if settings.DEBUG:
     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

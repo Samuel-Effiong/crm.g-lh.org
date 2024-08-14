@@ -1,7 +1,7 @@
 "use strict"
 
 let currentPage = 1;
-const itemsPerPage = 5;
+const itemsPerPage = 20;
 let urlData = []
 
 const getCookie = (name) => {
@@ -98,7 +98,7 @@ function renderTable(data) {
 
         const shortCell = document.createElement('td');
         const shortLink = document.createElement('a');
-        shortLink.href = url.short;
+        shortLink.href = `${window.location.origin}/${url.short}`;
         shortLink.textContent = url.short;
         shortLink.target = '_blank';
         shortCell.appendChild(shortLink);
@@ -106,13 +106,17 @@ function renderTable(data) {
         const dateCell = document.createElement('td');
         dateCell.textContent = url.date;
 
+        const viewCell = document.createElement('td');
+        viewCell.textContent = url.click_count;
+
         const actionsCell = document.createElement('td');
         actionsCell.classList.add('actions');
 
         const copyButton = document.createElement('button');
         copyButton.textContent = 'Copy';
         copyButton.addEventListener('click', () => {
-            navigator.clipboard.writeText(url.short).then(() => {
+            const short_url = `${window.location.origin}/${url.short}`
+            navigator.clipboard.writeText(short_url).then(() => {
                 alert('Short URL copied to clipboard!');
             });
         });
@@ -149,6 +153,7 @@ function renderTable(data) {
         row.appendChild(originalCell);
         row.appendChild(shortCell);
         row.appendChild(dateCell);
+        row.appendChild(viewCell)
         row.appendChild(actionsCell);
 
         urlList.appendChild(row); 
@@ -330,3 +335,23 @@ function deleteURL(index) {
 }
 
 
+const convert_text_to_slug = (event) => {
+    let value = event.target.value;
+
+    // Convert to lowercase
+    value = value.toLowerCase();
+
+    // Replace spaces with hyphens
+    value = value.replace(/\s+/g, '-');
+
+    // Remove all non-alphanumeric characters except hyphens
+    value = value.replace(/[^a-z0-9-]/g, '');
+
+    // Replace multiple hyphens with a single hyphen
+    value = value.replace(/-+/g, '-');
+
+    // Update the input field value
+    event.target.value = value;
+}
+document.getElementById('editShortUrl').addEventListener('input', convert_text_to_slug);
+document.getElementById('addShortUrl').addEventListener('input', convert_text_to_slug);

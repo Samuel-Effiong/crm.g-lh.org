@@ -8,7 +8,7 @@ from .models import (CustomUser, Shepherd, SubShepherd, Catalog, Permission,
 class PermissionInline(admin.StackedInline):
     model = Permission
     can_delete = False
-    verbose_name_plural = 'Permission'
+    verbose_name_plural = 'Permissions'
     verbose_name = 'Additional Permission'
 
 
@@ -20,7 +20,7 @@ class CustomUserAdmin(UserAdmin):
                    'skills', 'graduate_status', 'marital_status', 'employment_status')
     search_fields = ('first_name', 'last_name', 'country', 'state',)
     date_hierarchy = 'date_of_birth'
-    # inlines = (PermissionInline, )
+    inlines = (PermissionInline, )
 
     fieldsets = [
         ("Bio Data", {

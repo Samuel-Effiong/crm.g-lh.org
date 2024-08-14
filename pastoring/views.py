@@ -20,6 +20,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 
 from users.models import Shepherd, SubShepherd, CustomUser, Catalog, Skill, Course
+from users.models import Permission
 from users.my_models.users import LEVEL_CHOICES
 from users.my_models.utilities import convert_to_format
 
@@ -30,7 +31,9 @@ from prophetic_vision.models import PropheticVision
 
 from home.models import Notification
 
-from .models import (Testimony, PropheticWord, Blog, Sermon, UrlShortener)
+from .models import (
+    Testimony, PropheticWord, Blog, Sermon, 
+    UrlShortener)
 
 developers = "God's Lighthouse Developers Team (GDevT)"
 title = 'GLH-FAM'
@@ -1512,9 +1515,14 @@ class ShortenedUrlsView(LoginRequiredMixin, TemplateView):
     template_name = 'pastoring/workspace/url_shortener/url_shortener.html'
 
     def get(self, request, *args, **kwargs):
+        if not hasattr(self.request.user, 'permission'):
+            Permission.objects.create(name=self.request.user)
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'):
+                or self.request.user.level == 'chief_shep' or self.request.user.permission.short_link_manager):
+            
+            """Ensures that only core shepherd, chief shep and those who have specific permission
+            have access to this page"""
             if 'api' in request.GET:  # READ API
                 shortened_urls = UrlShortener.objects.filter(user=self.request.user)
                 shortened_urls = {'urls': [url.to_json() for url in shortened_urls]}
@@ -1540,7 +1548,17 @@ class ShortenedUrlsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        if self.request.user.permission.short_link_manager and (
+            self.request.user.level == 'core_shep' or 
+                self.request.user.level == 'chief_shep'):
+            
+            context['restricted_access'] = False
+        else:
+            context['restricted_access'] = True
+            
+
         context['category'] = 'Shortened Url'
+        context['developers'] = developers
         context['title'] = title
         context['user'] = self.request.user
 

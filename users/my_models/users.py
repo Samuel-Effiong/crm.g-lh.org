@@ -12,6 +12,9 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from .utilities import Validators, ValidationError, get_user_name
 
 from wagtail.snippets.models import register_snippet
@@ -421,13 +424,18 @@ class CustomUser(AbstractUser):
 
 
 class Permission(models.Model):
-    name = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, to_field='username')
+    name = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     can_edit_catalog = models.BooleanField(default=False)
     head_of_department = models.BooleanField(default=False)
+    short_link_manager = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.name)
 
+
+# Use Django signals to ensure that whenever a `CustomUser` is created,
+# a corresponping `Permission` is created
+# TODO: Implement it 
 
 @register_snippet
 class FamilyMemberWeeklySchedule(models.Model):
