@@ -19,6 +19,7 @@ from .utilities import Validators, ValidationError, get_user_name
 
 from wagtail.snippets.models import register_snippet
 
+
 SEX_CHOICES = (
     ('M', "Male"),
     ('F', "Female")
@@ -384,6 +385,14 @@ class CustomUser(AbstractUser):
 
         else:
             self.profile_updated = False
+
+    def get_my_departments(self):
+        """Get a list of department this user belongs to
+        return an empty list if the user does not belong to any department
+        """
+        departments = self.departmentmember_set.get_user_departments(self)
+        return departments
+
 
     def to_dict(self):
         data = {

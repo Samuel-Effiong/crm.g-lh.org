@@ -1,7 +1,10 @@
 from django.urls import path, include, re_path
-from .views import (Home, Profile, Registration, Login, logout_user, CounterUpdate,
-                    ChartBibleReading, CatalogView, TaskView, ComingSoonView,
-                    SuggestionComplaintView, RecoverPasswordView, short_links)
+from .views import (
+    Home, Profile, Registration, Login, logout_user, CounterUpdate,
+    ChartBibleReading, CatalogView, TaskView, ComingSoonView,
+    SuggestionComplaintView, RecoverPasswordView, TreasuryRequestView,
+    TreasuryRequestListView
+)
 
 
 urlpatterns = [
@@ -21,6 +24,8 @@ urlpatterns = [
     path('users-recover-password/', RecoverPasswordView.as_view(), name='users-recover-password'),
 
     path('users-tasks/', TaskView.as_view(), name='users-task'),
+    path('treasury-request-form/', TreasuryRequestView.as_view(), name='treasury-request-form'),
+    path('treasury-request-list/', TreasuryRequestListView.as_view(), name='treasury-request-list'),
     path('coming-soon/<str:category>/', ComingSoonView.as_view(), name='coming-soon'),
 
     path('personal-development/', include('personal_development.urls')),

@@ -1,12 +1,13 @@
 from typing import Any
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 from django.utils import timezone
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponseNotFound
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login, logout
@@ -28,6 +29,9 @@ from users.my_models.utilities import convert_image_to_webp
 
 from project_management.models import DepartmentMember
 from pastoring.models import UrlShortener
+from diaconate.models import AssetCategory, TreasuryRequest
+
+from project_management.models import Diaconate
 
 
 developers = "God's Lighthouse Developers Team (GDevT)"
@@ -219,7 +223,7 @@ class Profile(LoginRequiredMixin, TemplateView):
         else:
             return super().get(request, *args, **kwargs)
 
-    def post(self, request, **kwargs):
+    def post(self, request, **kwargs) -> HttpResponse:
         context = self.get_context_data(**kwargs)
         form = request.POST['form_name']
 
@@ -403,7 +407,7 @@ class CatalogView(LoginRequiredMixin, TemplateView):
         else:
             return super().get(request, *args, **kwargs)
 
-    def post(self, request, **kwargs):
+    def post(self, request, **kwargs) -> HttpResponse:
         context = super().get_context_data(**kwargs)
         context['category'] = 'Catalog'
         context['developers'] = developers
@@ -665,6 +669,143 @@ class RecoverPasswordView(TemplateView):
             return JsonResponse({'confirm': True})
         else:
             return JsonResponse({'confirm': False})
+
+
+class TreasuryRequestView(LoginRequiredMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'diaconate/treasury/treasury_request_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['title'] = title
+        context['category'] = 'Treasury Request Form'
+        context['developers'] = developers
+        context['user'] = self.request.user
+
+        # Get all the active notification for the user
+        general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
+                                                           is_activated=False)
+        all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
+                                                        is_activated=False)
+                                                        
+        active_notifications = list(general_notifications) + list(all_notifications)
+        context['active_notifications'] = active_notifications
+        context['no_of_notifications'] = len(active_notifications)
+
+        # load to the context the information gotten from the query 
+        # parameters
+
+        if 'confirm_request' in self.request.GET:
+            confirm_request = self.request.GET['confirm_request']
+            context['confirm_request'] = confirm_request
+
+            if confirm_request == 'failed':
+                context['error_message'] = self.request.GET['error_message']
+
+        # Ensure that the treasury diaconate has been created before the page
+        # is loaded, else display a warning page to create the diaconate
+
+        try:
+            treasury = Diaconate.objects.get(name='Treasury')
+        except Diaconate.DoesNotExist as e:
+            context['department_unavailable'] = True
+            return context
+        else:
+            context['treasury'] = treasury
+        
+        context['asset_categories'] = AssetCategory.objects.all()
+        return context
+    
+    def post(self, request, **kwargs) -> HttpResponse:
+        context = super().get_context_data(**kwargs)
+
+        requester_name = request.POST['requester_name']
+        department = request.POST.get('department', False)
+
+        if not department:
+            confirm_request = 'failed'
+            error_message = 'You must belong in a department before you can make a request'
+            
+            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={error_message}")
+
+        asset = request.POST['asset'].strip()
+
+        if not asset:
+            context['confirm_request'] = 'failed'
+            context['error_message'] = 'Asset cannot be empty!' 
+
+            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request=failed&error_message={error_message}")
+        
+        asset_category = request.POST.get('asset_category', False)
+
+        if not asset_category:
+            confirm_request = 'failed'
+            error_message = 'Please select a category'
+            
+            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={error_message}")
+        
+        request_deadline = request.POST['request_deadline']
+
+        if request_deadline:
+            request_deadline = datetime.fromisoformat(request_deadline)
+        else:
+            request_deadline = None
+
+        justification = request.POST['justification'].strip()
+
+        if not justification:
+            confirm_request = 'failed'
+            error_message = "Please enter your reason for your request"
+
+            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={error_message}")
+
+        try:
+            TreasuryRequest.objects.create(
+                requested_by=requester_name,
+                department=department,
+                asset=asset,
+                asset_category=asset_category,
+                reason=justification,
+                preferred_date=request_deadline
+            )
+        except Exception as e:
+            context['confirm_request'] = 'failed'
+            context['error_message'] = str(e)
+            
+            return self.render_to_response(context)
+
+        context['success'] = 'successful'
+        return self.render_to_response(context)
+
+
+class TreasuryRequestListView(LoginRequiredMixin, TemplateView):
+    template_name = 'diaconate/treasury/treasury_request_list.html'
+    login_url = reverse_lazy('users-login')
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        context['title'] = title
+        context['category'] = 'Treasury Request Form'
+        context['developers'] = developers
+        context['user'] = self.request.user
+
+        # Get all the active notification for the user
+        general_notifications = Notification.objects.filter(target=self.request.user, exposure_level='general',
+                                                           is_activated=False)
+        all_notifications = Notification.objects.filter(target=self.request.user, exposure_level='all',
+                                                        is_activated=False)
+                                                        
+        active_notifications = list(general_notifications) + list(all_notifications)
+        context['active_notifications'] = active_notifications
+        context['no_of_notifications'] = len(active_notifications)
+
+        # retrieve the request made by this user
+        treasury_requests = TreasuryRequest.objects.filter(requested_by=self.request.user)
+        context['treasury_requests'] = treasury_requests
+
+        return context
 
 
 class ComingSoonView(TemplateView):

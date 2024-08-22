@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     'prophetic_vision',
     'pastoring',
     'project_management',
+    'diaconate',
     'bot',    
 ]
 

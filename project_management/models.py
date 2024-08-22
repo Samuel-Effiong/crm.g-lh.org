@@ -1,18 +1,18 @@
 from typing import Tuple, Dict
 
-from django.conf import settings
+# from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
 from django.db import models
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 
-from users.models import Shepherd
+# from users.models import Shepherd
 
 
 class Utility:
@@ -25,11 +25,18 @@ class DepartmentMemberManager(models.Manager):
         members = self.get_queryset().filter(department_name=department)
         return members
 
+    def get_user_departments(self, user):
+        """Get a list of all the department a user is a member to"""
+        departments_membership = self.get_queryset().filter(member_name=user)
+        departments = [department.department_name for department in departments_membership]
+
+        return departments
+
     def is_in_a_department(self, user):
         """Check if user is a member of any department"""
         member = self.get_queryset().filter(member_name=user)
 
-        return len(member) > 0
+        return len(self.get_user_departments(user)) > 0
 
  
 # Create your models here.

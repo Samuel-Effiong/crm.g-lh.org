@@ -51,7 +51,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('', include('home.urls')),
 
-    re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin).*$', short_links, name='short-links')
+    re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|treasury-request-form|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin).*$', short_links, name='short-links')
 ]
 
 if settings.DEBUG:
