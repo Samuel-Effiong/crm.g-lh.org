@@ -1,0 +1,76 @@
+<div class="col-sm-12 col-lg-12" id=inventory_list>
+    {% if confirm %}
+        <div class="alert bg-success-light mb-0 mb-3" role="alert">
+            <div class="iq-alert-text">{{ success_message }}</div>
+            <button type="button" class="close text-muted" data-dismiss="alert" aria-label="Close">
+            <i class="ri-close-line"></i>
+            </button>
+        </div>
+    {% else %}
+        <div class="alert bg-danger-light mb-0" role="alert">
+            <div class="iq-alert-text">{{ error_message }}</div>
+            <button type="button" class="close text-muted" data-dismiss="alert" aria-label="Close">
+            <i class="ri-close-line"></i>
+            </button>
+        </div>
+    {% endif %}
+    
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <div class="header-title col-12 d-flex justify-content-between">
+                <h4 class="card-title">Treasury Assets</h4>
+                <button type="button" class="btn btn-success" data-target="#add-asset" data-toggle="modal">Add asset</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Asset</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Acquisition Date</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Condition</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in treasury_assets %}
+                        <tr id="asset-id-{{ item.id }}">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.purchase_date }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>{{ item.condition }}</td>
+
+                            <td>
+                                <button type="button" class="btn btn-outline-primary mt-2" data-target='#edit-asset' data-toggle='modal'
+                                    hx-get="{% url 'diaconate:treasury-inventory' %}?edit={{ item.id }}"
+                                    hx-trigger="click"
+                                    hx-target="#edit-asset-body"
+                                    hx-swap="innerHTML"
+                                    hx-indicator="#springBouceLoader"
+                                >
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-outline-danger mt-2"
+                                    hx-get="{% url 'diaconate:treasury-inventory' %}?delete={{ item.id }}"
+                                    hx-trigger="click"
+                                    hx-target="#asset-id-{{ item.id }}"
+                                    hx-swap='delete'
+                                    hx-indicator='#springBouceLoader'
+                                    hx-confirm="Are you sure you want to remove {{ item.name }} from the Treasury"
+                                >
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

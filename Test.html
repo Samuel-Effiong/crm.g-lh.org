@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple File Upload with Remove Option</title>
+    <style>
+        #fileDetails {
+            margin-top: 10px;
+        }
+        #fileDetails ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #fileDetails ul li {
+            background-color: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-info {
+            flex-grow: 1;
+        }
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="uploadBtn">Upload Files</button>
+    <input type="file" id="fileInput" style="display:none;" multiple  value="Hello"/>
+    <div id="fileDetails"></div>
+
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const fileDetails = document.getElementById('fileDetails');
+
+        // Store selected files in an array
+        let selectedFiles = [];
+
+        // Allowed file types and max size (in bytes)
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        uploadBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            const files = Array.from(fileInput.files);
+
+            files.forEach(file => {
+                // Validate file type
+                if (!allowedTypes.includes(file.type)) {
+                    alert(`Error: ${file.name} is not a valid file type. Only JPG, PNG, and PDF files are allowed.`);
+                    return;
+                }
+
+                // Validate file size
+                if (file.size > maxSize) {
+                    alert(`Error: ${file.name} exceeds the 5MB size limit.`);
+                    return;
+                }
+
+                // Add file to the selectedFiles array
+                selectedFiles.push(file);
+                updateFileList();
+            });
+
+            // Reset file input to allow selecting the same file again if removed
+            fileInput.value = '';
+        });
+
+        // Function to remove a file from the selected list
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        // Function to update the displayed file list
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                fileDetails.innerHTML = '';
+                return;
+            }
+
+            let output = '<ul>';
+            selectedFiles.forEach((file, index) => {
+                output += `
+                    <li>
+                        <div class="file-info">
+                            <span class="file-name">File Name: ${file.name}</span><br>
+                            <span class="file-size">File Size: ${(file.size / 1024).toFixed(2)} KB</span><br>
+                            <span>File Type: ${file.type}</span>
+                        </div>
+                        <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                    </li>
+                `;
+            });
+            output += '</ul>';
+
+            fileDetails.innerHTML = output;
+        }
+    </script>
+
+</body>
+</html>

@@ -9,8 +9,6 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-# import numpy as np
-# import pandas as pd
 
 # from users.models import Shepherd
 
@@ -564,7 +562,15 @@ class Diaconate(models.Model):
     @admin.display(description="Number of Departments")
     def get_number_of_departments(self) -> int:
         return self.departments.count()
+    
+    def is_a_diaconate_member(self, user):
 
+        # check if this user belongs to any department that is part of 
+        # this diaconate
+        
+        result = self.departments.filter(member_names__member_name=user)
+        return result
+ 
 
 class CustomUnitManager(models.Manager):
     pass

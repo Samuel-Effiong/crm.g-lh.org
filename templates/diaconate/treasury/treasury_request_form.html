@@ -11,7 +11,7 @@
             <div class="row">
                 
 
-                {% if department_unavailable %}
+                {% if treasury_diaconate_unavailable %}
                     <div class="col-xl-12 col-lg-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between">
@@ -61,7 +61,7 @@
                                     </div>
                                     <div class="form-group pt-2">
                                         <div class="align-items-center">
-                                            <span>Assitant Head:  <br> {{ treasury.assistant.get_full_name }}</span>
+                                            <span>Assistant Head:  <br> {{ treasury.assistant.get_full_name }}</span>
                                             <span>Contact: {{ treasury.assistant.phone_number }}</span>
                                             <span>Email: {{ treasury.assistant.email }}</span>
                                         </div>
@@ -78,7 +78,7 @@
                                 <span> {{ error_message }}</span>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
-                        {% elif confirm_request == 'successful' %}
+                        {% elif confirm_request == 'success' %}
                             <div class="alert alert-success rounded-0 alert-dismissible fade show " role="alert">
                                 <span>Request submitted successfully, check requests status <a href="{% url 'treasury-request-list' %}">here</a></span>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -116,18 +116,36 @@
 
                                         <div class="form-group col-md-12">
                                             <label class="form-label" for="asset">Asset</label>    
-                                            <input type="text" class="form-control" name="asset" id="asset" placeholder="What item are you requesting for" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label" for="asset_category">Asset Category</label>
-                                            <select class="form-select" id="asset_category" name="asset_category" required>
-                                                <option selected="" disabled="">Select Resource Category</option>
-                                                {% for category in asset_categories %}
-                                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                            
+                                            <select class="form-select" id="asset" name="asset" required
+                                                hx-get="{% url 'treasury-request-form' %}?slider"
+                                                hx-trigger="change"
+                                                hx-target="#asset_slides_changer"
+                                                hx-swap="innerHTML"
+                                                hx-indicators="#springBouceLoader"
+                                            >
+                                                
+                                                <option value="" selected="">None</option>
+                                                {% for item in assets %}
+                                                    <option value="{{ item.id }}">{{ item.name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
+
+                                        <div id="asset_slides_changer">
+                                            
+                                        </div>
+
+
+                                        <div class="form-group">
+                                            <label for="new_location">New Location</label>
+                                            <select class="form-select" name="new_location" id="new_location" required>
+                                                {% for loc in locations %}
+                                                    <option value="{{ loc.0 }}">{{ loc.0 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
 
                                         <div class="form-group">
                                             <label class="form-label" for="request_deadline">Request Deadline</label>

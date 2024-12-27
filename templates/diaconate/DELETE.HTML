@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Positioning Layout Exercise</title>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    z-index: 1000;
+}
+
+.container {
+    margin-top: 80px; /* Space for the fixed header */
+}
+
+.left-sidebar {
+    float: left;
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 15px;
+    height: 100vh; /* Full viewport height */
+    position: relative;
+}
+
+.left-sidebar nav ul {
+    list-style-type: none;
+}
+
+.left-sidebar nav ul li {
+    margin-bottom: 10px;
+}
+
+.left-sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.content {
+    margin-left: 220px;
+    padding: 20px;
+}
+
+.content section {
+    margin-bottom: 20px;
+}
+
+.right-sidebar {
+    position: absolute;
+    top: 80px; /* Below the fixed header */
+    right: 0;
+    width: 200px;
+    background-color: #eaeaea;
+    padding: 15px;
+    height: calc(100vh - 80px); /* Full viewport height minus header */
+}
+
+.footer {
+    clear: both;
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    position: relative;
+}
+
+.scroll-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.scroll-top:hover {
+    background-color: #555;
+}
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>My Website</h1>
+    </header>
+
+    <div class="container">
+
+        <aside class="left-sidebar">
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section>
+                <h2>Section 1</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.</p>
+            </section>
+
+            <section>
+                <h2>Section 2</h2>
+                <p>Cras quis nulla commodo, aliquam lectus sed, blandit augue. Cras ullamcorper bibendum bibendum.</p>
+            </section>
+
+            <section>
+                <h2>Section 3</h2>
+                <p>Vestibulum fermentum massa vel enim feugiat gravida. Nulla faucibus nisi vitae facilisis congue.</p>
+            </section>
+        </main>
+
+        <aside class="right-sidebar">
+            <p>Right Sidebar Content</p>
+        </aside>
+
+    </div>
+
+    <footer class="footer">
+        <p>Footer Content</p>
+    </footer>
+
+    <button class="scroll-top">Top</button>
+
+</body>
+</html>

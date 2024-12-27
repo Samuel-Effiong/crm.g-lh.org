@@ -4,8 +4,8 @@ import pandas as pd
 from datetime import datetime
 
 from django.utils import timezone
-from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponse
 
@@ -27,9 +27,9 @@ from users.models import (Catalog, Shepherd, SubShepherd, CustomUser,
 from users.my_models.users import GENOTYPE_CHOICES, BLOOD_GROUP_CHOICES
 from users.my_models.utilities import convert_image_to_webp
 
-from project_management.models import DepartmentMember
+from project_management.models import DepartmentMember, Department
 from pastoring.models import UrlShortener
-from diaconate.models import AssetCategory, TreasuryRequest
+from diaconate.models import AssetCategory, TreasuryRequest, Asset, LOCATION_CHOICES
 
 from project_management.models import Diaconate
 
@@ -674,6 +674,22 @@ class RecoverPasswordView(TemplateView):
 class TreasuryRequestView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'diaconate/treasury/treasury_request_form.html'
+    
+    def get(self, request, *args, **kwargs):
+        
+        if request.htmx:
+            if 'slider' in request.GET:
+                asset = request.GET['asset'].strip()
+                context = {}
+                if asset and asset.lower() != 'none':
+                    asset = Asset.objects.get(id=asset)
+                    context['asset'] = asset
+                else:
+                    context['asset'] = None
+                    
+                return render(request, 'diaconate/treasury/partial_html/asset_image_changer_for_request_form.html', context)
+        else:
+            return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -707,14 +723,16 @@ class TreasuryRequestView(LoginRequiredMixin, TemplateView):
         # is loaded, else display a warning page to create the diaconate
 
         try:
-            treasury = Diaconate.objects.get(name='Treasury')
+            treasury = Diaconate.objects.get(name='TREASURY')
         except Diaconate.DoesNotExist as e:
-            context['department_unavailable'] = True
+            context['treasury_diaconate_unavailable'] = True
             return context
         else:
             context['treasury'] = treasury
         
         context['asset_categories'] = AssetCategory.objects.all()
+        context['assets'] = Asset.objects.all()
+        context['locations'] = LOCATION_CHOICES
         return context
     
     def post(self, request, **kwargs) -> HttpResponse:
@@ -728,23 +746,19 @@ class TreasuryRequestView(LoginRequiredMixin, TemplateView):
             error_message = 'You must belong in a department before you can make a request'
             
             return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={error_message}")
+        else:
+            department = Department.objects.get(id=department)
 
-        asset = request.POST['asset'].strip()
+        asset = request.POST.get('asset', False).strip()
 
         if not asset:
             context['confirm_request'] = 'failed'
             context['error_message'] = 'Asset cannot be empty!' 
-
             return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request=failed&error_message={error_message}")
-        
-        asset_category = request.POST.get('asset_category', False)
-
-        if not asset_category:
-            confirm_request = 'failed'
-            error_message = 'Please select a category'
-            
-            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={error_message}")
-        
+        else: 
+            asset = Asset.objects.get(id=asset)
+         
+        new_location = request.POST['new_location']
         request_deadline = request.POST['request_deadline']
 
         if request_deadline:
@@ -762,21 +776,19 @@ class TreasuryRequestView(LoginRequiredMixin, TemplateView):
 
         try:
             TreasuryRequest.objects.create(
-                requested_by=requester_name,
+                requested_by=request.user,
                 department=department,
                 asset=asset,
-                asset_category=asset_category,
                 reason=justification,
-                preferred_date=request_deadline
+                preferred_date=request_deadline,
+                new_location=new_location
             )
         except Exception as e:
             context['confirm_request'] = 'failed'
             context['error_message'] = str(e)
             
-            return self.render_to_response(context)
-
-        context['success'] = 'successful'
-        return self.render_to_response(context)
+            return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request={confirm_request}&error_message={str(e)}")
+        return HttpResponseRedirect(f"{reverse_lazy('treasury-request-form')}?confirm_request=success")
 
 
 class TreasuryRequestListView(LoginRequiredMixin, TemplateView):

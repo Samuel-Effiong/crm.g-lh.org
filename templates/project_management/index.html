@@ -110,6 +110,7 @@
               <div class="data-scrollbar" data-scroll="1">
                   <nav class="iq-sidebar-menu">
                       <ul id="iq-sidebar-toggle" class="iq-menu">
+                        {% block project_management_nav %}
                           <li class="">
                               <a href="#dashboard" class="collapsed" data-toggle="collapse" aria-expanded="false">
                                   <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -171,7 +172,8 @@
                                   {% endfor %}
                               </ul>
                           </li>
-                          {% if user in department_leaders or user.is_superuser %}
+                          
+                          {% if user in department_leaders or user.is_superuser %} 
                               <li class="">
                                   <a href="#settings" class="collapsed" data-toggle="collapse" aria-expanded="false">
                                       <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -195,6 +197,13 @@
                                   </ul>
                               </li>
                           {% endif %}
+
+                          <hr>
+                        
+                            {% if not treasury_diaconate_unavailable and treasury_membership %}
+                                
+                            {% endif %}
+                        {% endblock project_management_nav %}
                       </ul>
                   </nav>
                   <div id="sidebar-bottom" class="position-relative sidebar-bottom">

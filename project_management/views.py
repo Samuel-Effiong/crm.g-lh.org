@@ -29,12 +29,15 @@ from users.models import Shepherd, SubShepherd
 from home.models import Notification
 from users.my_models.utilities import convert_to_format
 
+from diaconate.models import TreasuryRequest
+
 
 title = 'GLH-FAM'
 project_title = 'GLH-PROJ'
 
 
 def is_member(user):
+    """A utitlity function to check is a user belongs to any department"""
     member = DepartmentMember.objects.filter(member_name=user)
     return len(member) > 0
 
@@ -104,6 +107,7 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         department = Department.objects.get(department_name=context['category'])
         context['department'] = department
 
+        # Context needed to handle the navigation
         if user.is_superuser:
             context['member_departments'] = Department.objects.all()
         else:
@@ -131,6 +135,22 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         context['member_activity_in_a_department'] = zip(members, complete_project)
 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
+        # check if there is a treasury diaconate and adds a special link section
+        # to access treasury related pages
+        try:
+            treasury = Diaconate.objects.get(name='TREASURY')
+            membership = treasury.is_a_diaconate_member(user)
+
+            if membership:
+                context['treasury_membership'] = True
+        except Diaconate.DoesNotExist as e:
+            context['treasury_diaconate_unavailable'] = True
+
+        # activate the special diaconate features
+
+        # check if the user belongs to a treasury diaconate
+
 
         return context
 
@@ -566,7 +586,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
                         if unit_members:
                             department_unit.members.add(*unit_members)
 
-                except IntegrityError as e:
+                except IntegrityError as e: 
                     pass
 
             elif settings == 'member':

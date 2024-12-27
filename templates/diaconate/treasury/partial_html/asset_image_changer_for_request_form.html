@@ -1,0 +1,60 @@
+{% if asset %}
+    {% if asset.files.all %}
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <div class="header-title">
+                <h4 class="card-title">Image Slides</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="bd-example">
+                    <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                            {% for file in asset.files.all %}
+                                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}" aria-label="Image {{ forloop.counter0 }}" class="{% if forloop.counter0 == 0 %}active{% endif %}" aria-current="{% if forloop.counter0 == 0 %}active{% endif %}"></button>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-inner">
+                            {% for file in asset.files.all %}
+                                <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
+                                    {% if 'image' in file.type %}
+                                        <img src="{{ file.name }}" class="img-fluid" width="100%" alt="{{ file.name }}">
+                                    
+                                    {% elif 'video' in file.type %}
+                                        <video controls preload="metadata" style="background-color: black; margin-bottom: 60px;" class="d-block pb-5 w-100">
+                                            <source src="{{ file.name }}" type="{{ file.type}}">
+                                            Video not supported on the browser
+                                        </video>
+                                    {% endif %}
+            
+                                    <div class="carousel-caption d-none d-md-block">
+                                        <h5>Asset image {{ forloop.counter0 }}</h5>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-header d-flex jutify-content-between">
+                <div class="header-title">
+                    <h4 class="card-title">Asset do not have a preview image</h4>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+
+

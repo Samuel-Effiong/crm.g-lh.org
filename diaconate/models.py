@@ -50,19 +50,30 @@ SOURCE_OF_ITEM_CHOICES = [
 ]
 
 
+class AssetFile(models.Model):
+    FILE_CHOICES = (
+        ('image', 'img'),
+        ('video', 'video')
+    )
+    name = models.CharField(max_length=1000)
+    type = models.CharField(max_length=20, choices=FILE_CHOICES)
+    size = models.IntegerField(null=True, blank=True)
+
+
 class Asset(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField('Description|Configuration')
     category = models.ForeignKey('AssetCategory', on_delete=models.CASCADE)
     purchase_date = models.DateField('Date of Acquisition')
-    # value = models.DecimalField(max_digits=10, decimal_places=2)
+
     location = models.CharField(max_length=100)
     condition = models.CharField(
         max_length=50, choices=CONDITION_CHOICES,
         help_text="These choices represent the condition of assets, allowing for clear categorization."
     )
     source_of_item = models.CharField(max_length=50, choices=SOURCE_OF_ITEM_CHOICES)
-    image = models.ImageField(upload_to='assets/', null=True, blank=True)
+    files = models.ManyToManyField(AssetFile, blank=True)
+
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='Active',
         help_text="These choices can be used to indicate the current status of assets or requests."
@@ -70,6 +81,9 @@ class Asset(models.Model):
 
     def __str__(self):
         return self.name
+    
+    # class Meta:
+    #     ordering = ('purchased_date',)
 
 
 class AssetCategory(models.Model):
@@ -97,7 +111,6 @@ class TreasuryRequest(models.Model):
     requested_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    asset_category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE)
     request_date = models.DateField(auto_now_add=True)
     status = models.CharField(
         max_length=20, choices=REQUEST_STATUS_CHOICES, default='Pending',
@@ -106,6 +119,7 @@ class TreasuryRequest(models.Model):
     reason = models.TextField()
     approved_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_requests')
     approved_date = models.DateField(null=True, blank=True)
+    new_location = models.CharField(max_length=1000, choices=LOCATION_CHOICES, default="")
     preferred_date = models.DateField(null=True, blank=True, help_text="Deadline for the request")
 
     def __str__(self):

@@ -1,0 +1,226 @@
+{% extends 'diaconate/treasury/dashboard.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+    <style>
+        #request_details {
+
+        }
+
+        #request_details tr {
+            border-bottom: 2px solid grey;
+        }
+
+        #request_details th, #request_details td {
+            padding: 10px;
+        }
+    </style>
+{% endblock extra_css %}
+
+{% block content %}
+    
+    <div class="container-fluid">
+        <div class="row">
+        
+            <div class="col-sm-12 col-lg-12">
+            
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">Pending Treasury Requests</h4>
+                        </div>
+                        <a href="{% url 'diaconate:treasury-pending-request' %}?download_requests" type="button" class="btn btn-primary p-2">Download Requests</a>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Asset</th>
+                                    <th scope="col">New Location</th>
+                                    <th scope="col">Requested By</th>
+                                    <th scope="col">Request Date</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+
+                                {% for request in treasury_requests %}
+                                    <tr id="pending-detail-{{ request.id }}">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ request.asset }}</td>
+                                        <td>{{ request.new_location }}</td>
+                                        <td>{{ request.requested_by }}</td>
+                                        <td>{{ request.request_date }}</td>
+                                        <td id="request-status-{{ request.id }}">
+                                            <p style="margin-top: 20px; color: {% if request.status == 'Approved' %}green{% else %}red{% endif %};">{{ request.status }}</p>    
+                                        </td>
+                                        {% comment %} Make this fetch the latest data from the database {% endcomment %}
+                                        <td><button type="button" class="btn btn-outline-primary p-2 mt-2" data-target="#view-details" data-toggle="modal" onclick="view_details('{{ request.id }}', '{{ request.asset }}', '{{ request.asset_category }}', '{{ request.requested_by.get_full_name }}', '{{ request.request_date }}', '{{ request.preferred_date }}', '{{ request.department.department_name }}', '{{ request.status }}', '{{ request.reason }}', '{{ request.approved_by }}', '{{ request.approved_date }}', '{{ request.new_location}}')">View Details</button></td>
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                    <th scope="row"></th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block modal %}
+
+    <div class="modal fade" id="view-details" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog  modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bttom">
+                    <h3 class="modal-title" id="exampleModalCenterTitle01">Request Details</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="col-12" id="notification"></div>
+
+                        <p id="asset_id" style="display: none;"></p>
+
+                        <table class="col-lg-12" id="request_details">
+                            <tr>
+                                <th>Asset Name:</th>
+                                <td id="asset_name"></td>
+                            </tr>
+                            <tr>
+                                <th>Asset Category</th>
+                                <td id="asset_category"></td>
+                            </tr>
+                            <tr>
+                                <th>Requested By</th>
+                                <td id="requested_by"></td>
+                            </tr>
+                            <tr>
+                                <th>Request Date</th>
+                                <td id="request_date"></td>
+                            </tr>
+                            <tr>
+                                <th>New Location</th>
+                                <td id="new_location"></td>
+                            </tr>
+                            <tr>
+                                <th>Reequest Deadline</th>
+                                <td id="request_deadline"></td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td id="department"></td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td id="status"></td>
+                            </tr>
+                            <tr>
+                                <th>Reason</th>
+                                <td id="reason"></td>
+                            </tr>
+                            <tr>
+                                <th>Approved By</th>
+                                <td id="approved_by"></td>
+                            </tr>
+                            <tr>
+                                <th>Approved Date</th>
+                                <td id="approved_date"></td>
+                            </tr>
+                            <tr>
+
+                            </tr>
+                        </table>
+
+                        <div class="col-lg-12">
+                            <div class="d-flex flex-wrap align-items-ceter justify-content-center mt-2">
+                                <div class="btn btn-outline-danger mr-3" id="approve_button" onclick="submit_request_decision('approve')">Approve</div>
+                                <div class="btn btn-primary mr-2" id="reject_button" onclick="submit_request_decision('reject')">Reject</div>
+                                <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock modal %}
+
+
+{% block extra_js %}
+    <script>
+        const view_details = (id, asset, asset_category, requested_by, request_date, requested_deadline, department, status, reason, approved_by, approved_date, new_location) => {
+            document.getElementById('asset_id').textContent = id;
+            document.getElementById('asset_name').textContent = asset;
+            document.getElementById('asset_category').textContent = asset_category;
+            document.getElementById('requested_by').textContent = requested_by;
+            document.getElementById('request_date').textContent = request_date;
+            document.getElementById('request_deadline').textContent = requested_deadline;
+            document.getElementById('new_location').textContent = new_location
+            
+            document.getElementById('department').textContent = department;
+            document.getElementById('status').textContent = status;
+            document.getElementById('reason').textContent = reason;
+            document.getElementById('approved_by').textContent = approved_by;
+            document.getElementById('approved_date').textContent = approved_date;
+
+            const approve_button = document.getElementById('approve_button');
+            const reject_button = document.getElementById('reject_button');
+
+        }
+
+        const submit_request_decision = (decision) => {
+            const id = document.getElementById('asset_id').textContent;
+
+            const url = `{% url 'diaconate:treasury-pending-request' %}?pending-request-decision=${decision}&pending-request-id=${id}`;
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const notification = document.getElementById('notification');
+                const pending_status = document.querySelector(`#pending-detail-${data['request_id']} #request-status-${data['request_id']}`);
+                if (decision === 'approve') {
+                    notification.innerHTML = `
+                        <div class="alert text-white alert-success col-12" role="alert">
+                            <div class="iq-alert-text text-black">Request Successfully Aproved</div>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    `;
+                    pending_status.textContent = 'Approved';
+                    pending_status.style.color = 'green';
+                }
+                else {
+                    notification.innerHTML = `
+                        <div class="alert text-white alert-success col-12" role="alert">
+                            <div class="iq-alert-text text-black">Request Successfully Rejected</div>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    `;
+                    pending_status.textContent = 'Rejected';
+                    pending_status.style.color = 'red'
+                }
+                
+            })
+        }
+    </script>
+
+{% endblock extra_js %}
+

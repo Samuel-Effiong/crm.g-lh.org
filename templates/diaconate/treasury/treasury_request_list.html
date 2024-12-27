@@ -30,6 +30,7 @@
                                     <th>S/N</th>
                                     <th>Asset</th>
                                     <th>Description</th>
+                                    <th>New Location</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
                                 </tr>
@@ -41,7 +42,7 @@
                                             <td>{{ forloop.counter }}</td>
                                             <td>{{ request.asset }}</td>
                                             <td>{{ request.reason|truncatewords:"7" }}</td>
-
+                                            <td>{{ request.new_location }}</td>
                                             <td>{{ request.request_date|date:"l d M Y" }}</td>
                                             <td>
                                                 {% if request.status == 'Pending' %}
@@ -62,6 +63,7 @@
                                     <th>S/N</th>
                                     <th>Asset</th>
                                     <th>Description</th>
+                                    <th>New Location</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
                                 </tr>

@@ -1,0 +1,13 @@
+<tbody id="pending-requests">
+    {% for request in treasury_requests %}
+        <tr id="pending-detail-{{ request.id }}">
+            <td>{{ forloop.counter }}</td>
+            <td>{{ request.asset }}</td>
+            <td>{{ request.new_location }} </td>
+            <td>{{ request.requested_by }}</td>
+            <td>{{ request.request_date }}</td>
+            <td>{{ request.status }}</td>
+            <td><button type="button" class="btn btn-outline-primary p-2 mt-2" data-target="#view-details" data-toggle="modal" onclick="view_details('{{ request.id }}', '{{ request.asset }}', '{{ request.asset_category }}', '{{ request.requested_by.get_full_name }}', '{{ request.request_date }}', '{{ request.preferred_date }}', '{{ request.department.department_name }}', '{{ request.status }}', '{{ request.reason }}', '{{ request.approved_by }}', '{{ request.approved_date }}')">View Details</button></td>
+        </tr>
+    {% endfor %}
+</tbody>

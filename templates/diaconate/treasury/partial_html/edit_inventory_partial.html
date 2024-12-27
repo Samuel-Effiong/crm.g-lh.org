@@ -1,0 +1,171 @@
+<div class="col-lg-12">
+    <form
+        hx-post="{% url 'diaconate:treasury-inventory' %}?edit={{ asset.id }}"
+        enctype="multipart/form-data"
+        hx-trigger="submit"
+        hx-target="#inventory_list"
+        hx-swap="innerHTML"
+        hx-indicator="#springBouceLoader"
+        class="row"
+    >
+        {% csrf_token %}
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="asset_name">Asset Name</label>
+                <input type="text" class="form-control" id="asset_name" name="asset_name" value="{{ asset.name }} "required>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="edit-category">Category</label>
+                <select name="category" class="form-control" id="edit-category" data-style="py-0" required>
+                    {% for category in asset_categories %}
+                        <option value="{{ category.name }}" {% if asset.category.name == category.name %}selected{% endif %}>{{ category.name }}</option>
+                    {% empty %}
+                        <option value="" disabled>No Category</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="edit-purchase_date">Purchase Date</label>
+                <input type="date" class="form-control" id="edit-purchase_date" name="purchase_date" value="{{ asset.purchase_date.isoformat }}" required>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="edit-condition">Conditions:</label>
+                <select name="condition" class="form-control" id="edit-condition" data-style="py-0" required>
+                    {% for condition in conditions %}
+                        <option value="{{ condition }}" {% if asset.condition == condition %}selected{% endif %}>{{ condition }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="edit-source_of_item">Source of Item</label>
+                <select name="source_of_item" class="form-control" id="edit-source_of_item" data-style="py-0" required>
+                    {% for source in source_of_items %}
+                        <option value="{{ source }}" {% if asset.source_of_item == source %}selected{% endif %}>{{ source }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="form-group mb-3">
+                <label for="edit-status">Status</label>
+                <select name="status" class="form-control" id="edit-status" data-style="py-0" required>
+                    {% for stat in statuses %}
+                        <option value="{{ stat }}" {% if asset.status == stat %}selected{% endif %}>{{ stat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <div class="form-group mb-3">
+                <label for="edit-location">Location</label>
+                <select name="location" class="form-control" id="edit-location" data-style="py-0" required>
+                    {% for location in locations %}
+                        <option value="{{ location }}" {% if asset.location == location %}selected{% endif %}>{{ location }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <div class="form-group">
+                <label for="edit-image" name="images" style="display:block;">Select Image(s)</label>
+                <input name="images" type="file" id="edit-image" multiple>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <ul class="list-group">
+                {% for file in asset.files.all  %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center iq-bg-primary" title="{{ img }}">
+                            <div>
+                                <p>File name: Asset {{ forloop.counter0 }}</p>
+                                <p>File type: {{ file.type }}</p>
+                            </div>
+                            <button type="button" class="btn btn-danger mt-2"
+                                hx-get="{% url 'diaconate:treasury-inventory' %}?delete_asset_file={{ file.id }}"
+                                hx-trigger="click"
+                                hx-target="#edit-asset-body"
+                                hx-swap="innerHTML"
+                                hx-indicator="#springBouceLoader"
+                            >
+                                <i class="ri-delete-bin-2-fill pr-0"></i>
+                            </button>
+                        </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if asset.files.all %}
+            <div class="col-sm-12 col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                           <h4 class="card-title">Image Slides</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="bd-example">
+                            <div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel">
+                                <ol class="carousel-indicators">
+                                    {% for file in asset.files.all %}
+                                        <li data-target="#carouselExampleCaptions" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.counter0 == 0 %}active{% endif %}"></li>
+                                    {% endfor %}
+                                </ol>
+                                <div class="carousel-inner">
+                                    {% for file in asset.files.all %}
+                                        <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}" {% if 'video' in file.type %}style="background-color: black;"{% endif %}>
+                                            {% if 'image' in file.type %}
+                                                <img src="{{ file.name }}" class="d-block w-100" alt="#">
+                                            {% elif 'video' in file.type %}
+                                                <video controls preload="metadata" style="background-color: black; margin-bottom: 60px;" class="d-block pb-5 w-100">
+                                                    <source src="{{ file.name }}" type="{{ file.type}}">
+                                                    Video not supported on the browser
+                                                </video>
+                                            {% endif %}
+                                            <div class="carousel-caption d-none d-md-block">
+                                                <h4 class="text-white">Asset image {{ forloop.counter0 }}</h4>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+
+        <div class="form-group mb-3 col-12">
+            <label for="asset_description">Asset Description</label>
+            <textarea name="asset_description" class="form-control" id="asset_description" placeholder="Additional information about the asset" rows="3">{% if asset.description %}{{ asset.description }}{% endif %}</textarea>
+        </div>
+
+        <div class="col-lg-12">
+            <button type="submit" class="btn btn-outline-primary mt-2">Submit</button>
+            <button type="button" class="btn btn-outline-danger mt-2" data-dismiss="modal">Cancel</button>
+        </div>
+    </form>
+</div>
