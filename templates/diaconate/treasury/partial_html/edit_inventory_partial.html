@@ -18,19 +18,6 @@
 
         <div class="col-lg-6">
             <div class="form-group mb-3">
-                <label for="edit-category">Category</label>
-                <select name="category" class="form-control" id="edit-category" data-style="py-0" required>
-                    {% for category in asset_categories %}
-                        <option value="{{ category.name }}" {% if asset.category.name == category.name %}selected{% endif %}>{{ category.name }}</option>
-                    {% empty %}
-                        <option value="" disabled>No Category</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="form-group mb-3">
                 <label for="edit-purchase_date">Purchase Date</label>
                 <input type="date" class="form-control" id="edit-purchase_date" name="purchase_date" value="{{ asset.purchase_date.isoformat }}" required>
             </div>
@@ -69,7 +56,7 @@
             </div>
         </div>
 
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="form-group mb-3">
                 <label for="edit-location">Location</label>
                 <select name="location" class="form-control" id="edit-location" data-style="py-0" required>
@@ -79,6 +66,23 @@
                 </select>
             </div>
         </div>
+
+        <div class="col-lg-12">
+            <div class="form-group mb-3">
+                <label for="edit-category">Category</label>
+                <select name="category" class="form-control" id="edit-category" data-style="py-0" required>
+                    {% for category in asset_categories %}
+                        <option value="{{ category.name }}" {% if asset.category.name == category.name %}selected{% endif %}>{{ category.name }}</option>
+                    {% empty %}
+                        <option value="" disabled>No Category</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <fieldset id="field-attributes" class='container'>
+            
+        </fieldset>
 
         <div class="col-lg-12">
             <div class="form-group">
@@ -168,4 +172,37 @@
             <button type="button" class="btn btn-outline-danger mt-2" data-dismiss="modal">Cancel</button>
         </div>
     </form>
+
+    <script>
+        document.getElementById('edit-category').addEventListener('change', function() {
+            const attributeFields = document.getElementById('field-attributes');
+            attributeFields.innerHTML = "";
+
+            switch(this.value) {
+                {% for category in asset_categories %}
+                    case `{{ category.name }}`:
+                    attributeFields.innerHTML = `
+                        <legend class="h5">Attributes</legend>
+
+                        <div class="row">
+                            {% for attr in asset_attributes %}
+                                {% if attr.category.name == category.name %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group mb-3">
+                                            <label for={{ category.name }}_{{ attr.name }}>{{ attr.name }}</label>
+                                            <input type="test" class="form-control" id="{{ category.name }}_{{ attr.name }}" name="{{ category.name }}_{{ attr.name }}" >
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    `;
+                    break;
+                {% endfor %}
+                default: 
+                    attributeFields.innerHTML = "";
+
+            }
+        })
+    </script>
 </div>

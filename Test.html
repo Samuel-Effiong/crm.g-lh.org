@@ -3,127 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiple File Upload with Remove Option</title>
+    <title>Add Asset</title>
     <style>
-        #fileDetails {
-            margin-top: 10px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
         }
-        #fileDetails ul {
-            list-style-type: none;
-            padding: 0;
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
-        #fileDetails ul li {
-            background-color: #f9f9f9;
-            margin: 5px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
-        .file-info {
-            flex-grow: 1;
+        label {
+            margin: 10px 0 5px;
         }
-        .remove-btn {
-            background-color: #e74c3c;
+        input, select, textarea {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
             color: white;
+            padding: 10px;
+            font-size: 16px;
             border: none;
-            padding: 5px 10px;
+            border-radius: 5px;
             cursor: pointer;
-            border-radius: 3px;
         }
-        .remove-btn:hover {
-            background-color: #c0392b;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        .success {
-            color: green;
-            font-weight: bold;
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Add New Asset</h1>
+        <form id="assetForm">
+            <label for="assetName">Asset Name:</label>
+            <input type="text" id="assetName" name="assetName" placeholder="Enter asset name" required>
 
-    <button id="uploadBtn">Upload Files</button>
-    <input type="file" id="fileInput" style="display:none;" multiple  value="Hello"/>
-    <div id="fileDetails"></div>
+            <label for="category">Category:</label>
+            <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="furniture">Furniture</option>
+                <option value="electrical">Electrical</option>
+                <option value="clothing">Clothing</option>
+                <option value="kitchen">Kitchen</option>
+            </select>
+
+            <div id="additionalFields"></div>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" placeholder="Enter asset description" rows="4" required></textarea>
+
+            <label for="value">Value (in currency):</label>
+            <input type="number" id="value" name="value" placeholder="Enter value" required>
+
+            <label for="condition">Condition:</label>
+            <select id="condition" name="condition" required>
+                <option value="">Select condition</option>
+                <option value="new">New</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+            </select>
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="Enter location" required>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 
     <script>
-        const uploadBtn = document.getElementById('uploadBtn');
-        const fileInput = document.getElementById('fileInput');
-        const fileDetails = document.getElementById('fileDetails');
+        document.getElementById('category').addEventListener('change', function () {
+            const additionalFields = document.getElementById('additionalFields');
+            additionalFields.innerHTML = '';
 
-        // Store selected files in an array
-        let selectedFiles = [];
+            switch (this.value) {
+                case 'furniture':
+                    additionalFields.innerHTML = `
+                        <label for="dimensions">Dimensions:</label>
+                        <input type="text" id="dimensions" name="dimensions" placeholder="Enter dimensions (e.g., 6x4 ft)">
 
-        // Allowed file types and max size (in bytes)
-        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-        const maxSize = 5 * 1024 * 1024; // 5MB
+                        <label for="color">Color:</label>
+                        <input type="text" id="color" name="color" placeholder="Enter color">
+                    `;
+                    break;
+                case 'electrical':
+                    additionalFields.innerHTML = `
+                        <label for="manufacturer">Manufacturer:</label>
+                        <input type="text" id="manufacturer" name="manufacturer" placeholder="Enter manufacturer">
 
-        uploadBtn.addEventListener('click', function() {
-            fileInput.click();
-        });
+                        <label for="model">Model:</label>
+                        <input type="text" id="model" name="model" placeholder="Enter model">
 
-        fileInput.addEventListener('change', function() {
-            const files = Array.from(fileInput.files);
+                        <label for="color">Color:</label>
+                        <input type="text" id="color" name="color" placeholder="Enter color">
+                    `;
+                    break;
+                case 'clothing':
+                    additionalFields.innerHTML = `
+                        <label for="size">Size:</label>
+                        <input type="text" id="size" name="size" placeholder="Enter size (e.g., M, L, XL)">
 
-            files.forEach(file => {
-                // Validate file type
-                if (!allowedTypes.includes(file.type)) {
-                    alert(`Error: ${file.name} is not a valid file type. Only JPG, PNG, and PDF files are allowed.`);
-                    return;
-                }
+                        <label for="gender">Gender:</label>
+                        <select id="gender" name="gender">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="unisex">Unisex</option>
+                        </select>
 
-                // Validate file size
-                if (file.size > maxSize) {
-                    alert(`Error: ${file.name} exceeds the 5MB size limit.`);
-                    return;
-                }
+                        <label for="color">Color:</label>
+                        <input type="text" id="color" name="color" placeholder="Enter color">
+                    `;
+                    break;
+                case 'kitchen':
+                    additionalFields.innerHTML = `
+                        <label for="material">Material:</label>
+                        <input type="text" id="material" name="material" placeholder="Enter material (e.g., stainless steel, plastic)">
 
-                // Add file to the selectedFiles array
-                selectedFiles.push(file);
-                updateFileList();
-            });
-
-            // Reset file input to allow selecting the same file again if removed
-            fileInput.value = '';
-        });
-
-        // Function to remove a file from the selected list
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            updateFileList();
-        }
-
-        // Function to update the displayed file list
-        function updateFileList() {
-            if (selectedFiles.length === 0) {
-                fileDetails.innerHTML = '';
-                return;
+                        <label for="brand">Brand:</label>
+                        <input type="text" id="brand" name="brand" placeholder="Enter brand">
+                    `;
+                    break;
+                default:
+                    additionalFields.innerHTML = '';
             }
+        });
 
-            let output = '<ul>';
-            selectedFiles.forEach((file, index) => {
-                output += `
-                    <li>
-                        <div class="file-info">
-                            <span class="file-name">File Name: ${file.name}</span><br>
-                            <span class="file-size">File Size: ${(file.size / 1024).toFixed(2)} KB</span><br>
-                            <span>File Type: ${file.type}</span>
-                        </div>
-                        <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
-                    </li>
-                `;
-            });
-            output += '</ul>';
-
-            fileDetails.innerHTML = output;
-        }
+        document.getElementById('assetForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            alert('Asset has been successfully submitted!');
+        });
     </script>
-
 </body>
 </html>

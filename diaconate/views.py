@@ -15,7 +15,8 @@ from django.http import (HttpResponseRedirect, JsonResponse,
                          HttpResponseForbidden, HttpResponse)
 
 from .models import (
-    TreasuryRequest, Asset, AssetCategory, AssetFile,
+    TreasuryRequest, Asset, AssetCategory, 
+    AssetFile, AssetAttribute, AssetAttributeValue,
     STATUS_CHOICES, CONDITION_CHOICES, REQUEST_STATUS_CHOICES,
     LOCATION_CHOICES, SOURCE_OF_ITEM_CHOICES
 )
@@ -175,6 +176,7 @@ class TreasuryInventoryView(LoginRequiredMixin, TemplateView):
                     
                     context['asset'] = asset
                     context['asset_categories'] = AssetCategory.objects.all()
+                    context['asset_attributes'] = AssetAttribute.objects.all()
                     context['locations'] = [location[0] for location in LOCATION_CHOICES]
                     context['conditions'] = [condition[0] for condition in CONDITION_CHOICES]
                     context['source_of_items'] = [source[0] for source in SOURCE_OF_ITEM_CHOICES]
@@ -281,6 +283,7 @@ class TreasuryInventoryView(LoginRequiredMixin, TemplateView):
 
         context['treasury_assets'] = Asset.objects.all()
         context['asset_categories'] = AssetCategory.objects.all()
+        context['asset_attributes'] = AssetAttribute.objects.all()
         context['locations'] = [location[0] for location in LOCATION_CHOICES]
         context['conditions'] = [condition[0] for condition in CONDITION_CHOICES]
         context['source_of_items'] = [source[0] for source in SOURCE_OF_ITEM_CHOICES]
@@ -299,6 +302,30 @@ class TreasuryInventoryView(LoginRequiredMixin, TemplateView):
         source_of_item = request.POST['source_of_item'].strip()
         status = request.POST['status'].strip()
         location = request.POST['location'].strip()
+        
+        if category == 'Cloth':
+            cloth_type = request.POST['Cloth_Type']
+            cloth_size = request.POST['Cloth_Size']
+            cloth_gender = request.POST['Cloth_Gender']
+            cloth_brand = request.POST['Cloth_Brand']
+            cloth_style = request.POST['Cloth_Style']
+
+        elif category == 'Furniture':
+            furniture_type = request.POST['Furniture_Type']
+            furniture_material = request.POST['Furniture_Material']
+            furniture_color = request.POST['Furniture_Color']
+            furniture_manufacturer = request.POST['fFurniture_Manufacturer']
+            furniture_mobility = request.POST['Furniture_Mobility']
+            
+            
+        elif category == 'Fixture':
+            fixture_type = request.POST['Fixture_Type']
+            fixture_material = request.POST['Fixture_Material']
+        
+        elif category == 'Equipment':
+            equipment_type = request.POST['Equipment_Type']
+            equipment_purpose = request.POST['Equipment_Purpose']
+            equipment_manufacturer = request.POST['Equipment_Manufacturer']
 
         files = request.FILES.getlist('images', None)
         files_path = []
@@ -338,6 +365,12 @@ class TreasuryInventoryView(LoginRequiredMixin, TemplateView):
             asset.status = status
             asset.location = location
             asset.description = description
+            
+            if category == 'Cloth':
+                
+                pass
+            
+            
             
             if files:
                 asset.files.add(*files_path)

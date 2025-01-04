@@ -1,12 +1,10 @@
 from django.contrib import admin
 
 from .models import (
-    Asset, 
-    AssetCategory, 
-    TreasuryRequest,
-    Audit,
-    Transaction,
-    Report,
+    Asset, AssetCategory, 
+    AssetAttribute, AssetAttributeValue,
+    TreasuryRequest, Audit,
+    Transaction, Report,
 )
 
 # Register your models here.
@@ -22,6 +20,22 @@ class AssetAdmin(admin.ModelAdmin):
 @admin.register(AssetCategory)
 class AssetCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
+     
+
+@admin.register(AssetAttribute)
+class AttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category')
+    list_filter = ('category', )
+    search_fields = ('name', )
+    
+    
+@admin.register(AssetAttributeValue)
+class AssetAttributeValueAdmin(admin.ModelAdmin):
+    list_display = ('asset', 'attribute', 'value')
+    search_fields = ('asset__name', 'attribute__name', 'value')
+    list_filter = ('attribute__category', )
+
+
 
 
 @admin.register(TreasuryRequest)

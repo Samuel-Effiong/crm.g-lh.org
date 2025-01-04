@@ -88,12 +88,31 @@ class Asset(models.Model):
 
 class AssetCategory(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Asset Categories'
 
     def __str__(self):
         return self.name
+
+
+class AssetAttribute(models.Model):
+    category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE, related_name="attributes")
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name} ({self.category.name})"
+
+
+class AssetAttributeValue(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="attribute_values")
+    attribute = models.ForeignKey(AssetAttribute, on_delete=models.CASCADE)
+    value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.asset.name} - {self.attribute.name}: {self.value}"
+
 
 
 class MaintenanceSchedule(models.Model):
