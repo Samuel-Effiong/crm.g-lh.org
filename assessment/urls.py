@@ -47,9 +47,10 @@ urlpatterns = [
     path('documents/', include(wagtaildocs_urls)),
     path('pages/', include(wagtail_urls)),
 
-    path('bot/', include('bot.urls')),
+    path('bot/', include('bot.urls')), 
     path('accounts/', include('allauth.urls')),
-    path('', include('home.urls')),
+    path('unperplexed/', include('unperplexed.urls')),
+    path('', include('home.urls')), 
 
     re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|treasury-request-form|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin).*$', short_links, name='short-links')
 ]

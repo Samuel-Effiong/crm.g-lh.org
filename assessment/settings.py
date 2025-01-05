@@ -142,6 +142,7 @@ INSTALLED_APPS = [
     'project_management',
     'diaconate',
     'bot',    
+    'unperplexed',
 ]
 
 
