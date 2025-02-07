@@ -1,0 +1,48 @@
+{% extends "project_management/index.html" %}
+{% load static %}
+{% load extra_tags %}
+
+{% block project_management_nav %}
+    <li class="">
+        <a href="#unperplexed" class="collapsed" data-toggle="collapse" aria-expanded="false">
+            <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="ml-4">Unperplexed</span>
+            <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+            <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+        </a>
+        <ul id="unperplexed" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
+            <li class="{% if page == 'Unperplexed' %}{% if category == 'Dashboard' %}active{% endif %}{% endif %}">
+                <a href="{% url 'unperplexed:dashboard' %}">
+                    <i class="las la-minus"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="{% if page == 'Unperplexed' %}{% if category == 'Worker' %}active{% endif %}{% endif %}">
+                <a href="{% url 'unperplexed:worker' %}">
+                    <i class="las la-minus"></i>
+                    <span>Workers</span>
+                </a>
+            </li>
+            <li class="{% if page == 'Unperplexed' %}{% if category == 'Organization' %}active{% endif %}{% endif %}">
+                <a href="{% url 'unperplexed:organization' %}">
+                    <i class="las la-minus"></i>
+                    <span>Organizations</span>
+                </a>
+            </li>
+            <li class="{% if page == 'Unperplexed' %}{% if category == 'Contract' %}active{% endif %}{% endif %}">
+                <a href="{% url 'unperplexed:contract' %}">
+                    <i class="las la-minus"></i>
+                    <span>Contracts</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+{% endblock project_management_nav %}
+
+{% block content %}
+{% endblock content %}
+
+
+{% block extra_js %}{% endblock extra_js %}

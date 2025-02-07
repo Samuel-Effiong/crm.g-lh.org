@@ -121,3 +121,8 @@ def length(value) -> int:
 @register.filter()
 def concatenate(value, arg) -> str:
     return f"{value} {arg}"
+
+
+@register.simple_tag()
+def get_range(value):
+    return range(value)
