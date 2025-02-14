@@ -40,7 +40,7 @@ def is_member(user):
     member = DepartmentMember.objects.filter(member_name=user)
     return len(member) > 0
 
-
+ 
 
 class TreasuryDashboardView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')

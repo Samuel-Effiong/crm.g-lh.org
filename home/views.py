@@ -144,6 +144,11 @@ class Home(LoginRequiredMixin, TemplateView):
 
         # Check if user is in a department
         context['is_in_a_department'] = DepartmentMember.objects.is_in_a_department(context['user'])
+
+        # Check which diaconate this user belongs to 
+        diaconate = [diaconate for diaconate in Diaconate.objects.all() if diaconate.is_a_diaconate_member(context['user']) and diaconate.is_admin_staff(context['user'])]
+        context['diaconate_membership'] = diaconate
+
         return context
 
 

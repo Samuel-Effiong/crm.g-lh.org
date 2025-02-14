@@ -144,7 +144,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="collapse" href="#horizontal-menu" role="button" aria-expanded="false" aria-controls="horizontal-menu">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#training-ground-menu" role="button" aria-expanded="false" aria-controls="horizontal-menu">
                                 <i class="icon bi-shield-shaded"></i>
                                 <span class="item-name">Training Ground</span>
                                 <i class="right-icon">
@@ -153,7 +153,7 @@
                                     </svg>
                                 </i>
                             </a>
-                            <ul class="sub-nav collapse {% if category in 'Bible Reading Prayer Marathon' %}show{% endif %}" id="horizontal-menu" data-bs-parent="#sidebar-menu">
+                            <ul class="sub-nav collapse {% if category in 'Bible Reading Prayer Marathon' %}show{% endif %}" id="training-ground-menu" data-bs-parent="#sidebar-menu">
                                 <li class="nav-item">
                                     <a class="nav-link {% if category == 'Bible Reading' %}active{% endif %}" href="{% url 'bible_reading:list' %}">
                                       <i class="icon">
@@ -196,6 +196,7 @@
                                 </li>
                             </ul>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link {% if category == 'Prophetic Vision' %}active{% endif %}" href="{% url 'prophetic_vision:list' %}">
                                 <i class="icon bi bi-eye-fill"></i>
@@ -362,12 +363,39 @@
 {#                        {% endif %}#}
 
                         <li><hr class="hr-horizontal"></li>
-                        <li class="nav-item static-item mb-5">
-                            <a class="nav-link static-item disabled" href="#" tabindex="-1">
-                                <span class="default-icon">Coming Soon</span>
-                                <span class="mini-icon">-</span>
+
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#diaconate-menu" role="button" aria-expanded="false" aria-controls="horizontal-menu">
+                                <i class="icon bi-shield-shaded"></i>
+                                <span class="item-name">Diaconate</span>
+                                <i class="right-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </i>
                             </a>
+                            <ul class="sub-nav collapse" id="diaconate-menu" data-bs-parent="#sidebar-menu">
+
+                                {% for diaconate in diaconate_membership %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ diaconate.get_absolute_url }}" target="_blank">
+                                            <i class="icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                                    <g>
+                                                    <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                                    </g>
+                                                </svg>                       
+                                            </i>
+                                            <i class="sidenav-mini-icon">-</i>
+                                            <span class="item-name">{{ diaconate.name }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </li>
+
+                        
+                        <li><hr class="hr-horizontal"></li><br>
                     </ul>
 
                 {% endblock navbar %}

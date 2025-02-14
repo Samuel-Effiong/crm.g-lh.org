@@ -1,4 +1,5 @@
 from typing import Tuple, Dict
+from users.my_models import CustomUser
 
 # from django.conf import settings
 from django.contrib import admin
@@ -23,14 +24,14 @@ class DepartmentMemberManager(models.Manager):
         members = self.get_queryset().filter(department_name=department)
         return members
 
-    def get_user_departments(self, user):
+    def get_user_departments(self, user: CustomUser) -> list[str]:
         """Get a list of all the department a user is a member to"""
         departments_membership = self.get_queryset().filter(member_name=user)
-        departments = [department.department_name for department in departments_membership]
+        departments: list[str] = [department.department_name for department in departments_membership]
 
         return departments
 
-    def is_in_a_department(self, user):
+    def is_in_a_department(self, user: CustomUser) -> bool:
         """Check if user is a member of any department"""
         member = self.get_queryset().filter(member_name=user)
 
@@ -39,8 +40,7 @@ class DepartmentMemberManager(models.Manager):
  
 # Create your models here.
 class DepartmentMember(models.Model):
-    """A user that is a member of a department
-    """
+    """A user that is a member of a department"""
     member_name = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
     experience_score = models.IntegerField(default=0)
@@ -570,6 +570,22 @@ class Diaconate(models.Model):
         
         result = self.departments.filter(member_names__member_name=user)
         return result
+
+    def is_admin_staff(self, user):
+
+        if self.head and self.assistant:
+            
+            if user.username == self.head.username or user.username == self.assistant.username:
+                return True
+            elif user.level == 'chief_shep':
+                return True
+            elif user.is_superuser:
+                return True
+            
+        return False
+    
+    def get_absolute_url(self) -> str:
+        return reverse_lazy("diaconate:treasury-dashboard")
  
 
 class CustomUnitManager(models.Manager):
