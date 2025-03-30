@@ -20,7 +20,10 @@
         <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
 
         <script src="{% static 'assets/js/htmx.min.js' %}"></script>
-
+    
+        <link rel="preload" href="{% static 'fonts/SF-Pro-Display-Regular.otf' %}" as="font" type="font/otf" crossorigin="anonymous">
+{#        <link rel="preload" href="path/to/Inter-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">#}
+    
         <style>
         .htmx-indicator {
             display: none;
@@ -31,6 +34,20 @@
 
         .htmx-request.htmx-indicator {
             display: inline;
+        }
+        
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('{% static "fonts/SF-Pro-Display-Regular.otf" %}') format('otf');
+        }
+        {##}
+        {#@font-face {#}
+        {#    font-family: 'Inter';#}
+        {#    src: url('path/to/Inter-Regular.ttf') format('ttf');#}
+        {#{#}
+        
+        body {
+            font-family: 'SF Pro Display', 'Inter', sans-serif;
         }
       </style>
     </head>

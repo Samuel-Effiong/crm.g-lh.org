@@ -362,6 +362,9 @@ class CustomUser(AbstractUser):
     def get_skillset(self) -> list:
         return [skill for skill in self.skills.split(',') if skill]
 
+    def get_skillset_str(self):
+        return ", ".join(self.get_skillset())
+
     def get_image_url(self) -> str:
         if self.profile_pic:
             return self.profile_pic.url

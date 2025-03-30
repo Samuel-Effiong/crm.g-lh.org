@@ -23,6 +23,7 @@ class Worker(models.Model):
     ) 
     
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    description = models.TextField()
     rating = models.FloatField(default=0)
     availability_status = models.BooleanField(default=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -30,6 +31,9 @@ class Worker(models.Model):
     
     class Meta:
         ordering = ('-date_added', )
+
+    def __str__(self) -> str:
+        return str(self.name)
     
     
 class Skill:
@@ -59,6 +63,7 @@ class Contract(models.Model):
     project_description = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField()
+    completed_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
         ('Pending', 'Pending'), ('In Progress', 'In Progress'),
         ('Completed', 'Completed')
@@ -66,8 +71,8 @@ class Contract(models.Model):
     )
     progress_updates = models.TextField(null=True, blank=True)
     budget = models.DecimalField(max_digits=10, decimal_places=2)
-    
-    
+    project_duration = models.PositiveSmallIntegerField(default=0)
+
 
 class Organization(models.Model):
     """tracks organizations that book workers
@@ -81,6 +86,9 @@ class Organization(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     address = models.TextField()
+
+    def __str__(self) -> str:
+        return self.name
     
     
 class Notification:

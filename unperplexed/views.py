@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
@@ -18,6 +18,7 @@ subtitle = 'Unperplexed'
 
 # Create your views here.
 
+
 class Homepage(TemplateView):
     template_name = "unperplexed/index.html"
     
@@ -26,8 +27,17 @@ class Homepage(TemplateView):
         
         context['title'] = title
         context['subtitle'] = subtitle
-        
-        
+
+        # Retrieve every worker in the hub
+        context['all_workers'] = models.Worker.objects.all()
+        context['construction'] = models.Worker.objects.filter(category="construction")
+        context['design'] = models.Worker.objects.filter(category='design')
+        context['agriculture'] = models.Worker.objects.filter(category='agriculture')
+        context['event'] = models.Worker.objects.filter(category='event_services')
+
+        # retrieve the workers with 5-star rating
+        context['featured_workers'] = models.Worker.objects.filter(rating__gte=4)
+
         return context
     
     
@@ -120,17 +130,54 @@ class WorkerDetail(TemplateView):
     
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context['title'] = title
+        context['project_title'] = subtitle
+
+        context['category'] = 'Worker'
+        context['page'] = 'Unperplexed'
+        context['user'] = user
+
+        worker = get_object_or_404(models.Worker, name__username=kwargs['worker'])
+        context['worker'] = worker
+        context['active_contracts'] = worker.contract_set.exclude(status='Completed')
+
+        completed_contracts = worker.contract_set.filter(status='Completed')
+        total_revenue = completed_contracts.values_list('budget', flat=True)
+        total_revenue = sum(total_revenue)
+
+        total_duration = completed_contracts.values_list('project_duration', flat=True)
+        total_duration = sum(total_duration)
+
+        context['total_revenue'] = total_revenue
+        context['total_duration'] = total_duration
+        context['completed_contracts'] = completed_contracts
+
+        return context
     
-    def post(self, **kwargs):
+    def post(self, request, **kwargs):
         pass
-    
+
+
 class ContractView(TemplateView):
-    template_name = 'unperplexed/admin/contract.html'
+    template_name = 'unperplexed/admin/contracts.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context['title'] = title
+        context['project_title'] = subtitle
+
+        context['category'] = 'Worker'
+        context['page'] = 'Unperplexed'
+        context['user'] = user
         
-        context[""] = 'love' 
+        # worker = get_object_or_404()
         return context 
     
 

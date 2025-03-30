@@ -1,11 +1,344 @@
-{% extends "unperplexed/admin/dashboard.html" %}
+{% extends 'unperplexed/admin/worker.html' %}
 {% load static %}
 {% load extra_tags %}
 
-{% block extra_css %}{% endblock extra_css %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'unperplexed/css/worker-detail.css' %}">
+{% endblock extra_css %}
 
-{% block content %}{% endblock content %}
+{% block content %}
+    <div class="container-fluid">
+         <div class="row">
+             <div class="col-xl-4 col-lg-5">
+                  <div class="card">
+                     <div class="card-body">
+                       <div class="mb-3">
+                           <div class="crm-profile-img-edit position-relative">
+                               <img class="crm-profile-pic rounded img-fluid" src="{{ worker.name.get_image_url }}" alt="profile-pic">
+                           </div>
+                       
+                           <h4 class="text-center mt-3">{{ worker.name }}</h4>
+                           <p class="text-center m-0">{{ worker.category }}</p>
+                            
+                           <div class="text-center m-0">
+                              <div class="d-inline-block text-center align-items-center">
+                                  {% if worker.availability_status %}
+                                      <span class="badge badge-success">Available</span>
+                                  {% else %}
+                                      <span class="badge badge-danger">Not Available</span>
+                                  {% endif %}
+                                  <span class="badge border border-dark text-dark mt-2">{{ worker.rating }}</span>
+                              </div>
+                           </div>
+                       
+                       </div>
+                       <div class="mb-4">
+                           <p class="h5 m-0"><b>About</b></p>
+                           <p>{{ worker.description }}</p>
+                       </div>
+                     
+                       <div class="mb-4">
+                           <p class="h5 m-0"><b>Skills</b></p>
+                           <ul class="list-unstyled">
+                                 {% for skill in worker.name.get_skillset %}
+                                      <span class="mt-2 badge badge-pill border border-success text-success">{{ skill }}</span>
+                                 {% endfor %}
+                           </ul>
+                       </div>
+                         
+                       <div class="mb-4">
+                           <p class="h5"><b>Contact Information</b></p>
+                           <p><span class="ri ri-mail-line mr-2"></span><span>{{ worker.name.email }}</span></p>
+                           <p><span class="ri ri-phone-line mr-2"></span><span>{{ worker.name.phone_number }}</span></p>
+                           <p><span class="ri ri-map-line mr-2"></span><span>{{ worker.name.address }}</span></p>
+                       </div>
+                         
+                         <div>
+                             <p class="h5"><b>Addition Information</b></p>
+                             <div class="row mt-3">
+                                 <div class="col-sm-6">
+                                     <div class="d-flex align-items-center">
+                                         <i class="ri ri-calendar-2-fill mr-2 font-size-20"></i>
+                                         <div>
+                                             <p class="m-0"><b>Joined</b></p>
+                                             <p>{{ worker.date_added|date:"D M Y" }}</p>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <div class="col-sm-6">
+                                     <div class="d-flex align-items-center">
+                                         <i class="ri ri-pie-chart-2-fill mr-2 font-size-20"></i>
+                                         <div>
+                                             <p class="m-0"><b>Category</b></p>
+                                             <p>{{ worker.category }}</p>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="row mt-3">
+                                 <div class="col-sm-6">
+                                     <div class="d-flex align-items-center">
+                                         <i class="ri ri-shield-check-line mr-2 font-size-20"></i>
+                                         <div>
+                                             <p class="m-0"><b>Completed</b></p>
+                                             <p>{{ completed_contracts.count }} Projects</p>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <div class="col-sm-6">
+                                     <div class="d-flex align-items-center">
+                                         <i class="ri ri-bar-chart-fill mr-2 font-size-20"></i>
+                                         <div>
+                                             <p class="m-0"><b>Active</b></p>
+                                             <p>{{ active_contracts.count }} Project</p>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         <a href="#" class="btn btn-primary btn-block" data-target="#book_now" data-toggle="modal">Book This Artisan</a>
+                     </div>
+                  </div>
+            </div>
+             <div class="col-xl-8 col-lg-7">
+                <ul class="nav w-bg-grey-50 nav-pills justify-content-center mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item">
+                       <a class="nav-link active" id="pills-active-tab" data-toggle="pill" href="#pills-active" role="tab" aria-controls="pills-home" aria-selected="false">Active Contracts {% if active_contracts.count > 0 %}<span class="badge badge-light ml-2">{{ active_contracts.count }}{% endif %}</span></a>
+                    </li>
+                    <li class="nav-item">
+                       <a class="nav-link" id="pills-completed-tab" data-toggle="pill" href="#pills-completed" role="tab" aria-controls="pills-profile" aria-selected="false">Completed Works {% if completed_contracts.count > 0 %}<span class="badge badge-light ml-2">{{ completed_contracts.count }}{% endif %}</span></a>
+                    </li>
+                    <li class="nav-item">
+                       <a class="nav-link" id="pills-portfolio-tab" data-toggle="pill" href="#pills-portfolio" role="tab" aria-controls="pills-contact" aria-selected="true">Portfolio</a>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="pills-tabContent-2">
+                    <div class="tab-pane fade active show" id="pills-active" role="tabpanel" aria-labelledby="pills-active-tab">
+                        <div class="d-flex justify-content-between mb-4">
+                            <h3>Active Contract ({{ active_contracts.count }})</h3>
+                            <button type="button" class="btn btn-outline-primary mt-2">Create New Contract</button>
+                        </div>
+                        
+                        {% for contract in active_contracts %}
+                            <div class="card active_contract">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5>{{ contract.project_title }}</h5>
+                                        <span class="mt-2 badge badge-primary">{{ contract.status }}</span>
+                                    </div>
+                                    <p>{{ contract.project_description }}</p>
+    
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6>Start Date</h6>
+                                            <p>{{ contract.start_date|date:"D M Y"}}</p>
+                                        </div>
+                                        <div>
+                                            <h6>End Date</h6>
+                                            <p>{{ contract.end_date|date:"D M Y"}}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="col-12 d-flex justify-content-between btn mb-1 btn-light-gray">
+                                        <b>View Details</b> <span class="ri-eye-line"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    
+                    </div>
+                    <div class="tab-pane fade" id="pills-completed" role="tabpanel" aria-labelledby="pills-completed-tab">
+                        <div class="d-flex justify-content-between mb-4">
+                            <h3>Completed Works {% if completed_contracts.counts > 0 %}({{ completed_contracts.counts }}){% endif %}</h3>
+                        </div>
 
-{% block modal %}{% endblock modal %}
+                        <div class="row">
+                            {% for contract in completed_contracts %}
+                                <div class="col-lg-6 col-sm-6 col-md-6">
+                                    <div class="card complete_contract">
+                                        <div class="card-body hover:w-scale-110">
+                                            <div class="d-flex mb-3 justify-content-between align-items-center">
+                                                <h5>{{ contract.project_title }}</h5>
+                                                <span class="badge border border-success text-success mt-2">{{ contract.status }}</span>
+                                            </div>
 
-{% block extra_js %}{% endblock extra_js %}
+                                            <p class="card-text project_description">{{ contract.project_description }}</p>
+
+
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <p class="m-0">Completed On</p>
+                                                    <p><b>{{ contract.end_date|date:"D M Y" }}</b></p>
+                                                </div>
+                                                <div class="col-6">
+                                                    <p class="m-0">Total Amount</p>
+                                                    <p><b>{{ contract.budget }}</b></p>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end align-items-center">
+                                                <button class="btn btn-light-gray">View Details <span class="ri-external-link-line ml-2"></span></button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            
+                         </div>
+                    
+                        <h5>Professional Summary</h5>
+                        <div class=>
+                            <table class="table">
+                               <thead>
+                                  <tr>
+                                     <th scope="col">#</th>
+                                     <th scope="col">Category</th>
+                                     <th scope="col">Metric</th>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  <tr>
+                                     <th scope="row">1</th>
+                                     <td>Total Completed</td>
+                                     <td>{{ completed_contracts.count }} projects</td>
+                                  </tr>
+                                  <tr>
+                                     <th scope="row">2</th>
+                                     <td>Average Project Duration</td>
+                                     <td>{{ total_duration }} days</td>
+                                  </tr>
+                                  <tr>
+                                     <th scope="row">3</th>
+                                     <td>Total Revenue</td>
+                                     <td>{{ total_revenue }}</td>
+                                  </tr>
+                               </tbody>
+                            </table>
+                         </div>
+{#                    #}
+{#                        <table class="rwd-table">#}
+{#                          <tr>#}
+{#                            <th>Movie Title</th>#}
+{#                            <th>Genre</th>#}
+{#                            <th>Year</th>#}
+{#                            <th>Gross</th>#}
+{#                          </tr>#}
+{#                          <tr>#}
+{#                            <td data-th="Movie Title">Star Wars</td>#}
+{#                            <td data-th="Genre">Adventure, Sci-fi</td>#}
+{#                            <td data-th="Year">1977</td>#}
+{#                            <td data-th="Gross">$460,935,665</td>#}
+{#                          </tr>#}
+{#                          <tr>#}
+{#                            <td data-th="Movie Title">Howard The Duck</td>#}
+{#                            <td data-th="Genre">"Comedy"</td>#}
+{#                            <td data-th="Year">1986</td>#}
+{#                            <td data-th="Gross">$16,295,774</td>#}
+{#                          </tr>#}
+{#                          <tr>#}
+{#                            <td data-th="Movie Title">American Graffiti</td>#}
+{#                            <td data-th="Genre">Comedy, Drama</td>#}
+{#                            <td data-th="Year">1973</td>#}
+{#                            <td data-th="Gross">$115,000,000</td>#}
+{#                          </tr>#}
+{#                        </table>#}
+
+                    </div>
+                    <div class="tab-pane fade" id="pills-portfolio" role="tabpanel" aria-labelledby="pills-portfolio-tab">
+                        <div class="d-flex justify-content-between mb-4">
+                            <h3>Portfolio</h3>
+                        </div>
+                    
+                        
+                        <div class="card">
+                             <div class="card-body text-center">
+                                 <h2>...Coming Soon</h2>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                  
+            </div>
+         </div>
+      </div>
+{% endblock content %}
+
+{% block modal %}
+    <div class="modal fade" id="book_now" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable  modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="exampleModalCenterTitle01">Create New Contract</h3>
+                    <p>Create new contract with {{ worker.name.get_full_name }}</p>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_title">Contract Title</label>
+                                        <input type="text" class="form-control" name="contract_title" id="contract_title" placeholder="e.g. Construction of a 3 bedroom flat" required>
+                                        <p><small>A clear title describing the contract work</small></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_description">Contract Description</label>
+                                        <textarea class="form-control" name="contract_description" id="contract_description" rows="7" placeholder="e.g. Construction of a 3 bedroom flat" required></textarea>
+                                        <p><small>Detailed explanation of the contract requirements.</small></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_start_date">Start Date</label>
+                                        <input type="date" class="form-control" name="contract_start_date" id="contract_start_date" placeholder="e.g. Pick a start date" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_end_date">End Date</label>
+                                        <input type="date" class="form-control" name="contract_end_date" id="contract_end_date" placeholder="e.g. Pick an end date" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_title">Payment Terms</label>
+                                        <input type="text" class="form-control" name="contract_payment_terms" id="contract_payment_terms" placeholder="e.g. 50% upfront, 50% upon completion" required>
+                                        <p><small>Specify how and when payments will be made</small></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="contract_total_amount">Total Amount (N)</label>
+                                        <input type="number" class="form-control" name="contract_total_amount" id="contract_total_amount" placeholder="0.00" required>
+                                        <p><small>The total contract value in USD</small></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12">
+                                    <button type="button" class="btn btn-outline-dark mt-2" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary mt-2">Create Contract</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock modal %}
+
+{% block extra_js %}
+    <script src="{% static 'unperplexed/js/worker-detail.js' %}"></script>
+{% endblock %}

@@ -621,11 +621,9 @@ class Login(TemplateView):
             
             if not confirm_password:
                 user = None
-        
 
         if user is None:
             # Username is used for login
-
             try:
                 user = User.objects.get(username=email_username)
             except User.DoesNotExist:

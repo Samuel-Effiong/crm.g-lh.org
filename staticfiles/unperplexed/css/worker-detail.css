@@ -1,0 +1,97 @@
+/* Base styles for .rwd-table */
+.rwd-table {
+  margin: 1em 0;
+  min-width: 300px;
+  display: block;
+  width: 100%;
+}
+
+/* Table rows */
+.rwd-table tr {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Hide headers by default */
+.rwd-table th {
+  display: none;
+}
+
+/* Table cells */
+.rwd-table td {
+  display: block;
+}
+
+/* First and last cell padding */
+.rwd-table td:first-child {
+  padding-top: 0.5em;
+}
+.rwd-table td:last-child {
+  padding-bottom: 0.5em;
+}
+
+/* Before pseudo-element to show data-th attribute */
+.rwd-table td:before {
+  content: attr(data-th) ": ";
+  font-weight: bold;
+  width: 6.5em; /* adjust as needed */
+  display: inline-block;
+}
+
+/* Hide pseudo-element on larger screens */
+@media (min-width: 480px) {
+  .rwd-table td:before {
+    display: none;
+  }
+}
+
+/* On larger screens, display headers and cells as table cells */
+@media (min-width: 480px) {
+  .rwd-table th,
+  .rwd-table td {
+    display: table-cell;
+    padding: 0.25em 0.5em;
+  }
+  .rwd-table th:first-child,
+  .rwd-table td:first-child {
+    padding-left: 0;
+  }
+  .rwd-table th:last-child,
+  .rwd-table td:last-child {
+    padding-right: 0;
+  }
+}
+
+/* Presentational styling */
+.rwd-table {
+  border-radius: 0.4em;
+  overflow: hidden;
+}
+.rwd-table tr {
+  border-color: #485B6E; /* a lightened version of #34495E */
+}
+.rwd-table th,
+.rwd-table td {
+  margin: 0.5em 1em;
+}
+
+@media (min-width: 480px) {
+  .rwd-table th,
+  .rwd-table td {
+    padding: 1em !important;
+  }
+}
+
+/* Set text color for headers and pseudo-elements */
+.rwd-table th,
+.rwd-table td:before {
+  color: black;
+}
+
+.active_contract:hover h5 {
+  color: dodgerblue;
+}
+
+.complete_contract:hover h5 {
+  color: dodgerblue;
+}
