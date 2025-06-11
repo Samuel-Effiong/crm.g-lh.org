@@ -50,7 +50,8 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_staff and (
                 self.request.user.level == 'core_shep'
                 or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
+                or is_member(self.request.user),
+                ):
             department_dashboard = kwargs.get('department', None)
 
             if department_dashboard:
@@ -1274,7 +1275,7 @@ class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
                     files = request.FILE.get(field.name, None)
 
                     if files:
-                        files = '';
+                        files = ''
                     else:
                         pass
                 elif field.field_type == 'family_member':

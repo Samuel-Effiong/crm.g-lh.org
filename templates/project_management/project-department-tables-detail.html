@@ -47,7 +47,7 @@
                                         {% for item in row.table_field_value.all %}
                                             {% if forloop.counter == 1 %}
                                                 <td>
-                                                    <a href="#" data-target="#edit_database_row" data-toggle="modal" onclick="populate_edit_modal({{ row.to_dict}}, {{ row.id }})">{{ item.value }}</a>
+                                                    <a href="#" data-target="#edit_database_row" data-toggle="modal" onclick="populate_edit_modal({{ row.to_dict}}, {{ row.id }}, '{{ item.value }}')">{{ item.value }}</a>
                                                 </td>
                                             {% else %}
                                                 <td>{{ item.value|truncatewords:"7" }}</td>
@@ -90,26 +90,19 @@
                                 {% for field in object.fields.all %}
                                     <div class="form-group mb-3">
                                         <label for="{{ field.name }}">{{ field.name.title }}</label>
-
-                                        {% if field.field_type == 'char' %}
-                                            <input type="text" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'textfield' %}
+                                        
+                                        {% if field.field_type == 'textarea' %}
                                             <textarea class="form-control" name="{{ field.name }}" id="{{ field.name }}" rows="3"></textarea>
-                                        {% elif field.field_type == 'datetime' %}
-                                            <input type="date" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'number' %}
-                                            <input type="number" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'url'%}
-                                            <input type="url" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'file' %}
-                                            <input type="file" name="{{ field.name }}" id="{{ field.name }}" multiple class="p-2" style="width: 100%;" />
                                         {% elif field.field_type == 'family_member' %}
                                             <select class="form-control form-control-lg" name="{{ field.name }}" id="{{ field.name }}">
                                                 {% for fam in family_member %}
-                                                    <option value="{{ fam.username }}">{{ fam.get_full_name }}  @{{ fam.username }}</option>
+                                                    <option value="{{ fam.username }}"> {{ fam.get_full_name }}  @{{ fam.username }}</option>
                                                 {% endfor %}
                                             </select>
+                                        {% else %}
+                                            <input type="{{ field.field_type }}" name="{{ field.name }}" id="{{ field.name }}" class="form-control"/>
                                         {% endif %}
+                                        
                                     </div>
                                 {% endfor %}
                                 
@@ -135,7 +128,7 @@
             <div class="modal-content">
                 <div class="modal-header d-block text-center pb-3 border-bottom">
                     <div class="d-flex justify-content-between">
-                        <h3 class="modal-title" id="exampleModalCenterTitle03">Edit Row <span id="row_id_title"></span></h3>
+                        <h3 class="modal-title" id="exampleModalCenterTitle03">Edit <span id="row_id_title"></span></h3>
                         <button type="button" class="btn btn-danger mr-3 p-2" id="delete_id" onclick="delete_row()">Delete</button>
                     </div>
                     
@@ -149,26 +142,19 @@
                                 {% for field in object.fields.all %}
                                     <div class="form-group mb-3">
                                         <label for="{{ field.name }}">{{ field.name.title }}</label>
-
-                                        {% if field.field_type == 'char' %}
-                                            <input type="text" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'textfield' %}
+                                        
+                                        {% if field.field_type == 'textarea' %}
                                             <textarea class="form-control" name="{{ field.name }}" id="edit_{{ field.name }}" rows="3"></textarea>
-                                        {% elif field.field_type == 'datetime' %}
-                                            <input type="date" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'number' %}
-                                            <input type="number" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'url'%}
-                                            <input type="url" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
-                                        {% elif field.field_type == 'file' %}
-                                            <input type="file" name="{{ field.name }}" id="edit_{{ field.name }}" multiple class="p-2" style="width: 100%;" />
                                         {% elif field.field_type == 'family_member' %}
                                             <select class="form-control form-control-lg" name="{{ field.name }}" id="edit_{{ field.name }}">
                                                 {% for fam in family_member %}
                                                     <option value="{{ fam.username }}">{{ fam.get_full_name }}  @{{ fam.username }}</option>
                                                 {% endfor %}
                                             </select>
+                                        {% else %}
+                                            <input type="{{ field.field_type }}" name="{{ field.name }}" id="edit_{{ field.name }}" class="form-control"/>
                                         {% endif %}
+                                        
                                     </div>
                                 {% endfor %}
                                 
@@ -193,9 +179,9 @@
 
 {% block extra_js %}
     <script>
-        const populate_edit_modal = (details, id) => {
+        const populate_edit_modal = (details, id, name) => {
 
-            document.getElementById('row_id_title').textContent = id;
+            document.getElementById('row_id_title').textContent = name
             document.getElementById('row_id').value = id;
             document.getElementById('delete_id').setAttribute('data-id', id);
             

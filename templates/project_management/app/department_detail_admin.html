@@ -72,7 +72,7 @@
                               </div>
                               <div id="category_space">
                                   {% for category in department.department_categories.all %}
-                                      <div class="list-group" id="category_space_{{category.pk}}">
+                                      <div class="list-group mb-3" id="category_space_{{category.pk}}">
                                           <a class="list-group-item list-group-item-action">
                                               <div class="d-flex w-100 justify-content-between">
                                                   <h5 class="mb-1">{{ category.category_name }}</h5>
@@ -107,7 +107,7 @@
 
                    {#    DEPARTMENT MEMBERS    #}
                    <div class="col-12 border-top mt-3">
-                       <div class="card">
+                       <div class="">
                           <div class="card-body">
                               <div class="d-flex justify-content-between">
                                   <h4 class="mb-3">Department Members</h4>
@@ -146,7 +146,7 @@
                        </div>
                    </div>
 
-                   <div class="col-12">
+                   <div class="col-12 d-flex justify-content-center">
                        <button type="button" class="btn btn-outline-danger mt-2 p-2" data-target="#confirm_delete" data-toggle="modal" onclick="document.querySelector('#delete_department_name').textContent = '{{ department.department_name }}';">
                            <i class="ri-alert-line"></i>Delete Department
                        </button>

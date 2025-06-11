@@ -4,6 +4,7 @@ from users.my_models import CustomUser
 
 # Create your models here.
 
+
 class Worker(models.Model):
     """
     Represents a worker in the system.
@@ -66,7 +67,7 @@ class Contract(models.Model):
     completed_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
         ('Pending', 'Pending'), ('In Progress', 'In Progress'),
-        ('Completed', 'Completed')
+        ('Completed', 'Completed'), ('Cancelled', 'Cancelled')
         ]
     )
     progress_updates = models.TextField(null=True, blank=True)
@@ -89,10 +90,24 @@ class Organization(models.Model):
 
     def __str__(self) -> str:
         return self.name
-    
+
+
+class ContractMilestone(models.Model):
+    """Tracks contract/milestones workers are booked for"""
+    name = models.CharField(max_length=255)
+    contract_name = models.ForeignKey(Contract, on_delete=models.CASCADE)
+
+    description = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    score = models.PositiveSmallIntegerField(default=0)
+
     
 class Notification:
     """Tracks notification for workers and organization
     """
+
+
+
     
 

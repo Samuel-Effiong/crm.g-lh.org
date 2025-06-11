@@ -135,7 +135,7 @@ class Department(models.Model):
     leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
-    department_objectives = models.TextField(null=True, blank=True)
+    department_objectives = models.TextField(null=True, blank=True, default="")
     custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
     department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE, blank=True, null=True)
@@ -438,7 +438,7 @@ class DepartmentProject(models.Model):
         self.save()
 
     def to_event(self):
-        group_id = self.department_category.category_name
+        group_id = self.department_category.category_name if self.department_category else ""
         title = self.project_name
         start = self.start_date.isoformat()
         end = self.due_date.isoformat()
@@ -500,8 +500,27 @@ class DepartmentTable(models.Model):
 
 
 class CustomField(models.Model):
+    FIELD_TYPE_CHOICES = (
+        ('text', 'text'),
+        ('password', 'password'),
+        ('textarea', 'textarea'),
+        ('email', 'email'),
+        ('number', 'number'),
+        ('checkbox', 'checkbox'),
+        ('tel', 'tel'),
+        ('url', 'url'),
+        ('date', 'date'),
+        ('time', 'time'),
+        ('file', 'file'),
+        ('search', 'search'),
+        ('range', 'range'),
+        ('color', 'color'),
+        ('month', 'month'),
+        ('week', 'week'),
+        ('datetime-local', 'datetime-local'),
+    )
     name = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=255)
+    field_type = models.CharField(max_length=255, choices=FIELD_TYPE_CHOICES)
     table = models.ForeignKey(DepartmentTable, on_delete=models.CASCADE)
     foreign_key = models.CharField(max_length=255, blank=True, null=True,
                                    help_text="Know which other it links to")

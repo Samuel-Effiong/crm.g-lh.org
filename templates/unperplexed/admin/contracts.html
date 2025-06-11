@@ -13,7 +13,7 @@
             <p>Manage and track all contracts with Artisans</p>
         </div>
         <div>
-            <button type="button" class="btn btn-primary mx-2 py-2"><i class="ri ri-add-fill"></i> New Contract</button>
+            <button type="button" class="btn btn-primary mx-2 py-2" data-toggle="modal" data-target="#createContract"><i class="ri ri-add-fill"></i> New Contract</button>
         </div>
     </div>
 
@@ -21,12 +21,11 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Contract Statistics</h3>
-                        <p>Overview of all contracts and their statuses</p>
-                    </div>
                     <div class="card-body container-fluid">
-                        
+                        <div>
+                            <h3>Contract Statistics</h3>
+                            <p>Overview of all contracts and their statuses</p>
+                        </div>
                         
                         <div class="d-flex justify-content-between flex-wrap" style="gap: 10px;">
                             
@@ -37,7 +36,7 @@
                                         
                                     </div>
                                     <div class="col-sm-8">
-                                        <h5>Total Contract</h5>
+                                        <h5>Total Contracts</h5>
                                         <p>20</p>                                            
                                     </div>
                                 </div>
@@ -50,7 +49,7 @@
                                         
                                     </div>
                                     <div class="col-sm-8">
-                                        <h5>Pending Contract</h5>
+                                        <h5>Pending</h5>
                                         <p>20</p>                                            
                                     </div>
                                 </div>
@@ -63,7 +62,7 @@
                                         
                                     </div>
                                     <div class="col-sm-8">
-                                        <h5>Total Contract</h5>
+                                        <h5>In Progress </h5>
                                         <p>20</p>                                            
                                     </div>
                                 </div>
@@ -76,7 +75,7 @@
                                         
                                     </div>
                                     <div class="col-sm-8">
-                                        <h5>Total Contract</h5>
+                                        <h5>Completed</h5>
                                         <p>20</p>                                            
                                     </div>
                                 </div>
@@ -88,23 +87,52 @@
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h4>All Contracts</h4>
-                        <p>200 Contracts found</p>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4>All Contracts</h4>
+                                <p>200 Contracts found</p>
+                            </div>
+                            <div>
+                                <select id="contract-status-filter" name="status_filter" class="form-control form-control-lg" 
+                                        hx-get="" hx-trigger="change" 
+                                        hx-target="#contract_table"
+                                        hx-swap="innerHTML"
+                                        hx-indicators="#springBouceLoader"
+                                >
+                                    <option value="All" selected="">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" id="contract_table">
                         <div class="table-responsive">
                             <table id="datatable" class="table data-table table-striped">
+                                
                                <thead>
                                   <tr class="ligth">
-                                     <th>Name</th>
-                                     <th>Position</th>
-                                     <th>Office</th>
-                                     <th>Age</th>
-                                     <th>Start date</th>
-                                     <th>Salary</th>
+                                     <th>Contract Name</th>
+                                     <th>Artisan</th>
+                                     <th>Start Date</th>
+                                     <th>End Date</th>
+                                     <th>Amount</th>
+                                     <th>Status</th>
                                   </tr>
                                </thead>
                                <tbody>
+                                  {% for contract in contracts %}
+                                      <tr>{# <a href="{% url 'unperplexed:contract' contract.id %}"> #}
+                                          <td>{{ contract.project_title }}</td>
+                                          <td>{{ contract.worker.name }}</td>
+                                          <td>{{ contract.start_date|date:"D M Y" }}</td>
+                                          <td>{{ contract.end_date|date:"D M Y" }}</td>
+                                          <td>{{ contract.budget }}</td>
+                                          <td>{{ contract.status }}</td>
+                                      </a></tr>
+                                  {% endfor %}
                                   <tr>
                                      <td>Tiger Nixon</td>
                                      <td>System Architect</td>
@@ -564,12 +592,12 @@
                                </tbody>
                                <tfoot>
                                   <tr>
-                                     <th>Name</th>
-                                     <th>Position</th>
-                                     <th>Office</th>
-                                     <th>Age</th>
-                                     <th>Start date</th>
-                                     <th>Salary</th>
+                                     <th>Contract Name</th>
+                                     <th>Artisan</th>
+                                     <th>Start Date</th>
+                                     <th>End Date</th>
+                                     <th>Amount</th>
+                                     <th>Status</th>
                                   </tr>
                                </tfoot>
                             </table>
@@ -582,3 +610,34 @@
     
     
 {% endblock content %}
+
+
+{% block modal %}
+    <div id="createContract" class="modal fade" tabindex="-1" aria-labelledby="createContractTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+           <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="createContractTitle">
+                      Create New Contract<br>
+                      <small>Select the artisan to create the contract with</small>
+                  </h5>
+                  
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">×</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <div class="row">
+                      <div class="col-12 text-center py-5">
+                          <p>Please select an artisan from the artisans page first</p>
+                          <button type="button" class="btn btn-primary p-2">Browse Artisans</button>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+           </div>
+        </div>
+    </div>
+{% endblock modal %}

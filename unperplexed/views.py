@@ -165,7 +165,25 @@ class WorkerDetail(TemplateView):
 
 class ContractView(TemplateView):
     template_name = 'unperplexed/admin/contracts.html'
-    
+
+    def get(self, request, *args, **kwargs):
+        if request.htmx:
+            context = {}
+
+            if 'status_filter' in request.GET:
+                status = request.GET.get('status_filter', 'all')
+
+                if status == 'All':
+                    contracts = models.Contract.objects.all()
+                else:
+                    contracts = models.Contract.objects.filter(status)
+                context['contracts'] = contracts
+                context['status_filter'] = status
+
+                return render(request, 'unperplexed/admin/partials/contract-status-filter.html', context)
+
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -176,6 +194,9 @@ class ContractView(TemplateView):
         context['category'] = 'Worker'
         context['page'] = 'Unperplexed'
         context['user'] = user
+
+        context['contracts'] = models.Contract.objects.all()
+        context['status_filter'] = 'All'
         
         # worker = get_object_or_404()
         return context 

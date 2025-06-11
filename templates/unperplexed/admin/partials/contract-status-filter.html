@@ -1,0 +1,38 @@
+
+                        <div class="table-responsive">
+                            <table id="datatable" class="table data-table table-striped">
+                                
+                               <thead>
+                                  <tr class="ligth">
+                                     <th>Contract Name</th>
+                                     <th>Artisan</th>
+                                     <th>Start Date</th>
+                                     <th>End Date</th>
+                                     <th>Amount</th>
+                                     <th>Status</th>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  {% for contract in contracts %}
+                                      <tr><a href="{% url 'unperplexed:contract' contract.id %}"></a></tr>
+                                      <td>{{ contract.project_title }}</td>
+                                      <td>{{ contract.worker.name }}</td>
+                                      <td>{{ contract.start_date|date:"D M Y" }}</td>
+                                      <td>{{ contract.end_date|date:"D M Y" }}</td>
+                                      <td>{{ contract.budget }}</td>
+                                      <td>{{ contract.status }}</td>
+                                  {% endfor %}
+                                  
+                               </tbody>
+                               <tfoot>
+                                  <tr>
+                                     <th>Contract Name</th>
+                                     <th>Artisan</th>
+                                     <th>Start Date</th>
+                                     <th>End Date</th>
+                                     <th>Amount</th>
+                                     <th>Status</th>
+                                  </tr>
+                               </tfoot>
+                            </table>
+                         </div>

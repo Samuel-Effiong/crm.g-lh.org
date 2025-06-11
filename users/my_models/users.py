@@ -440,6 +440,7 @@ class Permission(models.Model):
     can_edit_catalog = models.BooleanField(default=False)
     head_of_department = models.BooleanField(default=False)
     short_link_manager = models.BooleanField(default=False)
+    gam_admin_level = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.name)

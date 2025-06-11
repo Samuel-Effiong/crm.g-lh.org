@@ -117,7 +117,7 @@
                     <div class="tab-pane fade active show" id="pills-active" role="tabpanel" aria-labelledby="pills-active-tab">
                         <div class="d-flex justify-content-between mb-4">
                             <h3>Active Contract ({{ active_contracts.count }})</h3>
-                            <button type="button" class="btn btn-outline-primary mt-2">Create New Contract</button>
+                            <button type="button" class="btn btn-outline-primary mt-2" data-target="#book_now" data-toggle="modal">Create New Contract</button>
                         </div>
                         
                         {% for contract in active_contracts %}
@@ -139,7 +139,7 @@
                                             <p>{{ contract.end_date|date:"D M Y"}}</p>
                                         </div>
                                     </div>
-                                    <button type="button" class="col-12 d-flex justify-content-between btn mb-1 btn-light-gray">
+                                    <button type="button" class="col-12 d-flex justify-content-between btn mb-1 btn-light-gray" data-target="#contract_details" data-toggle="modal">
                                         <b>View Details</b> <span class="ri-eye-line"></span>
                                     </button>
                                 </div>
@@ -163,8 +163,7 @@
                                             </div>
 
                                             <p class="card-text project_description">{{ contract.project_description }}</p>
-
-
+                                            
                                             <div class="row">
                                                 <div class="col-6">
                                                     <p class="m-0">Completed On</p>
@@ -216,40 +215,12 @@
                                </tbody>
                             </table>
                          </div>
-{#                    #}
-{#                        <table class="rwd-table">#}
-{#                          <tr>#}
-{#                            <th>Movie Title</th>#}
-{#                            <th>Genre</th>#}
-{#                            <th>Year</th>#}
-{#                            <th>Gross</th>#}
-{#                          </tr>#}
-{#                          <tr>#}
-{#                            <td data-th="Movie Title">Star Wars</td>#}
-{#                            <td data-th="Genre">Adventure, Sci-fi</td>#}
-{#                            <td data-th="Year">1977</td>#}
-{#                            <td data-th="Gross">$460,935,665</td>#}
-{#                          </tr>#}
-{#                          <tr>#}
-{#                            <td data-th="Movie Title">Howard The Duck</td>#}
-{#                            <td data-th="Genre">"Comedy"</td>#}
-{#                            <td data-th="Year">1986</td>#}
-{#                            <td data-th="Gross">$16,295,774</td>#}
-{#                          </tr>#}
-{#                          <tr>#}
-{#                            <td data-th="Movie Title">American Graffiti</td>#}
-{#                            <td data-th="Genre">Comedy, Drama</td>#}
-{#                            <td data-th="Year">1973</td>#}
-{#                            <td data-th="Gross">$115,000,000</td>#}
-{#                          </tr>#}
-{#                        </table>#}
 
                     </div>
                     <div class="tab-pane fade" id="pills-portfolio" role="tabpanel" aria-labelledby="pills-portfolio-tab">
                         <div class="d-flex justify-content-between mb-4">
                             <h3>Portfolio</h3>
                         </div>
-                    
                         
                         <div class="card">
                              <div class="card-body text-center">
@@ -258,8 +229,6 @@
                         </div>
                     </div>
                 </div>
-                
-                  
             </div>
          </div>
       </div>
@@ -334,6 +303,119 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="contract_details" tabindex="-1" style="display: none;" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+           <div class="modal-content">
+              <div class="modal-header">
+                 <h5 class="modal-title">Contract Details</h5>
+                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                 </button>
+              </div>
+              <div class="modal-body">
+                  <div class="row">
+                     <div class="col-sm-6">
+                         <div>
+                             <div>
+                                 <p class="m-0">Payment Terms</p>
+                                 <p><b>
+                                     {{ worker.contract_set.project_description }}
+                                     50% upfront, 25% at midpoint, 25% upon completion
+                                 </b></p>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="col-sm-6">
+                         <div>
+                             <div>
+                                 <p class="m-0">End Date</p>
+                                 <p><b>
+                                     {{ worker.contract_set.budget }}</b>
+                                     $17,000
+                                 </p>
+                             </div>
+                         </div>
+                     </div>
+                  </div>
+
+                  <h5>Progress Tracker</h5>
+                  
+                  <div class="mt-2 py-4 px-4" style="border: 1px solid rgba(128,128,128,0.47); border-radius: 20px;">
+                      <h5 class="mb-3">Project Progress</h5>
+                      
+                      <div>
+                          <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -20px">
+                              <p><b>Overall Completion</b></p>
+                              <p>55%</p>
+                          </div>
+                          
+                          <div class="progress mb-4 mt-1">
+                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                          </div>
+                      </div>
+                      
+                      <div class="">
+                          <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -20px">
+                              <p><b>Design Approval</b></p>
+                              <p>100%</p>
+                          </div>
+                          
+                          <div class="progress my-1">
+                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                          </div>
+                          <p>Due: 30/08/2023 </p>
+                      </div>
+                      <div class="">
+                          <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -20px">
+                              <p><b>Material Sourcing</b></p>
+                              <p>100%</p>
+                          </div>
+                          
+                          <div class="progress my-1">
+                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                          </div>
+                          <p>Due: 30/08/2023 </p>
+                      </div>
+                      
+                      <div class="">
+                          <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -20px">
+                              <p><b>Table Construction</b></p>
+                              <p>100%</p>
+                          </div>
+                          
+                          <div class="progress my-1">
+                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                          </div>
+                          <p>Due: 30/08/2023 </p>
+                      </div>
+                      
+                      <div class="">
+                          <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -20px">
+                              <p><b>Table Construction</b></p>
+                              <p>0%</p>
+                          </div>
+                          
+                          <div class="progress my-1">
+                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                          </div>
+                          <p>Due: 30/08/2023 </p>
+                      </div>
+                  </div>
+                  
+                  <div class="d-flex justify-content-end mt-4">
+                      <div class="d-flex justify-content-end align-items-center">
+                        <button class="btn btn-light-gray py-2">Full Contract Details <span class="ri-external-link-line ml-2"></span></button>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                 <button type="button" class="btn btn-primary">Save changes</button>
+              </div>
+           </div>
         </div>
     </div>
 
