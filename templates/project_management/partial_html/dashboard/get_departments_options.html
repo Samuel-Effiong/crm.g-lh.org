@@ -1,0 +1,8 @@
+<option value="" disabled selected>Choose Department</option>
+{% for department in departments %}
+    <option value="{{ department.department_name }}">{{ department.department_name }}</option>
+{% empty %}
+    <option value="">No Departments Found</option>
+{% endfor %}
+
+

@@ -1,7 +1,9 @@
+import json
 from typing import Any, Dict
 from datetime import datetime
 
 import pandas as pd
+from django.db.models import Count, Q
 
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -42,9 +44,32 @@ def is_member(user):
     return len(member) > 0
 
 
+class PartialsView:
+    def get_departments(self, request):
+        diaconate_name = request.GET.get('diaconate_selection')
+        departments = Department.objects.none()
+
+        if diaconate_name:
+            try:
+                diaconate = Diaconate.objects.get(name=diaconate_name)
+                departments = diaconate.departments.all()
+            except Diaconate.DoesNotExist:
+                pass
+
+        return render(request, 'project_management/partial_html/dashboard/get_departments_options.html', {'departments': departments})
+
+
 class ProjectManagementView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/index.html'
+
+    def get_template_names(self):
+        self.template_name = super().get_template_names()
+
+        if self.request.user.is_superuser:
+            self.template_name = 'project_management/super_admin_dashboard.html'
+
+        return self.template_name
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_staff and (
@@ -109,10 +134,57 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
         context['department'] = department
 
         # Context needed to handle the navigation
+        # Handle the view for super admin
+
         if user.is_superuser:
             context['member_departments'] = Department.objects.all()
+            context['diaconates'] = Diaconate.objects.all()
+            context['departments_count'] = Department.objects.count()
+            project_totals = DepartmentProject.objects.aggregate(
+                active_project=Count('pk', filter=Q(status='In Progress')),
+                pending_project=Count('pk', filter=Q(status='Not Started')),
+                completed_project=Count('pk', filter=Q(status='Completed')),
+                critical_project=Count('pk', filter=Q(project_priority='High'))
+            )
+            context['active_projects_count'] = project_totals.get('active_project', 0)
+
+            try:
+                context['performance_score'] = project_totals.get('active_project', 0) / project_totals.get('active_project') + project_totals.get('pending_project') + project_totals.get('completed_project')
+            except ZeroDivisionError:
+                context['performance_score'] = 0
+
+            context['department_members_count'] = DepartmentMember.objects.count()
+            context['project_target_totals'] = ProjectTarget.objects.aggregate(
+                completed_target=Count('pk', filter=Q(state='Completed')),
+                pending_target=Count('pk', filter=Q(state='Pending Approval')),
+                active_target=Count('pk', filter=Q(state='In Progress'))
+            )
+
+            # Chart based data
+            diaconate_chart_data = Diaconate.objects.annotate(
+                num_members=Count('departments__member_names', distinct=True),
+                num_active_projects=Count(
+                    'departments__departmentproject',
+                    filter=Q(departments__departmentproject__status='In Progress'),
+                    distinct=True
+                )
+            )
+
+            categories = [data.name for data in diaconate_chart_data]
+            members = [data.num_members for data in diaconate_chart_data]
+            active = [data.num_active_projects for data in diaconate_chart_data]
+
+            context['diaconate_chart_data'] = {
+                'categories': json.dumps(categories),
+                'members': json.dumps(members),
+                'active_projects': json.dumps(active)
+            }
+
+            context['active_targets'] = ProjectTarget.objects.filter(state='In Progress')[:5]
+
         else:
             context['member_departments'] = Department.objects.get_member_departments(user)
+
         context['department_leaders'] = [leader.member_name for leader in Department.objects.department_leaders() if leader]
 
         try:
@@ -121,6 +193,8 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
             context['is_department_leader'] = department.is_leader(department_member)
         except DepartmentMember.DoesNotExist:
             context['is_department_leader'] = False
+
+
 
         department_projects = DepartmentProject.objects.filter(department=department, status__in=['In Progress', 'Not Started'])
         context['department_projects'] = department_projects
@@ -152,10 +226,57 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
 
         # check if the user belongs to a treasury diaconate
 
-
         return context
 
     def post(self, request, *args, **kwargs):
+
+        dashboard_selection = request.POST.get('dashboard_selection', None)
+        if dashboard_selection:
+            diaconate_selection = request.POST.get('diaconate_selection', None)
+            department_selection = request.POST.get('department_selction', None)
+            submit_button = request.POST['submit_button']
+
+            context = self.get_context_data(**kwargs)
+
+            if diaconate_selection:
+                diaconate = Diaconate.objects.get(name=diaconate_selection)
+
+                no_of_members_in_diaconate = DepartmentMember.objects.filter(
+                    department_name__department_diaconate__name=diaconate_selection
+                ).count()
+
+                context['diaconate'] = diaconate
+                context['no_of_members_in_diaconate'] = no_of_members_in_diaconate
+
+                active_project = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='In Progress')
+                context['active_project'] = active_project
+                no_of_active_project_in_diaconate = active_project.count()
+
+                no_of_completed_project_in_diaconate = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='Completed').count()
+                context['no_of_completed_project_in_diaconate'] = no_of_completed_project_in_diaconate
+
+                no_of_pending_project_in_diaconate = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='Not Started').count()
+                context['no_of_pending_project_in_diaconate'] = no_of_pending_project_in_diaconate
+
+                if no_of_active_project_in_diaconate or no_of_completed_project_in_diaconate or no_of_pending_project_in_diaconate:
+                    overall_efficiency = no_of_completed_project_in_diaconate / (no_of_completed_project_in_diaconate + no_of_active_project_in_diaconate + no_of_pending_project_in_diaconate)
+
+                    context['overall_efficiency'] = overall_efficiency
+                else:
+                    context['overall_efficiency'] = 0
+
+                if department_selection:
+                    department = diaconate.departments.get(department_name=department_selection)
+
+
+
+            if submit_button == 'diakonate':
+                context['display_category'] = 'diakonate'
+            elif submit_button == 'department':
+                context['display_category'] = 'department'
+
+            context['display_category'] = submit_button
+            return render(request, 'project_management/partial_html/dashboard/diakonate_dashboard.html', context=context)
 
         department = kwargs['department']
         department = Department.objects.get(department_name=department)

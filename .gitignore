@@ -92,3 +92,4 @@ media
 # <django-project-name>/staticfiles/
 
 .vscode/
+migrations/

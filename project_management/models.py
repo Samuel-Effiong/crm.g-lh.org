@@ -345,7 +345,7 @@ class DepartmentProject(models.Model):
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
     project_priority = models.CharField(max_length=50, default='Low', choices=PRIORITY_CHOICES)
-    status = models.CharField(max_length=50, blank=True, null=True, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=50, default="Not Started", choices=STATUS_CHOICES)
 
     target = models.ManyToManyField(ProjectTarget, blank=True)
 
@@ -591,6 +591,9 @@ class Diaconate(models.Model):
         return result
 
     def is_admin_staff(self, user):
+        """Display the diaconate link on the user home dashboard if the user is a staff in any
+        of the department under the diaconate
+        """
 
         if self.head and self.assistant:
             

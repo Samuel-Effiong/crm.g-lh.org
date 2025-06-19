@@ -1,0 +1,491 @@
+{% load humanize %}
+
+{% if display_category == 'diakonate' %}
+    <div id="kpi" class="row">
+        <div class="card col-lg-6">
+             <div class="card-body">
+                <h4 class="card-title">{{ diaconate.name }}</h4>
+                <p class="card-text">Diakonate Overview</p>
+                <p class="card-text"><small class="text-muted">Leadership dashboard</small></p>
+             </div>
+        </div>
+    
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Total Departments</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ diaconate.departments.count }}</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Under this diakonate</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Total Members</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ no_of_members_in_diaconate }}</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Across all department</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Active Projects</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ active_project.count }}</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Currently running</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Completed Tasks</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ no_of_completed_project_in_diaconate }}</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Successful finished</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Pending Tasks</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ no_of_pending_project_in_diaconate }}</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Awaiting Tasks</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Diakonate Efficiency</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>{{ overall_efficiency }}%</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Overall Performance</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-block card-stretch card-height">
+                <div class="card-body">
+                    <div class="top-block d-flex align-items-center justify-content-between">
+                        <p class="card-text"><small>Resource Allocation</small></p>
+                        <span class="badge badge-warning">Anual</span>
+                    </div>
+                    <h3>10%</h3>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                        <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        {% if diakonate_tasks %}
+            <div class="col-lg-12">
+                <div class="card-transparent mb-0">
+                    <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
+                        <div class="header-title">
+                            <h4 class="card-title">Diakonate-wide Tasks</h4>
+                        </div>
+                        <div class="card-header-toolbar d-flex align-items-center">
+                            <div id="top-project-slick-arrow" class="slick-aerrow-block">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-unstyled row top-projects mb-0 slick-initialized slick-slider">
+                            <div class="slick-list draggable">
+                                <div class="slick-track" style="opacity: 1; width: 1155px; transform: translate3d(-315px, 0px, 0px);">
+                                    {% for project in active_project %}
+                                        {% if forloop.counter0 == 0 %}
+                                            <li class="col-lg-4 slick-slide" style="width: 105px;" tabindex="-1" data-slick-index="{{ forloop.counter0 }}" aria-hidden="true">                                    
+                                                <div class="card">
+                                                    <div class="card-body"> 
+                                                        <h5 class="mb-3">{{ project.project_name }}</h5>
+                                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>Due in {{ project.due_date|naturalday }}</p>
+                                                        <div class="iq-progress-bar bg-secondary-light mb-4">
+                                                            <span class="bg-secondary iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="iq-media-group">
+                                                                {% for project_member in project.project_members.all %}
+                                                                    <a href="#" class="iq-media" tabindex="-1">
+                                                                        <img src="{{ project_member.member_name.profile_pic.url }}" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                                    </a>
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div>
+                                                                <a href="#" class="btn {% if project.project_priority  %} bg-secondary-light" tabindex="-1">{{ project.status }}</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {% else %}
+                                            <li class="col-lg-4 slick-slide slick-current slick-active" style="width: 105px;" tabindex="0" data-slick-index="{{ forloop.counter0 }}" aria-hidden="false">
+                                        <div class="card">
+                                            <div class="card-body"> 
+                                                <h5 class="mb-3">Product list view changes</h5>
+                                                <p class="mb-3"><i class="las la-calendar-check mr-2"></i>02 / 02 / 2021</p>
+                                                <div class="iq-progress-bar bg-success-light mb-4">
+                                                    <span class="bg-success iq-progress progress-1" data-percent="65" style="transition: width 2s ease 0s; width: 65%;"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="iq-media-group">
+                                                        <a href="#" class="iq-media" tabindex="0">
+                                                            <img src="../assets/images/user/03.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                        </a>
+                                                        <a href="#" class="iq-media" tabindex="0">
+                                                            <img src="../assets/images/user/04.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                        </a>
+                                                        <a href="#" class="iq-media" tabindex="0">
+                                                            <img src="../assets/images/user/05.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                        </a>
+                                                        <a href="#" class="iq-media" tabindex="0">
+                                                            <img src="../assets/images/user/06.jpg" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                        </a>
+                                                    </div>
+                                                    <div>
+                                                        <a href="#" class="btn bg-success-light" tabindex="0">SEO</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    
+    
+    </div>
+{% elif display_category == 'department' %}
+    {% if department_projects|length > 3 %}
+        <div class="col-lg-12">
+            <div class="card-transparent mb-0">
+                <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
+                    <div class="header-title">
+                        <h4 class="card-title">Current Projects</h4>
+                    </div>
+                    <div class="card-header-toolbar d-flex align-items-center">
+                        <div id="top-project-slick-arrow" class="slick-aerrow-block">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-unstyled row top-projects mb-0">
+                        {% for project in department_projects %}
+                            <li class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="mb-3"><a href="{% url 'project_management:project-detail' category project.id %}">{{ project.project_name }}</a></h5>
+                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>{{ project.due_date|date:"jS E, Y" }}</p>
+                                        <div class="iq-progress-bar bg-secondary-light mb-4">
+                                            <span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: {{ project.get_complete_percentage }}%;"></span>
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="iq-media-group">
+                                                {% for member in project.project_members.all %}
+                                                    <a class="iq-media">
+                                                        <img src="{{ member.get_member_image_url }}" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                            <div>
+                                                <a class="btn bg-secondary-light">{{ project.department_category }}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12 mb-4">
+            <div class="card-transparent mb-0">
+                <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
+                    <div class="header-title">
+                        <h4 class="card-title">Projects</h4>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="row">
+                        {% for project in department_projects %}
+                            <div class="col-lg-4">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <h5 class="mb-3 text-secondary"><a href="{% url 'project_management:project-detail' category project.id %}">{{ project.project_name }}</a></h5>
+                                        <p class="mb-3"><i class="las la-calendar-check mr-2"></i>{{ project.due_date|date:"jS E, Y" }}</p>
+                                        <div class="iq-progress-bar bg-secondary-light mb-4">
+                                            <span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: {{ project.get_complete_percentage }}%;"></span>
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="iq-media-group">
+                                                {% for member in project.project_members.all %}
+                                                    <a class="iq-media">
+                                                        <img src="{{ member.get_member_image_url }}" class="img-fluid avatar-40 rounded-circle" alt="">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                            <div>
+                                                <a class="btn bg-secondary-light">{{ project.department_category }}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12 pl-4">
+                                <p class="h4">No Active Project</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
+    <div class="col-xl-8">
+        <div class="card-transparent card-block card-stretch card-height">
+            <div class="card-body p-0">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between">
+                        <div class="header-title">
+                            <h4 class="card-title">Overview Progress</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-inline p-0 mb-0">
+                            <li class="mb-1">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0">Completed</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="iq-progress-bar bg-secondary-light">
+                                                <span class="bg-secondary iq-progress progress-1" data-percent="{{ department_project_status_statistic.completed.percent }}"></span>
+                                            </div>
+                                            <span class="ml-3">{{ department_project_status_statistic.completed.percent }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="iq-media-group text-sm-right">
+                                            <p class="h3">{{ department_project_status_statistic.completed.freq }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="mb-1">
+                                <div class="d-flex align-items-center justify-content-between row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0">In Progress</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="iq-progress-bar bg-primary-light">
+                                                <span class="bg-primary iq-progress progress-1" data-percent="{{ department_project_status_statistic.active.percent }}"></span>
+                                            </div>
+                                            <span class="ml-3">{{ department_project_status_statistic.active.percent }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="iq-media-group text-sm-right">
+                                            <p class="h3">{{ department_project_status_statistic.active.freq }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="d-flex align-items-center justify-content-between row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0">Not Started</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="iq-progress-bar bg-warning-light">
+                                                <span class="bg-warning iq-progress progress-1" data-percent="{{ department_project_status_statistic.inactive.percent }}"></span>
+                                            </div>
+                                            <span class="ml-3">{{ department_project_status_statistic.inactive.percent }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="iq-media-group text-sm-right">
+                                            <p class="h3">{{ department_project_status_statistic.inactive.freq }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <h4>Member Activity (Completed Project)</h4>
+                                        </div>
+                                        <ul class="list-group">
+                                            {% for member, completed_project in member_activity_in_a_department %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center iq-bg-primary">
+                                                    {{ member.member_name }}
+                                                   <span class="h4">{{ completed_project }}</span>
+                                                </li>
+                                            {% endfor %}
+                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <h4>Database</h4>
+                                                
+                                                <a class="h2">
+                                                    <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">Table Name</th>
+                                                    <th scope="col">Count</th>
+                                                    <th scope="col">Created on</th>
+
+                                                    {% if is_department_leader %}
+                                                        <th scope="col"></th>
+                                                    {% endif %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for table in department.custom_tables.all %}
+                                                    <tr>
+                                                        <th scope="row">{{ forloop.counter }}.</th>
+                                                        <td><a href="{% url 'project_management:project-department-table-detail' department.department_name table.pk %}">{{ table.table_name_plural }}</td>
+                                                        <td>{{ table.value_counts }}</td>
+                                                        <td>{{ table.date|date:"jS E, Y" }}</td>
+
+                                                        {% if is_department_leader %}
+                                                            <td>
+                                                                <a class="h2" title="Delete table">
+                                                                    <i class="ri-delete-bin-5-line text-primary" style="cursor: pointer"  data-target="#delete_table" onclick="delete_table({{table.pk}}, '{{ table.table_name_plural }}')" data-toggle="modal"></i>
+                                                                </a>
+                                                            </td>
+                                                        {% endif %}
+                                                    </tr>
+
+                                                {% empty %}
+                                                    <tr>
+                                                        <th colspan="4">No Table</th>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+                                <div class="card card-block card-stretch card-height">
+                                    <div class="card-body">
+                                        <div class="card border-bottom pb-2 shadow-none">
+                                            <div class="card-body text-center inln-date flet-datepickr">
+                                                <input type="text" id="inline-date" class="date-input basicFlatpickr d-none" readonly="readonly">
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <div class="header-title">
+                                                    <h5 class="text-danger">...Pending Targets</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {% for pending_target in all_department_pending_target %}
+                                            <div class="card card-list">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center">
+                                                        <svg class="svg-icon text-secondary mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                        </svg>
+                                                        <div class="pl-3 border-left">
+                                                            <h5 class="mb-1">{{ pending_target.target_name }}</h5>
+                                                            <p class="mb-0">Project: {{ pending_target.project.project_name }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <p class="h4 ml-5">Up-to Date</p>
+                                        {% endfor %}
+
+                                    </div>
+                                </div>
+                            </div>
+{% endif %}

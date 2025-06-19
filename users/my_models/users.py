@@ -238,7 +238,7 @@ class CustomUser(AbstractUser):
     gender = models.CharField(_('Gender'), max_length=2, choices=SEX_CHOICES)
     date_of_birth = models.DateField(_("Date of Birth"), blank=True, null=True,
                                      validators=[Validators.validate_prevent_future_date])
-    about = models.TextField(_("About"), blank=True, null=True)
+    about = models.TextField(_("About"), blank=True, default="")
     profile_pic = models.FileField(_("Profile pic"), upload_to=get_user_name, blank=True)
 
     # PERSONAL DATA

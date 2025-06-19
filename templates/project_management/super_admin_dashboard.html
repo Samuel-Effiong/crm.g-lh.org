@@ -263,11 +263,11 @@
                           <i class="ri-menu-line wrapper-menu"></i>
                           <a href="{% url 'project_management:dashboard' %}" class="header-logo">
                               <h4 class="logo-title text-uppercase">{{ project_title }} </h4>
-
                           </a>
                       </div>
                       <div class="navbar-breadcrumb">
                           <h5>{{ category }} Dashboards</h5>
+                          <p>Complete organizational overview and control center</p>
                       </div>
                       <div class="d-flex align-items-center">
                           <button class="navbar-toggler" type="button" data-toggle="collapse"
@@ -338,12 +338,67 @@
                 {% block content %}
                     <div class="container-fluid">
                         <div class="row">
-                            {% if department_projects|length > 3 %}
+                            <div class="col-sm-12 col-lg-12">
+                               <div class="card">
+                                  <div class="card-body">
+                                      <div class="d-flex justify-content-between">
+                                          <h4 class="card-title">Super Admin Dashboard Controls</h4>
+                                          <span class="mt-2 badge border border-dark text-dark mt-2">Organization Overview</span>
+                                      </div>
+                                      
+                                      <form class="row"
+                                            hx-post=""
+                                            hx-trigger="submit"
+                                            hx-target="#display_metrics"
+                                            hx-swap="innerHTML"
+                                            hx-indicator="#springBouceLoader"
+                                      >
+                                          {% csrf_token %}
+                                          <input type="text" name="dashboard_selection" value="True" style="display: none">
+                                          <div class="form-group col-lg-3">
+                                            <label for="diakonate_overview_selection">Select Diakonate</label>
+                                            <select id="diakonate_overview_selection" class="form-control mb-3" name="diaconate_selection"
+                                                hx-get="{% url 'project_management:get_departments' %}"
+                                                hx-target="#department_overview_selection"
+                                                hx-swap="innerHTML"
+                                            >
+                                                <option value="" disabled selected>Choose Diakonate</option>
+                                                {% for office in diaconates %}
+                                                    <option value="{{ office.name }}">{{ office.name }}</option>
+                                                {% empty %}
+                                                    <option value="" disabled>No Diakonate</option>
+                                                {% endfor %}
+                                            </select>
+                                          </div>
+                                          <div class="form-group col-lg-3">
+                                                <label for="department_overview_selection">Select Department</label>
+                                                <select id="department_overview_selection" class="form-control mb-3" name="department_selection">
+                                                    <option value="" disabled selected>Choose Department</option>
+                                                </select>
+                                          </div>
+                                          <div class="col-lg-3">
+                                                <label>Dashboard View</label>
+                                                <button type="button" class="btn btn-lg btn-primary btn-block">Block level button</button>
+                                          </div>
+                                      
+                                        <div class="col-lg-3">
+                                            <label>Quick Actions</label>
+                                            <div class="d-flex">
+                                                <button type="submit" value="diakonate" name="submit_button" class="btn btn-lg btn-outline-dark mr-2">View Diakonate</button>
+                                                <button type="submit" value="department" name="submit_button" class="btn btn-lg btn-outline-dark">View Dept</button>
+                                            </div>
+                                        </div>
+                                      </form>
+                                  </div>
+                               </div>
+                            </div>
+                        
+                            <div id="display_metrics" class="container-fluid">
                                 <div class="col-lg-12">
                                     <div class="card-transparent mb-0">
                                         <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
                                             <div class="header-title">
-                                                <h4 class="card-title">Current Projects</h4>
+                                                <h4 class="card-title">Organization Overview</h4>
                                             </div>
                                             <div class="card-header-toolbar d-flex align-items-center">
                                                 <div id="top-project-slick-arrow" class="slick-aerrow-block">
@@ -351,285 +406,142 @@
                                             </div>
                                         </div>
                                         <div class="card-body p-0">
-                                            <ul class="list-unstyled row top-projects mb-0">
-                                                {% for project in department_projects %}
-                                                    <li class="col-lg-4">
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <h5 class="mb-3"><a href="{% url 'project_management:project-detail' category project.id %}">{{ project.project_name }}</a></h5>
-                                                                <p class="mb-3"><i class="las la-calendar-check mr-2"></i>{{ project.due_date|date:"jS E, Y" }}</p>
-                                                                <div class="iq-progress-bar bg-secondary-light mb-4">
-                                                                    <span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: {{ project.get_complete_percentage }}%;"></span>
-                                                                </div>
-                                                                <div class="d-flex align-items-center justify-content-between">
-                                                                    <div class="iq-media-group">
-                                                                        {% for member in project.project_members.all %}
-                                                                            <a class="iq-media">
-                                                                                <img src="{{ member.get_member_image_url }}" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                                            </a>
-                                                                        {% endfor %}
-                                                                    </div>
-                                                                    <div>
-                                                                        <a class="btn bg-secondary-light">{{ project.department_category }}</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="col-12 mb-4">
-                                    <div class="card-transparent mb-0">
-                                        <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
-                                            <div class="header-title">
-                                                <h4 class="card-title">Projects</h4>
-                                            </div>
-                                        </div>
-
-                                        <div class="card-body p-0">
                                             <div class="row">
-                                                {% for project in department_projects %}
-                                                    <div class="col-lg-4">
-                                                        <div class="card card-block card-stretch card-height">
-                                                            <div class="card-body">
-                                                                <h5 class="mb-3 text-secondary"><a href="{% url 'project_management:project-detail' category project.id %}">{{ project.project_name }}</a></h5>
-                                                                <p class="mb-3"><i class="las la-calendar-check mr-2"></i>{{ project.due_date|date:"jS E, Y" }}</p>
-                                                                <div class="iq-progress-bar bg-secondary-light mb-4">
-                                                                    <span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: {{ project.get_complete_percentage }}%;"></span>
-                                                                </div>
-                                                                <div class="d-flex align-items-center justify-content-between">
-                                                                    <div class="iq-media-group">
-                                                                        {% for member in project.project_members.all %}
-                                                                            <a class="iq-media">
-                                                                                <img src="{{ member.get_member_image_url }}" class="img-fluid avatar-40 rounded-circle" alt="">
-                                                                            </a>
-                                                                        {% endfor %}
-                                                                    </div>
-                                                                    <div>
-                                                                        <a class="btn bg-secondary-light">{{ project.department_category }}</a>
-                                                                    </div>
-                                                                </div>
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Total Diakonates</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                {% empty %}
-                                                    <div class="col-12 pl-4">
-                                                        <p class="h4">No Active Project</p>
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            {% endif %}
-
-                            <div class="col-xl-8">
-                                <div class="card-transparent card-block card-stretch card-height">
-                                    <div class="card-body p-0">
-                                        <div class="card">
-                                            <div class="card-header d-flex justify-content-between">
-                                                <div class="header-title">
-                                                    <h4 class="card-title">Overview Progress</h4>
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <ul class="list-inline p-0 mb-0">
-                                                    <li class="mb-1">
-                                                        <div class="row">
-                                                            <div class="col-sm-3">
-                                                                <p class="mb-0">Completed</p>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <div class="d-flex align-items-center justify-content-between">
-                                                                    <div class="iq-progress-bar bg-secondary-light">
-                                                                        <span class="bg-secondary iq-progress progress-1" data-percent="{{ department_project_status_statistic.completed.percent }}"></span>
-                                                                    </div>
-                                                                    <span class="ml-3">{{ department_project_status_statistic.completed.percent }}%</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-3">
-                                                                <div class="iq-media-group text-sm-right">
-                                                                    <p class="h3">{{ department_project_status_statistic.completed.freq }}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="mb-1">
-                                                        <div class="d-flex align-items-center justify-content-between row">
-                                                            <div class="col-sm-3">
-                                                                <p class="mb-0">In Progress</p>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <div class="d-flex align-items-center justify-content-between">
-                                                                    <div class="iq-progress-bar bg-primary-light">
-                                                                        <span class="bg-primary iq-progress progress-1" data-percent="{{ department_project_status_statistic.active.percent }}"></span>
-                                                                    </div>
-                                                                    <span class="ml-3">{{ department_project_status_statistic.active.percent }}%</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-3">
-                                                                <div class="iq-media-group text-sm-right">
-                                                                    <p class="h3">{{ department_project_status_statistic.active.freq }}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="d-flex align-items-center justify-content-between row">
-                                                            <div class="col-sm-3">
-                                                                <p class="mb-0">Not Started</p>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <div class="d-flex align-items-center justify-content-between">
-                                                                    <div class="iq-progress-bar bg-warning-light">
-                                                                        <span class="bg-warning iq-progress progress-1" data-percent="{{ department_project_status_statistic.inactive.percent }}"></span>
-                                                                    </div>
-                                                                    <span class="ml-3">{{ department_project_status_statistic.inactive.percent }}%</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-3">
-                                                                <div class="iq-media-group text-sm-right">
-                                                                    <p class="h3">{{ department_project_status_statistic.inactive.freq }}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <div class="mb-3">
-                                                                    <h4>Member Activity (Completed Project)</h4>
-                                                                </div>
-                                                                <ul class="list-group">
-                                                                    {% for member, completed_project in member_activity_in_a_department %}
-                                                                        <li class="list-group-item d-flex justify-content-between align-items-center iq-bg-primary">
-                                                                            {{ member.member_name }}
-                                                                           <span class="h4">{{ completed_project }}</span>
-                                                                        </li>
-                                                                    {% endfor %}
-                                                                 </ul>
+                                                            <h3>{{ diaconates.count }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <div class="mb-3">
-                                                                    <div class="d-flex justify-content-between">
-                                                                        <h4>Database</h4>
-                                                                        
-                                                                        <a class="h2">
-                                                                            <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
-                                                                        </a>
-                                                                    </div>
-                                                                </div>
+                                                
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Total Departments</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
                                                             </div>
-
-                                                            <div class="col-12">
-                                                                <table class="table table-hover">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th scope="col">#</th>
-                                                                            <th scope="col">Table Name</th>
-                                                                            <th scope="col">Count</th>
-                                                                            <th scope="col">Created on</th>
-
-                                                                            {% if is_department_leader %}
-                                                                                <th scope="col"></th>
-                                                                            {% endif %}
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {% for table in department.custom_tables.all %}
-                                                                            <tr>
-                                                                                <th scope="row">{{ forloop.counter }}.</th>
-                                                                                <td><a href="{% url 'project_management:project-department-table-detail' department.department_name table.pk %}">{{ table.table_name_plural }}</</td>
-                                                                                <td>{{ table.value_counts }}</td>
-                                                                                <td>{{ table.date|date:"jS E, Y" }}</td>
-
-                                                                                {% if is_department_leader %}
-                                                                                    <td>
-                                                                                        <a class="h2" title="Delete table">
-                                                                                            <i class="ri-delete-bin-5-line text-primary" style="cursor: pointer"  data-target="#delete_table" onclick="delete_table({{table.pk}}, '{{ table.table_name_plural }}')" data-toggle="modal"></i>
-                                                                                        </a>
-                                                                                    </td>
-                                                                                {% endif %}
-                                                                            </tr>
-
-                                                                        {% empty %}
-                                                                            <tr>
-                                                                                <th colspan="4">No Table</th>
-                                                                            </tr>
-                                                                        {% endfor %}
-                                                                    </tbody>
-                                                                 </table>
+                                                            <h3>{{ departments_count }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Active Projects</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
+                                                            </div>
+                                                            <h3>{{ active_projects_count }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Total Members</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
+                                                            </div>
+                                                            <h3>{{ department_members_count }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Completed Tasks</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
+                                                            </div>
+                                                            <h3>{{ project_target_totals.completed_target }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Pending Tasks</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
+                                                            </div>
+                                                            <h3>{{ project_target_totals.pending_target }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card card-block card-stretch card-height">
+                                                        <div class="card-body">
+                                                            <div class="top-block d-flex align-items-center justify-content-between">
+                                                                <p class="card-text"><small>Performance Score</small></p>
+                                                                <span class="badge badge-warning">Anual</span>
+                                                            </div>
+                                                            <h3>{{ performance_score }}</h3>
+                                                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
                                             </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="card card-block card-stretch">
+                                                        <div class="card-body">
+                                                            <div id="diaconate-chart"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="card card-block card-stretch">
+                                                        <div class="card-body">
+                                                            <div id="org-wide-chart"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-4">
-                                <div class="card card-block card-stretch card-height">
-                                    <div class="card-body">
-                                        <div class="card border-bottom pb-2 shadow-none">
-                                            <div class="card-body text-center inln-date flet-datepickr">
-                                                <input type="text" id="inline-date" class="date-input basicFlatpickr d-none" readonly="readonly">
-                                            </div>
-                                        </div>
-
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <div class="header-title">
-                                                    <h5 class="text-danger">...Pending Targets</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {% for pending_target in all_department_pending_target %}
-                                            <div class="card card-list">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center">
-                                                        <svg class="svg-icon text-secondary mr-3" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                                        </svg>
-                                                        <div class="pl-3 border-left">
-                                                            <h5 class="mb-1">{{ pending_target.target_name }}</h5>
-                                                            <p class="mb-0">Project: {{ pending_target.project.project_name }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% empty %}
-                                            <p class="h4 ml-5">Up-to Date</p>
-                                        {% endfor %}
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 {% endblock content %}
           </div>
+        </div>
         </div>
         <!-- Wrapper End-->
 
@@ -729,6 +641,7 @@
     {% endblock footer %}
 
     <!-- Backend Bundle JavaScript -->
+    <script src="{% static 'unperplexed/js/apexcharts.min.js' %}"></script>
     <script src="{% static 'assets_project_management/js/backend-bundle.min.js' %}"></script>
     <!-- app JavaScript -->
     <script src="{% static 'assets_project_management/js/app.js' %}"></script>
@@ -737,6 +650,7 @@
 
     {% block extra_js %}
         <script src="{% static 'custom/dynamic_table/dynamic_table.js' %}"></script>
+        
 
         <script>
             const delete_table = (id, name) => {
@@ -759,6 +673,117 @@
                         window.location.reload();
                     })
             }
+            
+            handle_selection_swap = (selection) => {
+                alert(selection)
+            }
+            
+            let options = {
+                chart: {
+                    type: 'bar',
+                    height: 450,
+                    
+                    toolbar: { show: false }
+                }, 
+                title: {
+                    text: "Diakonates Overview",
+                    align: "left",
+                    style: { fontSize: '20px' }
+                },
+                series: [
+                    {
+                        name: "Members",
+                        data: {{ diaconate_chart_data.members|safe }}
+                    },
+                    {
+                        name: "Active Projects",
+                        data: {{ diaconate_chart_data.active_projects|safe }}
+                    }
+                ],
+                xaxis: {
+                    categories: {{ diaconate_chart_data.categories|safe }},
+                    labels: { rotate: -20, trim: true }
+                },
+                colors: ["#008FFB", "#00E396"],
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '50%',
+                        endingShape: 'rounded'
+                    }
+                }, 
+                dataLabels: { enabled: false },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                },
+                yaxis: {
+                    title: { text: 'Count' },
+                    min: 0
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val;
+                        }
+                    }
+                }
+            };
+            
+            let chart = new ApexCharts(
+                document.getElementById('diaconate-chart'),
+                options
+            )
+            chart.render().catch(err => console.error(err))
+            
+            let option = {
+                chart: {
+                    type: 'donut',
+                },
+                title: {
+                    text: "Organization-wide Status",
+                    align: "left",
+                    style: { fontSize: '20px' }
+                },
+                series: [
+                    {{ project_target_totals.completed_target }},
+                    {{ project_target_totals.pending_target }},
+                    {{ project_target_totals.active_target }},
+                ],
+                labels: [
+                    'Completed Targets: ',
+                    'Pending Target: ',
+                    'Active Target: '
+                ],
+                colors: ['#00E396', '#008FFB', '#FEB019'],
+                legend: {
+                    position: 'right',
+                    offsetY: 0,
+                    formatter: function(label, opts) {
+                        return label + " " + opts.w.config.series[opts.seriesIndex];
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val, opts) {
+                        return val.toFixed(0) + "%";
+                    }
+                }, 
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: { height: 240 },
+                        legend: { position: 'bottom' }
+                    }
+                }]
+            };
+            
+            chart = new ApexCharts(
+                document.getElementById('org-wide-chart'),
+                option
+            )
+            chart.render();
+            
         </script>
     {% endblock extra_js %}
   </body>
