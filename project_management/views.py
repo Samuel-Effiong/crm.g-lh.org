@@ -167,20 +167,41 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
                     'departments__departmentproject',
                     filter=Q(departments__departmentproject__status='In Progress'),
                     distinct=True
-                )
+                ),
+                num_pending_targets=Count(
+                    'departments__departmentproject__target',
+                    filter=Q(departments__departmentproject__target__state='Pending Approval'),
+                    distinct=True
+                ),
+                num_active_targets=Count(
+                    'departments__departmentproject__target',
+                    filter=Q(departments__departmentproject__target__state='In Progress'),
+                    distinct=True
+                ),
+                num_not_started_targets=Count(
+                    'departments__departmentproject__target',
+                    filter=Q(departments__departmentproject__target__state='Not Started'),
+                    distinct=True
+                ),
             )
 
             categories = [data.name for data in diaconate_chart_data]
             members = [data.num_members for data in diaconate_chart_data]
             active = [data.num_active_projects for data in diaconate_chart_data]
 
+            pending_targets = [data.num_pending_targets for data in diaconate_chart_data]
+            active_targets = [data.num_active_targets for data in diaconate_chart_data]
+            not_started_targets = [data.num_not_started_targets for data in diaconate_chart_data]
+
             context['diaconate_chart_data'] = {
                 'categories': json.dumps(categories),
                 'members': json.dumps(members),
-                'active_projects': json.dumps(active)
+                'active_projects': json.dumps(active),
+                'pending_targets': json.dumps(pending_targets),
+                'active_targets': json.dumps(active_targets),
+                'not_started_targets': json.dumps(not_started_targets),
             }
-
-            context['active_targets'] = ProjectTarget.objects.filter(state='In Progress')[:5]
+            context['active_projects'] = DepartmentProject.objects.filter(status='In Progress')[:5]
 
         else:
             context['member_departments'] = Department.objects.get_member_departments(user)
