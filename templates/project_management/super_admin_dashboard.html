@@ -547,12 +547,12 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+                                            
                                                 <div class="col-lg-6">
                                                     <div class="card card-block card-stretch">
                                                         <div class="card-header">
                                                             <div class="header-title">
-                                                                <h3 class="card-title">Active Tasks</h3>
+                                                                <h3 class="card-title">Active Projects</h3>
                                                             </div>
                                                         </div>
                                                         <div class="card-body">
@@ -576,6 +576,46 @@
                                                                               </div>
                                                                               <div class="m-0 iq-progress-bar bg-secondary-light mb-4"><span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: 65%;"></span>
                                                                               </div>
+                                                                              <div class="d-flex justify-content-between">
+                                                                                  <p><small>{{ project.due_date|naturalday }}</small></p>
+                                                                                  <p><small>{{ project.project_members.count }} Assigned</small></p>
+                                                                              </div>
+                                                                          
+                                                                          
+                                                                             
+                                                                          </div>
+                                                                       </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="card card-block card-stretch">
+                                                        <div class="card-header">
+                                                            <div class="header-title">
+                                                                <h3 class="card-title">Active Targets</h3>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                
+                                                                {% for target in active_targets %}
+                                                                    
+                                                                    
+                                                                    <div class="col-12">
+                                                                       <div class="border-primary">
+                                                                          <div class="card-body" style="border:1px solid #a19e9e; border-radius: 20px">
+                                                                              <div class="d-flex justify-content-between align-items-center m-0">
+                                                                                 <h4 class="card-title">{{ target.target_name }}</h4>
+                                                                                <span class="badge {% if target.project.project_priority  == 'High' %}badge-danger{% elif target.project.project_priority == 'Medium' %}badge-warning{% elif target.project.project_priority == 'Low' %}badge-success{% endif %}">{{ target.project.project_priority }}</span>
+                                                                              </div>
+                                                                          
+                                                                              <p class="text-muted">{{ target.target_name }}</p>
+                                                                              
                                                                               <div class="d-flex justify-content-between">
                                                                                   <p><small>{{ project.due_date|naturalday }}</small></p>
                                                                                   <p><small>{{ project.project_members.count }} Assigned</small></p>
@@ -763,13 +803,17 @@
                     {
                         name: "Active Projects",
                         data: {{ diaconate_chart_data.active_projects|safe }}
+                    },
+                    {
+                        name: "Overdue Project",
+                        data: {{ diaconate_chart_data.overdue_projects|safe }}
                     }
                 ],
                 xaxis: {
                     categories: {{ diaconate_chart_data.categories|safe }},
                     labels: { rotate: -20, trim: true }
                 },
-                colors: ["#008FFB", "#00E396"],
+                colors: ["#008FFB", "#00E396", "#e30022"],
                 plotOptions: {
                     bar: {
                         horizontal: false,
@@ -815,13 +859,15 @@
                     {{ project_target_totals.completed_target }},
                     {{ project_target_totals.pending_target }},
                     {{ project_target_totals.active_target }},
+                    {{ project_target_totals.not_started_target }}
                 ],
                 labels: [
                     'Completed Targets: ',
                     'Pending Target: ',
-                    'Active Target: '
+                    'Active Target: ',
+                    'Not Started Target: '
                 ],
-                colors: ['#00E396', '#008FFB', '#FEB019'],
+                colors: ['#00E396', '#008FFB', '#FEB019', '#fe199b'],
                 legend: {
                     position: 'right',
                     offsetY: 0,
@@ -858,7 +904,7 @@
                     toolbar: { show: false }
                 }, 
                 title: {
-                    text: "Pending Approval Targets",
+                    text: "Diakonates Targets Overview",
                     align: "left",
                     style: { fontSize: '20px' }
                 },
@@ -921,10 +967,6 @@
               'Facilities & Maintenance'
             ];
 
-            const completedTasks = [260, 180, 200, 280, 230, 170];
-            const pendingTasks = [50, 45, 60, 80, 75, 65];
-            const activeProjects = [10, 8, 12, 15, 14, 11];
-
             let options2 = {
               chart: {
                 type: 'line',
@@ -933,29 +975,19 @@
                 toolbar: { show: false }
               },
               title: {
-                text: 'Tasks vs Projects Trends',
+                text: 'Diaconate Performance Scores',
                 align: 'left',
                 style: { fontSize: '18px' }
               },
               series: [
                 {
-                  name: 'Completed Tasks',
+                  name: 'Performance Score',
                   type: 'line',
-                  data: completedTasks
+                  data: {{ performance_score_for_each_diaconate.diaconate_perf_score|safe }}
                 },
-                {
-                  name: 'Pending Tasks',
-                  type: 'line',
-                  data: pendingTasks
-                },
-                {
-                  name: 'Active Projects',
-                  type: 'line',
-                  data: activeProjects
-                }
               ],
               xaxis: {
-                categories: categories,
+                categories: {{ performance_score_for_each_diaconate.diaconate_names|safe }},
                 labels: { rotate: -20 }
               },
               yaxis: {
@@ -969,7 +1001,7 @@
               markers: {
                 size: 5
               },
-              colors: ['#00E396', '#FEB019', '#008FFB'],
+              colors: ['#00E396'],  /* '#FEB019', '#008FFB'], */
               legend: {
                 position: 'top',
                 horizontalAlign: 'right'

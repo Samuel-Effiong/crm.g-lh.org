@@ -148,46 +148,31 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
             )
             context['active_projects_count'] = project_totals.get('active_project', 0)
 
-            try:
-                context['performance_score'] = project_totals.get('active_project', 0) / project_totals.get('active_project') + project_totals.get('pending_project') + project_totals.get('completed_project')
-            except ZeroDivisionError:
-                context['performance_score'] = 0
+            context['performance_score'] = Diaconate.objects.get_overall_performance_score()['performance_score']
+            context['performance_score_for_each_diaconate'] = Diaconate.objects.get_performance_score_for_each_diaconate()
+            # try:
+            #     # context['performance_score'] = project_totals.get('active_project', 0) / project_totals.get('active_project') + project_totals.get('pending_project') + project_totals.get('completed_project')
+            #
+            # except ZeroDivisionError:
+            #     context['performance_score'] = 0
 
             context['department_members_count'] = DepartmentMember.objects.count()
             context['project_target_totals'] = ProjectTarget.objects.aggregate(
                 completed_target=Count('pk', filter=Q(state='Completed')),
                 pending_target=Count('pk', filter=Q(state='Pending Approval')),
-                active_target=Count('pk', filter=Q(state='In Progress'))
+                active_target=Count('pk', filter=Q(state='In Progress')),
+                not_started_target=Count('pk', filter=Q(state="Not Started")),
             )
 
             # Chart based data
-            diaconate_chart_data = Diaconate.objects.annotate(
-                num_members=Count('departments__member_names', distinct=True),
-                num_active_projects=Count(
-                    'departments__departmentproject',
-                    filter=Q(departments__departmentproject__status='In Progress'),
-                    distinct=True
-                ),
-                num_pending_targets=Count(
-                    'departments__departmentproject__target',
-                    filter=Q(departments__departmentproject__target__state='Pending Approval'),
-                    distinct=True
-                ),
-                num_active_targets=Count(
-                    'departments__departmentproject__target',
-                    filter=Q(departments__departmentproject__target__state='In Progress'),
-                    distinct=True
-                ),
-                num_not_started_targets=Count(
-                    'departments__departmentproject__target',
-                    filter=Q(departments__departmentproject__target__state='Not Started'),
-                    distinct=True
-                ),
-            )
+            today = timezone.now().date()
+
+            diaconate_chart_data = Diaconate.objects.get_overview_statistics()
 
             categories = [data.name for data in diaconate_chart_data]
             members = [data.num_members for data in diaconate_chart_data]
-            active = [data.num_active_projects for data in diaconate_chart_data]
+            active_projects = [data.num_active_projects for data in diaconate_chart_data]
+            overdue_project = [data.num_overdue_projects for data in diaconate_chart_data]
 
             pending_targets = [data.num_pending_targets for data in diaconate_chart_data]
             active_targets = [data.num_active_targets for data in diaconate_chart_data]
@@ -196,12 +181,19 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
             context['diaconate_chart_data'] = {
                 'categories': json.dumps(categories),
                 'members': json.dumps(members),
-                'active_projects': json.dumps(active),
+                'active_projects': json.dumps(active_projects),
+                'overdue_projects': json.dumps(overdue_project),
+
                 'pending_targets': json.dumps(pending_targets),
                 'active_targets': json.dumps(active_targets),
                 'not_started_targets': json.dumps(not_started_targets),
             }
-            context['active_projects'] = DepartmentProject.objects.filter(status='In Progress')[:5]
+
+            context['active_projects'] = DepartmentProject.objects.filter(status='In Progress').order_by('-due_date')[:5]
+            context['all_overdue_projects'] = DepartmentProject.objects.get_overdue_projects()
+
+            context['active_targets'] = ProjectTarget.objects.filter(state='In Progress').order_by('-date')[:5]
+
 
         else:
             context['member_departments'] = Department.objects.get_member_departments(user)
