@@ -142,27 +142,6 @@
                                   </a>
                             </li>
                           <li class="">
-                              <a href="#dashboard" class="collapsed" data-toggle="collapse" aria-expanded="false">
-                                  <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                                  </svg>
-                                  <span class="ml-4">Dashboards</span>
-                                  <i class="las la-angle-right iq-arrow-right arrow-active"></i>
-                                  <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
-                              </a>
-                              <ul id="dashboard" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-                                  {% for department in member_departments %}
-                                      <li class="{% if page == 'Dashboard' %}{% if category == department.department_name %}active{% endif %}{% endif %}">
-                                          <a href="{% url 'project_management:department_dashboard' department.department_name %}">
-                                              <i class="las la-minus"></i>
-                                              <span>{{ department.department_name }}</span>
-                                          </a>
-                                      </li>
-                                  {% endfor %}
-                              </ul>
-                          </li>
-                          <li class="">
                               <a href="#projects" class="collapsed" data-toggle="collapse" aria-expanded="false">
                                   <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -355,32 +334,40 @@
                                             hx-indicator="#springBouceLoader"
                                       >
                                           {% csrf_token %}
-                                          <input type="text" name="dashboard_selection" value="True" style="display: none">
+                                          <input type="text" name="dashboard_selection" value="overview" style="display: none">
                                           <div class="form-group col-lg-3">
                                             <label for="diakonate_overview_selection">Select Diakonate</label>
-                                            <select id="diakonate_overview_selection" class="form-control mb-3" name="diaconate_selection"
+                                            <select id="diakonate_overview_selection" class="form-control mb-3" name="diaconate_selection" required
                                                 hx-get="{% url 'project_management:get_departments' %}"
                                                 hx-target="#department_overview_selection"
                                                 hx-swap="innerHTML"
                                             >
                                                 <option value="" disabled selected>Choose Diakonate</option>
-                                                {% for office in diaconates %}
-                                                    <option value="{{ office.name }}">{{ office.name }}</option>
-                                                {% empty %}
-                                                    <option value="" disabled>No Diakonate</option>
-                                                {% endfor %}
+                                                {% if user.is_superuser or user|has_project_management_permission:"Diakonate Head" %}
+                                                    {% for office in diaconates %}
+                                                        <option value="{{ office.name }}">{{ office.name }}</option>
+                                                    {% endfor %}
+                                                {% elif user|has_project_management_permission:"Department Head" %}
+                                                {% endif %}
                                             </select>
                                           </div>
                                           <div class="form-group col-lg-3">
                                                 <label for="department_overview_selection">Select Department</label>
-                                                <select id="department_overview_selection" class="form-control mb-3" name="department_selection">
+                                                <select id="department_overview_selection" class="form-control mb-3" name="department_selection" required>
                                                     <option value="" disabled selected>Choose Department</option>
                                                 </select>
                                           </div>
-                                          <div class="col-lg-3">
-                                                <label>Dashboard View</label>
-                                                <button type="button" class="btn btn-lg btn-primary btn-block">Block level button</button>
-                                          </div>
+                                      
+                                          {# Ensures that only the Super admin (or any one that might be added) have access to this feature  #}  
+                                          {% if user.is_superuser %} 
+                                              <div class="col-lg-3">
+                                                    <label>Dashboard View</label>
+                                                    <button type="submit" value="overview" name="submit_button" class="btn btn-lg btn-primary btn-block d-flex justify-content-center align-content-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye h-4 w-4 mr-1" data-lov-id="src/components/SuperAdminControls.tsx:115:16" data-lov-name="Eye" data-component-path="src/components/SuperAdminControls.tsx" data-component-line="115" data-component-file="SuperAdminControls.tsx" data-component-name="Eye" data-component-content="%7B%22className%22%3A%22h-4%20w-4%20mr-1%22%7D"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                        Overview
+                                                    </button>
+                                              </div>
+                                          {% endif %}
                                       
                                         <div class="col-lg-3">
                                             <label>Quick Actions</label>
@@ -395,253 +382,7 @@
                             </div>
                         
                             <div id="display_metrics" class="container-fluid">
-                                <div class="col-lg-12">
-                                    <div class="card-transparent mb-0">
-                                        <div class="card-header d-flex align-items-center justify-content-between p-0 pb-3">
-                                            <div class="header-title">
-                                                <h4 class="card-title">Organization Overview</h4>
-                                            </div>
-                                            <div class="card-header-toolbar d-flex align-items-center">
-                                                <div id="top-project-slick-arrow" class="slick-aerrow-block">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-body p-0">
-                                            <div class="row">
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Total Diakonates</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ diaconates.count }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Total Departments</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ departments_count }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Active Projects</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ active_projects_count }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Total Members</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ department_members_count }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Completed Tasks</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ project_target_totals.completed_target }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Pending Tasks</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ project_target_totals.pending_target }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6 col-lg-3">
-                                                    <div class="card card-block card-stretch card-height">
-                                                        <div class="card-body">
-                                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                                <p class="card-text"><small>Performance Score</small></p>
-                                                                <span class="badge badge-warning">Anual</span>
-                                                            </div>
-                                                            <h3>{{ performance_score }}</h3>
-                                                            <div class="d-flex align-items-center justify-content-between mt-1">
-                                                                <p class="mb-0 card-title"><small class="text-muted">Budget Utilization</small></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-body">
-                                                            <div id="diaconate-chart"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-body">
-                                                            <div id="org-wide-chart"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-body">
-                                                            <div id="targets-chart"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-body">
-                                                            <div id="project-trends-chart"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-header">
-                                                            <div class="header-title">
-                                                                <h3 class="card-title">Active Projects</h3>
-                                                            </div>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                
-                                                                {% for project in active_projects %}
-                                                                    
-                                                                    
-                                                                    <div class="col-12">
-                                                                       <div class="border-primary">
-                                                                          <div class="card-body" style="border:1px solid #a19e9e; border-radius: 20px">
-                                                                              <div class="d-flex justify-content-between align-items-center m-0">
-                                                                                 <h4 class="card-title">{{ project.project_name }}</h4>
-                                                                                <span class="badge {% if project.project_priority == 'High' %}badge-danger{% elif project.project_priority == 'Medium' %}badge-warning{% elif project.project_priority == 'Low' %}badge-success{% endif %}">{{ project.project_priority }}</span>
-                                                                              </div>
-                                                                          
-                                                                              <p class="text-muted"><small>{{ project.department.department_name }}</small></p>
-                                                                              <div class="d-flex justify-content-between m-0">
-                                                                                  <p>Progress</p>
-                                                                                  <p>{{ project.get_complete_percentage }}%</p>
-                                                                              </div>
-                                                                              <div class="m-0 iq-progress-bar bg-secondary-light mb-4"><span class="bg-secondary iq-progress progress-1" data-percent="{{ project.get_complete_percentage }}" style="transition: width 2s ease 0s; width: 65%;"></span>
-                                                                              </div>
-                                                                              <div class="d-flex justify-content-between">
-                                                                                  <p><small>{{ project.due_date|naturalday }}</small></p>
-                                                                                  <p><small>{{ project.project_members.count }} Assigned</small></p>
-                                                                              </div>
-                                                                          
-                                                                          
-                                                                             
-                                                                          </div>
-                                                                       </div>
-                                                                    </div>
-                                                                {% endfor %}
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-lg-6">
-                                                    <div class="card card-block card-stretch">
-                                                        <div class="card-header">
-                                                            <div class="header-title">
-                                                                <h3 class="card-title">Active Targets</h3>
-                                                            </div>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                
-                                                                {% for target in active_targets %}
-                                                                    
-                                                                    
-                                                                    <div class="col-12">
-                                                                       <div class="border-primary">
-                                                                          <div class="card-body" style="border:1px solid #a19e9e; border-radius: 20px">
-                                                                              <div class="d-flex justify-content-between align-items-center m-0">
-                                                                                 <h4 class="card-title">{{ target.target_name }}</h4>
-                                                                                <span class="badge {% if target.project.project_priority  == 'High' %}badge-danger{% elif target.project.project_priority == 'Medium' %}badge-warning{% elif target.project.project_priority == 'Low' %}badge-success{% endif %}">{{ target.project.project_priority }}</span>
-                                                                              </div>
-                                                                          
-                                                                              <p class="text-muted">{{ target.target_name }}</p>
-                                                                              
-                                                                              <div class="d-flex justify-content-between">
-                                                                                  <p><small>{{ project.due_date|naturalday }}</small></p>
-                                                                                  <p><small>{{ project.project_members.count }} Assigned</small></p>
-                                                                              </div>
-                                                                          
-                                                                          
-                                                                             
-                                                                          </div>
-                                                                       </div>
-                                                                    </div>
-                                                                {% endfor %}
-                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                
-                                                
-                                            </div>
-                                            
-                                            
-                                            
-                                        </div>
-                                    </div>
-                                </div>
+                                {% include 'project_management/partial_html/dashboard/diakonate_dashboard.html' with display_category='overview' %}
                             </div>
                     </div>
                 {% endblock content %}
@@ -746,11 +487,15 @@
     {% endblock footer %}
 
     <!-- Backend Bundle JavaScript -->
-    <script src="{% static 'unperplexed/js/apexcharts.min.js' %}"></script>
-    <script src="{% static 'assets_project_management/js/backend-bundle.min.js' %}"></script>
-    <!-- app JavaScript -->
-    <script src="{% static 'assets_project_management/js/app.js' %}"></script>
     
+    <script src="{% static 'unperplexed/js/apexcharts.min.js' %}"></script>
+    
+
+    <!-- app JavaScript -->
+{#    <script src="{% static 'assets_project_management/js/customizer.js' %}"></script>#}
+{#    <script src="{% static 'assets_project_management/js/chart-custom.js' %}"></script>#}
+    
+{#    <script src="{% static 'assets_project_management/js/app.js' %}"></script>#}
     <script src="{% static 'assets/vendor/moment.min.js' %}"></script>
 
     {% block extra_js %}
@@ -783,256 +528,271 @@
                 alert(selection)
             }
             
-            let options = {
-                chart: {
-                    type: 'bar',
-                    height: 450,
-                    
-                    toolbar: { show: false }
-                }, 
-                title: {
-                    text: "Diakonates Overview",
-                    align: "left",
-                    style: { fontSize: '20px' }
-                },
-                series: [
-                    {
-                        name: "Members",
-                        data: {{ diaconate_chart_data.members|safe }}
+            document.addEventListener('DOMContentLoaded', () => {
+                renderCharts();
+            })
+            
+            document.querySelector('#display_metrics').addEventListener('htmx:afterSwap', (event) => {
+                 const current_state = document.querySelector("#current_display_state").value;
+                 
+                 if (current_state === 'overview') {
+                     renderCharts();
+                 } else if (current_state === 'diakonate') {
+                     // Render diaconate specific charts if needed
+                     
+                 } else if (current_state === 'department') {
+                        // Render department specific charts if needed
+                        // renderDepartmentCharts();
+                 }
+                 
+            });
+            
+            const renderCharts = () => {
+                {# Render only the charts needed for the overview #}
+                
+                let options = {
+                    chart: {
+                        type: 'bar',
+                        height: 450,
+                        
+                        toolbar: { show: false }
+                    }, 
+                    title: {
+                        text: "Diakonates Overview",
+                        align: "left",
+                        style: { fontSize: '20px' }
                     },
-                    {
-                        name: "Active Projects",
-                        data: {{ diaconate_chart_data.active_projects|safe }}
+                    series: [
+                        {
+                            name: "Members",
+                            data: {{ diaconate_chart_data.members|safe }}
+                        },
+                        {
+                            name: "Active Projects",
+                            data: {{ diaconate_chart_data.active_projects|safe }}
+                        },
+                        {
+                            name: "Overdue Project",
+                            data: {{ diaconate_chart_data.overdue_projects|safe }}
+                        }
+                    ],
+                    xaxis: {
+                        categories: {{ diaconate_chart_data.categories|safe }},
+                        labels: { rotate: -20, trim: true }
                     },
-                    {
-                        name: "Overdue Project",
-                        data: {{ diaconate_chart_data.overdue_projects|safe }}
-                    }
-                ],
-                xaxis: {
-                    categories: {{ diaconate_chart_data.categories|safe }},
-                    labels: { rotate: -20, trim: true }
-                },
-                colors: ["#008FFB", "#00E396", "#e30022"],
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: '50%',
-                        endingShape: 'rounded'
-                    }
-                }, 
-                dataLabels: { enabled: false },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'right',
-                },
-                yaxis: {
-                    title: { text: 'Count' },
-                    min: 0
-                },
-                tooltip: {
-                    y: {
-                        formatter: function (val) {
-                            return val;
+                    colors: ["#008FFB", "#00E396", "#e30022"],
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '50%',
+                            endingShape: 'rounded'
+                        }
+                    }, 
+                    dataLabels: { enabled: false },
+                    legend: {
+                        position: 'top',
+                        horizontalAlign: 'right',
+                    },
+                    yaxis: {
+                        title: { text: 'Count' },
+                        min: 0
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val;
+                            }
                         }
                     }
-                }
-            };
-            
-            let chart = new ApexCharts(
-                document.getElementById('diaconate-chart'),
-                options
-            )
-            chart.render().catch(err => console.error(err))
-            
-            options = {
-                chart: {
-                    type: 'donut',
-                    height: 450
-                },
-                title: {
-                    text: "Organization-wide Status",
-                    align: "left",
-                    style: { fontSize: '20px' }
-                },
-                series: [
-                    {{ project_target_totals.completed_target }},
-                    {{ project_target_totals.pending_target }},
-                    {{ project_target_totals.active_target }},
-                    {{ project_target_totals.not_started_target }}
-                ],
-                labels: [
-                    'Completed Targets: ',
-                    'Pending Target: ',
-                    'Active Target: ',
-                    'Not Started Target: '
-                ],
-                colors: ['#00E396', '#008FFB', '#FEB019', '#fe199b'],
-                legend: {
-                    position: 'right',
-                    offsetY: 0,
-                    formatter: function(label, opts) {
-                        return label + " " + opts.w.config.series[opts.seriesIndex];
+                };
+                
+                let chart = new ApexCharts(
+                    document.getElementById('diaconate-chart'),
+                    options
+                )
+                chart.render().catch(err => console.error(err))
+                
+                options = {
+                    chart: {
+                        type: 'donut',
+                        height: 450
+                    },
+                    title: {
+                        text: "Organization-wide Status",
+                        align: "left",
+                        style: { fontSize: '20px' }
+                    },
+                    series: [
+                        {{ project_target_totals.completed_target }},
+                        {{ project_target_totals.pending_target }},
+                        {{ project_target_totals.active_target }},
+                        {{ project_target_totals.not_started_target }}
+                    ],
+                    labels: [
+                        'Completed Targets: ',
+                        'Pending Target: ',
+                        'Active Target: ',
+                        'Not Started Target: '
+                    ],
+                    colors: ['#00E396', '#008FFB', '#FEB019', '#fe199b'],
+                    legend: {
+                        position: 'right',
+                        offsetY: 0,
+                        formatter: function(label, opts) {
+                            return label + " " + opts.w.config.series[opts.seriesIndex];
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function(val, opts) {
+                            return val.toFixed(0) + "%";
+                        }
+                    }, 
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            chart: { height: 240 },
+                            legend: { position: 'bottom' }
+                        }
+                    }]
+                };
+                
+                chart = new ApexCharts(
+                    document.getElementById('org-wide-chart'),
+                    options
+                )
+                chart.render();
+                
+                options = {
+                    chart: {
+                        type: 'bar',
+                        height: 450,
+                        
+                        toolbar: { show: false }
+                    }, 
+                    title: {
+                        text: "Diakonates Targets Overview",
+                        align: "left",
+                        style: { fontSize: '20px' }
+                    },
+                    series: [
+                        {
+                            name: "Pending Targets",
+                            data: {{ diaconate_chart_data.pending_targets|safe }}
+                        },
+                        {
+                            name: "Active Targets",
+                            data: {{ diaconate_chart_data.active_targets|safe }}
+                        },
+                        {
+                            name: "Not Started Targets",
+                            data: {{ diaconate_chart_data.not_started_targets|safe }}
+                        }
+                    ],
+                    xaxis: {
+                        categories: {{ diaconate_chart_data.categories|safe }},
+                        labels: { rotate: -20, trim: true }
+                    },
+                    colors: ["#008FFB", "#00E396", "#e30072"],
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '50%',
+                        }
+                    }, 
+                    dataLabels: { enabled: false },
+                    legend: {
+                        position: 'top',
+                        horizontalAlign: 'right',
+                    },
+                    yaxis: {
+                        title: { text: 'Count' },
+                        min: 0
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val;
+                            }
+                        }
                     }
-                },
-                dataLabels: {
-                    enabled: true,
-                    formatter: function(val, opts) {
-                        return val.toFixed(0) + "%";
+                };
+                
+                chart = new ApexCharts(
+                    document.getElementById('targets-chart'),
+                    options
+                )
+                
+                chart.render();
+    
+                let options2 = {
+                  chart: {
+                    type: 'line',
+                    height: 450,
+                    zoom: { enabled: false },
+                    toolbar: { show: false }
+                  },
+                  title: {
+                    text: 'Diaconate Performance Scores',
+                    align: 'left',
+                    style: { fontSize: '18px' }
+                  },
+                  series: [
+                    {
+                      name: 'Performance Score',
+                      type: 'line',
+                      data: {{ performance_score_for_each_diaconate.diaconate_perf_score|safe }}
+                    },
+                  ],
+                  xaxis: {
+                    categories: {{ performance_score_for_each_diaconate.diaconate_names|safe }},
+                    labels: { rotate: -20 }
+                  },
+                  yaxis: {
+                    title: { text: 'Count' },
+                    min: 0
+                  },
+                  stroke: {
+                    curve: 'smooth',
+                    width: [3, 3, 3]
+                  },
+                  markers: {
+                    size: 5
+                  },
+                  colors: ['#00E396'],  /* '#FEB019', '#008FFB'], */
+                  legend: {
+                    position: 'top',
+                    horizontalAlign: 'right'
+                  },
+                  grid: {
+                    borderColor: '#e7e7e7',
+                    row: {
+                      colors: ['transparent','transparent'], // alternating rows
+                      opacity: 0.5
                     }
-                }, 
-                responsive: [{
-                    breakpoint: 480,
+                  },
+                  tooltip: {
+                    shared: true,
+                    intersect: false
+                  },
+                  responsive: [{
+                    breakpoint: 600,
                     options: {
-                        chart: { height: 240 },
-                        legend: { position: 'bottom' }
+                      chart: { height: 300 },
+                      xaxis: { labels: { rotate: -45 } },
+                      markers: { size: 3 }
                     }
-                }]
-            };
-            
-            chart = new ApexCharts(
-                document.getElementById('org-wide-chart'),
-                options
-            )
-            chart.render();
-            
-            options = {
-                chart: {
-                    type: 'bar',
-                    height: 450,
-                    
-                    toolbar: { show: false }
-                }, 
-                title: {
-                    text: "Diakonates Targets Overview",
-                    align: "left",
-                    style: { fontSize: '20px' }
-                },
-                series: [
-                    {
-                        name: "Pending Targets",
-                        data: {{ diaconate_chart_data.pending_targets|safe }}
-                    },
-                    {
-                        name: "Active Targets",
-                        data: {{ diaconate_chart_data.active_targets|safe }}
-                    },
-                    {
-                        name: "Not Started Targets",
-                        data: {{ diaconate_chart_data.not_started_targets|safe }}
-                    }
-                ],
-                xaxis: {
-                    categories: {{ diaconate_chart_data.categories|safe }},
-                    labels: { rotate: -20, trim: true }
-                },
-                colors: ["#008FFB", "#00E396", "#e30072"],
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: '50%',
-                    }
-                }, 
-                dataLabels: { enabled: false },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'right',
-                },
-                yaxis: {
-                    title: { text: 'Count' },
-                    min: 0
-                },
-                tooltip: {
-                    y: {
-                        formatter: function (val) {
-                            return val;
-                        }
-                    }
-                }
-            };
-            
-            chart = new ApexCharts(
-                document.getElementById('targets-chart'),
-                options
-            )
-            
-            chart.render();
-            
-            let categories = [
-              'Administration',
-              'G&M Publishing',
-              'Worship & Music',
-              'Youth & Education',
-              'Community Outreach',
-              'Facilities & Maintenance'
-            ];
+                  }]
+                };
+                
+                // 4) Render the chart
+                chart = new ApexCharts(
+                  document.querySelector("#project-trends-chart"),
+                  options2
+                );
+                chart.render();
 
-            let options2 = {
-              chart: {
-                type: 'line',
-                height: 450,
-                zoom: { enabled: false },
-                toolbar: { show: false }
-              },
-              title: {
-                text: 'Diaconate Performance Scores',
-                align: 'left',
-                style: { fontSize: '18px' }
-              },
-              series: [
-                {
-                  name: 'Performance Score',
-                  type: 'line',
-                  data: {{ performance_score_for_each_diaconate.diaconate_perf_score|safe }}
-                },
-              ],
-              xaxis: {
-                categories: {{ performance_score_for_each_diaconate.diaconate_names|safe }},
-                labels: { rotate: -20 }
-              },
-              yaxis: {
-                title: { text: 'Count' },
-                min: 0
-              },
-              stroke: {
-                curve: 'smooth',
-                width: [3, 3, 3]
-              },
-              markers: {
-                size: 5
-              },
-              colors: ['#00E396'],  /* '#FEB019', '#008FFB'], */
-              legend: {
-                position: 'top',
-                horizontalAlign: 'right'
-              },
-              grid: {
-                borderColor: '#e7e7e7',
-                row: {
-                  colors: ['transparent','transparent'], // alternating rows
-                  opacity: 0.5
-                }
-              },
-              tooltip: {
-                shared: true,
-                intersect: false
-              },
-              responsive: [{
-                breakpoint: 600,
-                options: {
-                  chart: { height: 300 },
-                  xaxis: { labels: { rotate: -45 } },
-                  markers: { size: 3 }
-                }
-              }]
-            };
-            
-            // 4) Render the chart
-            chart = new ApexCharts(
-              document.querySelector("#project-trends-chart"),
-              options2
-            );
-            chart.render();
+            } 
             
         </script>
     {% endblock extra_js %}

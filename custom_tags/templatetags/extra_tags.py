@@ -126,3 +126,20 @@ def concatenate(value, arg) -> str:
 @register.simple_tag()
 def get_range(value):
     return range(value)
+
+
+@register.filter(name='has_project_management_permission')
+def has_project_management_permission(user, specific_group=None):
+    """
+       Checks if the user belongs to either 'Diakonate Head' or 'Department Head' group.
+       Usage: {% if request.user|has_project_management_permission %}
+    """
+    if user.is_authenticated:
+        if specific_group:
+            return user.groups.filter(name=specific_group).exists()
+
+        # If no specific group is provided, check for both groups
+        # This is the default behavior when no specific group is passed to the filter
+        required_groups = ['Diakonate Head', 'Department Head']
+        return user.groups.filter(name__in=required_groups).exists()
+    return False

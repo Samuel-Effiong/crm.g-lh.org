@@ -10,7 +10,7 @@ from django_htmx.http import HttpResponseClientRedirect
 from django.db import models, transaction, IntegrityError
 
 from django.views.generic import TemplateView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from django.utils import timezone
 from django.shortcuts import render
@@ -33,6 +33,7 @@ from users.my_models.utilities import convert_to_format
 
 from diaconate.models import TreasuryRequest
 
+from .services import super_user_details, handle_view_details_for_various_roles
 
 title = 'GLH-FAM'
 project_title = 'GLH-PROJ'
@@ -59,170 +60,124 @@ class PartialsView:
         return render(request, 'project_management/partial_html/dashboard/get_departments_options.html', {'departments': departments})
 
 
-class ProjectManagementView(LoginRequiredMixin, TemplateView):
+class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/index.html'
 
-    def get_template_names(self):
-        self.template_name = super().get_template_names()
+    # def get_template_names(self):
+    #     self.template_name = super().get_template_names()
+    #
+    #     if self.request.user.is_superuser:
+    #         self.template_name = 'project_management/super_admin_dashboard.html'
+    #
+    #     return self.template_name
 
-        if self.request.user.is_superuser:
-            self.template_name = 'project_management/super_admin_dashboard.html'
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
 
-        return self.template_name
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user),
-                ):
-            department_dashboard = kwargs.get('department', None)
 
-            if department_dashboard:
+        department_dashboard = kwargs.get('department', None)
 
-                if 'delete_table_id' in request.GET:
-                    delete_table_id = request.GET['delete_table_id']
+        if department_dashboard:
 
-                    department = Department.objects.get(department_name=department_dashboard)
+            if 'delete_table_id' in request.GET:
+                delete_table_id = request.GET['delete_table_id']
 
-                    department_table = department.custom_tables.get(id=delete_table_id)
-                    department_table.delete()
+                department = Department.objects.get(department_name=department_dashboard)
 
-                    return JsonResponse({})
+                department_table = department.custom_tables.get(id=delete_table_id)
+                department_table.delete()
 
-                return super().get(request, *args, **kwargs)
+                return JsonResponse({})
+
+            return super().get(request, *args, **kwargs)
+        else:
+            # check if any department has been created
+            # if the user is a superuser redirect to the admin setting
+            # page else direct a normal user to contact the admin
+
+            # Get the department the user is in and select the first
+            if request.user.is_superuser:
+                pass
+                member_department = Department.objects.count()
+
+                if member_department == 0:
+                    return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
             else:
-                # check if any department has been created
-                # if the user is a superuser redirect to the admin setting
-                # page else direct a normal user to contact the admin
+                # A Diakonate can explicitly not be in any department to have access to the site
 
-                # Get the department the user is in and select the first
-                if request.user.is_superuser:
-                    member_department = Department.objects.first()
+                member_department = Department.objects.get_member_departments(request.user)
+                required_groups = ['Diakonate Head', 'Department Head']
 
-                    if not member_department:
-                        return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
-                else:
-                    member_department = Department.objects.get_member_departments(request.user)
+                if not member_department and not request.user.groups.filter(name__in=required_groups).exists():
+                    return HttpResponseForbidden("Please Join A Department before you can access this page.")
 
-                    if not member_department:
-                        return HttpResponseForbidden("Please Join A Department before you can access this page.")
-                    else:
-                        member_department = member_department[0]
-
-                department_dashboard = member_department.department_name
-                return HttpResponseRedirect(reverse_lazy('project_management:department_dashboard', args=[department_dashboard]))
-
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+            return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
 
-        context['category'] = kwargs['department']
+        # context['category'] = kwargs.get('department', "")
 
         context['page'] = 'Dashboard'
 
         context['title'] = title
         context['user'] = user
         context['project_title'] = project_title
-        context['department_name'] = f"{kwargs['department']} Dashboard"
+        # context['department_name'] = f"{kwargs.get('department', "")} Dashboard"
 
-        department = Department.objects.get(department_name=context['category'])
-        context['department'] = department
+        # department = Department.objects.get(department_name=context['category'])
+        # context['department'] = department
 
         # Context needed to handle the navigation
         # Handle the view for super admin
 
-        if user.is_superuser:
-            context['member_departments'] = Department.objects.all()
-            context['diaconates'] = Diaconate.objects.all()
-            context['departments_count'] = Department.objects.count()
-            project_totals = DepartmentProject.objects.aggregate(
-                active_project=Count('pk', filter=Q(status='In Progress')),
-                pending_project=Count('pk', filter=Q(status='Not Started')),
-                completed_project=Count('pk', filter=Q(status='Completed')),
-                critical_project=Count('pk', filter=Q(project_priority='High'))
-            )
-            context['active_projects_count'] = project_totals.get('active_project', 0)
+        handle_view_details_for_various_roles(context)
 
-            context['performance_score'] = Diaconate.objects.get_overall_performance_score()['performance_score']
-            context['performance_score_for_each_diaconate'] = Diaconate.objects.get_performance_score_for_each_diaconate()
-            # try:
-            #     # context['performance_score'] = project_totals.get('active_project', 0) / project_totals.get('active_project') + project_totals.get('pending_project') + project_totals.get('completed_project')
-            #
-            # except ZeroDivisionError:
-            #     context['performance_score'] = 0
-
-            context['department_members_count'] = DepartmentMember.objects.count()
-            context['project_target_totals'] = ProjectTarget.objects.aggregate(
-                completed_target=Count('pk', filter=Q(state='Completed')),
-                pending_target=Count('pk', filter=Q(state='Pending Approval')),
-                active_target=Count('pk', filter=Q(state='In Progress')),
-                not_started_target=Count('pk', filter=Q(state="Not Started")),
-            )
-
-            # Chart based data
-            today = timezone.now().date()
-
-            diaconate_chart_data = Diaconate.objects.get_overview_statistics()
-
-            categories = [data.name for data in diaconate_chart_data]
-            members = [data.num_members for data in diaconate_chart_data]
-            active_projects = [data.num_active_projects for data in diaconate_chart_data]
-            overdue_project = [data.num_overdue_projects for data in diaconate_chart_data]
-
-            pending_targets = [data.num_pending_targets for data in diaconate_chart_data]
-            active_targets = [data.num_active_targets for data in diaconate_chart_data]
-            not_started_targets = [data.num_not_started_targets for data in diaconate_chart_data]
-
-            context['diaconate_chart_data'] = {
-                'categories': json.dumps(categories),
-                'members': json.dumps(members),
-                'active_projects': json.dumps(active_projects),
-                'overdue_projects': json.dumps(overdue_project),
-
-                'pending_targets': json.dumps(pending_targets),
-                'active_targets': json.dumps(active_targets),
-                'not_started_targets': json.dumps(not_started_targets),
-            }
-
-            context['active_projects'] = DepartmentProject.objects.filter(status='In Progress').order_by('-due_date')[:5]
-            context['all_overdue_projects'] = DepartmentProject.objects.get_overdue_projects()
-
-            context['active_targets'] = ProjectTarget.objects.filter(state='In Progress').order_by('-date')[:5]
-
+        if user.is_superuser:  # Overview stats of all the organization
+            # Exclusively for the super admin
+            super_user_details(context)
 
         else:
+            # For a normal user, get the department they belong to
             context['member_departments'] = Department.objects.get_member_departments(user)
 
+        # For Both Super User and Normal User
+        # only ensure that the appropriate role only see what is relevant to them
         context['department_leaders'] = [leader.member_name for leader in Department.objects.department_leaders() if leader]
 
-        try:
-            department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
-            context['department_membership'] = department_member
-            context['is_department_leader'] = department.is_leader(department_member)
-        except DepartmentMember.DoesNotExist:
-            context['is_department_leader'] = False
+        # try:
+        #     department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
+        #     context['department_membership'] = department_member
+        #     # context['is_department_leader'] = department.is_leader(department_member)
+        # except DepartmentMember.DoesNotExist:
+        #     context['is_department_leader'] = False
 
+        # department_projects = DepartmentProject.objects.filter(department=department, status__in=['In Progress', 'Not Started'])
+        # context['department_projects'] = department_projects
+        #
+        # department_projects_status_statistic = DepartmentProject.objects.get_department_projects_status_statistic(department)
+        # context['department_project_status_statistic'] = department_projects_status_statistic
 
-
-        department_projects = DepartmentProject.objects.filter(department=department, status__in=['In Progress', 'Not Started'])
-        context['department_projects'] = department_projects
-
-        department_projects_status_statistic = DepartmentProject.objects.get_department_projects_status_statistic(department)
-        context['department_project_status_statistic'] = department_projects_status_statistic
-
-        all_department_pending_target = ProjectTarget.objects.all_department_pending_target(department)
-        context['all_department_pending_target'] = all_department_pending_target
+        # all_department_pending_target = ProjectTarget.objects.all_department_pending_target(department)
+        # context['all_department_pending_target'] = all_department_pending_target
 
         # GET Member Activity in the project
-        members, complete_project = department.member_activity_in_a_department()
-        context['member_activity_in_a_department'] = zip(members, complete_project)
+        # members, complete_project = department.member_activity_in_a_department()
+        # context['member_activity_in_a_department'] = zip(members, complete_project)
 
-        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+        # context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         # check if there is a treasury diaconate and adds a special link section
         # to access treasury related pages
@@ -245,48 +200,95 @@ class ProjectManagementView(LoginRequiredMixin, TemplateView):
 
         dashboard_selection = request.POST.get('dashboard_selection', None)
         if dashboard_selection:
-            diaconate_selection = request.POST.get('diaconate_selection', None)
-            department_selection = request.POST.get('department_selction', None)
+            diaconate_selection = request.POST.get('diaconate_selection', None)  # contains the actual diaconate selection
+            department_selection = request.POST.get('department_selection', None)  # contains the actual department selection
             submit_button = request.POST['submit_button']
 
             context = self.get_context_data(**kwargs)
 
+            diaconate = Diaconate.objects.get(name=diaconate_selection)
+            context['diaconate'] = diaconate
+
             if diaconate_selection:
-                diaconate = Diaconate.objects.get(name=diaconate_selection)
+                # To check to ensure that the diaconate selection is not empty
+                # This is to indicate that the dynamic switching between levels was selected
 
-                no_of_members_in_diaconate = DepartmentMember.objects.filter(
-                    department_name__department_diaconate__name=diaconate_selection
-                ).count()
+                if submit_button == 'diakonate':
+                    # Accessible only by diakonate head and super admin
+                    no_of_members_in_diaconate = DepartmentMember.objects.filter(
+                        department_name__department_diaconate__name=diaconate_selection
+                    ).count()
 
-                context['diaconate'] = diaconate
-                context['no_of_members_in_diaconate'] = no_of_members_in_diaconate
+                    context['no_of_members_in_diaconate'] = no_of_members_in_diaconate
 
-                active_project = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='In Progress')
-                context['active_project'] = active_project
-                no_of_active_project_in_diaconate = active_project.count()
+                    diaconate_stats = diaconate.calculate_performance_score()
 
-                no_of_completed_project_in_diaconate = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='Completed').count()
-                context['no_of_completed_project_in_diaconate'] = no_of_completed_project_in_diaconate
+                    context['diaconate_performance_score'] = diaconate_stats['performance_score']
+                    context['no_of_active_project_in_diaconate'] = diaconate_stats['active_projects']
+                    context['no_of_completed_project_in_diaconate'] = diaconate_stats['completed_projects']
+                    context['no_of_not_started_project_in_diaconate'] = diaconate_stats['not_started_projects']
+                    context['total_projects_in_diaconate'] = diaconate_stats['total_projects']
 
-                no_of_pending_project_in_diaconate = DepartmentProject.objects.filter(department__department_diaconate__name=diaconate_selection, status='Not Started').count()
-                context['no_of_pending_project_in_diaconate'] = no_of_pending_project_in_diaconate
+                    department_chart_data = Department.objects.get_overview_statistics_for_diaconate_departments(diaconate)
 
-                if no_of_active_project_in_diaconate or no_of_completed_project_in_diaconate or no_of_pending_project_in_diaconate:
-                    overall_efficiency = no_of_completed_project_in_diaconate / (no_of_completed_project_in_diaconate + no_of_active_project_in_diaconate + no_of_pending_project_in_diaconate)
+                    department_categories = [data.department_name for data in department_chart_data]
+                    department_members = [data.num_members for data in department_chart_data]
 
-                    context['overall_efficiency'] = overall_efficiency
-                else:
-                    context['overall_efficiency'] = 0
+                    # Project Related data
+                    department_total_projects = [data.total_projects for data in department_chart_data]
+                    department_active_projects = [data.num_active_projects for data in department_chart_data]
+                    department_not_started_projects = [data.num_not_started_targets for data in department_chart_data]
+                    department_completed_projects = [data.num_completed_projects for data in department_chart_data]
+                    department_overdue_projects = [data.num_overdue_projects for data in department_chart_data]
 
-                if department_selection:
+                    # Target Related data
+                    department_total_targets = [data.total_targets for data in department_chart_data]
+                    department_active_targets = [data.num_active_targets for data in department_chart_data]
+                    department_not_started_targets = [data.num_not_started_targets for data in department_chart_data]
+                    department_completed_targets = [data.num_completed_targets for data in department_chart_data]
+                    department_pending_approval_targets = [data.num_completed_targets for data in department_chart_data]
+                    # department_overdue_targets = [data.num_overdue_targets for data in department_chart_data]
+
+                    department_resource_allocation_index_projects = [data.resource_allocation_index_projects for data in department_chart_data]
+                    department_resource_allocation_index_targets = [data.resource_allocation_index_targets for data in department_chart_data]
+
+                    department_performance_scores = [data.calculate_performance_score() for data in department_chart_data]
+
+                    context['department_chart_data'] = {
+                        'categories': json.dumps(department_categories),
+                        'members': json.dumps(department_members),
+
+                        'total_projects': json.dumps(department_total_projects),
+                        'active_projects': json.dumps(department_active_projects),
+                        'not_started_projects': json.dumps(department_not_started_projects),
+                        'completed_projects': json.dumps(department_completed_projects),
+                        'overdue_projects': json.dumps(department_overdue_projects),
+
+                        'total_targets': json.dumps(department_total_targets),
+                        'active_targets': json.dumps(department_active_targets),
+                        'not_started_targets': json.dumps(department_not_started_targets),
+                        'completed_targets': json.dumps(department_completed_targets),
+                        'pending_approval_targets': json.dumps(department_pending_approval_targets),
+                        'department_resource_allocation_index_projects': json.dumps(department_resource_allocation_index_projects),
+                        'department_resource_allocation_index_targets': json.dumps(department_resource_allocation_index_targets),
+                        # 'overdue_targets': json.dumps(department_overdue_targets),
+
+                        'department_performance_score': json.dumps(department_performance_scores),
+                    }
+
+                    # Get the top performing worker in a particular diaconate
+                    diaconate_workers_performing_score = DepartmentMember.objects.get_ranking_of_performing_members_in_a_diaconate(10, diaconate)
+                    context['diaconate_workers_performing_score'] = diaconate_workers_performing_score
+
+                elif submit_button == 'department':
+                    # Accessible by department leader, diakonate head and super admin
                     department = diaconate.departments.get(department_name=department_selection)
+                    context['department'] = department
 
+                    department_stats = department.get_overview_statistic()
+                    context['department_stats'] = department_stats
 
-
-            if submit_button == 'diakonate':
-                context['display_category'] = 'diakonate'
-            elif submit_button == 'department':
-                context['display_category'] = 'department'
+                    # context['']
 
             context['display_category'] = submit_button
             return render(request, 'project_management/partial_html/dashboard/diakonate_dashboard.html', context=context)

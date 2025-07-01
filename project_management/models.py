@@ -1,3 +1,4 @@
+import random
 from typing import Tuple, Dict
 from users.my_models import CustomUser
 
@@ -6,7 +7,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 
 from django.db import models
-from django.db.models import Q, Sum, Count, Case, When
+from django.db.models import Q, Sum, Count, Case, When, F, FloatField, Value
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -17,6 +18,15 @@ from django.utils.translation import gettext_lazy as _
 
 class Utility:
     pass
+
+
+WEIGHT_PROJECT_COMPLETED = 60
+WEIGHT_PROJECT_OVERDUE = 50
+WEIGHT_PROJECT_NOT_STARTED = 20
+
+WEIGHT_TARGET_COMPLETED = 30
+WEIGHT_TARGET_PENDING = 20
+WEIGHT_TARGET_NOT_STARTED = 25
 
 
 class DepartmentMemberManager(models.Manager):
@@ -38,7 +48,60 @@ class DepartmentMemberManager(models.Manager):
 
         return len(self.get_user_departments(user)) > 0
 
- 
+    def get_top_and_lowest_performing_members(self, limit: int = None):
+        """
+        Retrieves a list of DepartmentMembers, sorted by their calculated performance score
+        in descending order (highest score first).
+
+        Args:
+            limit (int, optional): The maximum number of top members to return.
+                                   If None, returns all members. Defaults to None.
+
+        Returns:
+            list[dict]: A list of dictionaries, where each dictionary contains:
+                - 'member_id': The ID of the DepartmentMember.
+                - 'member_name': The full name of the member's associated CustomUser.
+                - 'performance_score': The calculated score for the member.
+                - 'department_name': The name of the primary department this member belongs to.
+                                     (Note: A member belongs to one Department in your model definition)
+        """
+
+        all_members = self.get_queryset().select_related('member_name', 'department_name')
+
+        member_scores = []
+        for member in all_members:
+            score = member.get_performance_score()
+            member_scores.append({
+                'member_id': member.id,
+                'member_name': member.member_name,
+                'performance_score': score,
+                'department_name': member.department_name.department_name if member.department_name else 'N/A'
+            })
+
+        # Sort the members by performance score in descending order
+        member_scores.sort(key=lambda x: x['performance_score'], reverse=True)
+
+        if limit:
+            return {'top': member_scores[:limit], 'bottom': member_scores[-limit:][::-1]}
+        return member_scores
+
+    def get_ranking_of_performing_members_in_a_diaconate(self, limit, diaconate: 'Diaconate'):
+        diaconate_members = self.get_queryset().filter(department_name__diaconate=diaconate)
+
+        member_scores = []
+        for member in diaconate_members:
+            score = member.get_performance_score()
+            member_scores.append({
+                'member': member,
+                'performance_score': score,
+                'project_completed': member.departmentproject_set.filter(status='Completed').count(),
+                'target_completed': member.departmentproject_set.filter(projecttarget__state='Completed').count(),
+            })
+        member_scores.sort(key=lambda x: x['performance_score'], reverse=True)
+        if limit:
+            return member_scores[:limit]
+
+
 # Create your models here.
 class DepartmentMember(models.Model):
     """A user that is a member of a department"""
@@ -81,6 +144,75 @@ class DepartmentMember(models.Model):
         )
         return completed_projects
 
+    def get_performance_score(self) -> float:
+
+        """
+        Calculates the performance score for this specific DepartmentMember
+        based on the projects they are involved in (as project_members) and
+        the status of those projects and their associated targets.
+
+        It rewards completed work and penalizes unstarted, in-progress,
+        and especially overdue projects/targets this member is assigned to.
+
+        Returns:
+            float: The calculated performance score (0-100), rounded to 2 decimal places.
+        """
+
+        today = timezone.now().date()
+
+
+        project_stats = DepartmentProject.objects.filter(
+            project_members=self
+        ).aggregate(
+            total_member_projects=Count('pk', distinct=True),
+            completed_member_projects=Count('pk', filter=Q(status='Completed'), distinct=True),
+            active_member_projects=Count('pk', filter=Q(status='In Progress'), distinct=True),
+            not_started_member_projects=Count('pk', filter=Q(status='Not Started'), distinct=True),
+            overdue_member_projects=Count(
+                'pk',
+                filter=Q(due_date__lt=today, status__in=['In Progress', 'Not Started']),
+                distinct=True
+            ),
+
+            total_member_targets=Count('target', distinct=True),
+            completed_member_targets=Count('target', filter=Q(target__state='Completed'), distinct=True),
+            pending_member_targets=Count('target', filter=Q(target__state='Pending Approval'), distinct=True),
+            active_member_targets=Count('target', filter=Q(target__state='In Progress'), distinct=True),
+            not_started_member_targets=Count('target', filter=Q(target__state='Not Started'), distinct=True)
+        )
+
+        total_projects = project_stats.get('total_member_projects') or 0
+        completed_projects = project_stats.get('completed_member_projects') or 0
+        active_projects = project_stats.get('active_member_projects') or 0
+        not_started_projects = project_stats.get('not_started_member_projects') or 0
+        overdue_projects = project_stats.get('overdue_member_projects') or 0
+
+        total_targets = project_stats.get('total_member_targets') or 0
+        completed_targets = project_stats.get('completed_member_targets') or 0
+        pending_targets = project_stats.get('pending_member_targets') or 0
+        active_targets = project_stats.get('active_member_targets') or 0
+        not_started_targets = project_stats.get('not_started_member_targets') or 0
+
+        score = 0.0  # Initialize the member's performance score
+
+        # Calculate project-based contributions to the score
+
+        if total_projects > 0:
+            score += (completed_projects / total_projects) * WEIGHT_PROJECT_COMPLETED
+            score -= (overdue_projects / total_projects) * WEIGHT_PROJECT_OVERDUE
+            score -= (not_started_projects / total_projects) * WEIGHT_PROJECT_NOT_STARTED
+
+            # Calculate target-based contributions to the score
+        if total_targets > 0:
+            score += (completed_targets / total_targets) * WEIGHT_TARGET_COMPLETED
+            score -= (pending_targets / total_targets) * WEIGHT_TARGET_PENDING
+            score -= (not_started_targets / total_targets) * WEIGHT_TARGET_NOT_STARTED
+
+        # Clamp the score to a reasonable range, e.g., 0 to 100
+        score = max(0.0, min(100.0, score))
+
+        return round(score, 2)
+
 
 class DepartmentCategoryManager(models.Manager):
     def get_department_categories(self, department):
@@ -118,6 +250,64 @@ class DepartmentManager(models.Manager):
     def department_leaders(self) -> list[DepartmentMember]:
         leaders = [department.leader for department in self.get_queryset()]
         return leaders
+
+    # def get_performance_score_for_diaconate_departments
+
+    def get_overview_statistics_for_diaconate_departments(self, diaconate_instance: 'Diaconate') -> models.QuerySet:
+        """Get all the overview statistics in a particular diaconate"""
+        today = timezone.now().date()
+
+        statistics = Department.objects.filter(department_diaconate=diaconate_instance).annotate(
+            num_members=Count('member_names', distinct=True),
+            # --- Project - related counts  ---
+            total_projects=Count('departmentproject', distinct=True),
+            num_completed_projects=Count('departmentproject', filter=Q(departmentproject__status='Completed'), distinct=True),
+            num_active_projects=Count('departmentproject', filter=Q(departmentproject__status='In Progress'), distinct=True),
+            num_not_started_projects=Count('departmentproject', filter=Q(departmentproject__status='Not Started'), distinct=True),
+            num_overdue_projects=Count(
+                'departmentproject',
+                filter=Q(
+                    departmentproject__due_date__lt=today,
+                    departmentproject__status__in=['In Progress', 'Not Started']
+                ), distinct=True
+            ),
+
+            # --- Target-related counts ---
+            total_targets=Count('departmentproject__target', distinct=True),
+            num_completed_targets=Count(
+                'departmentproject__target',
+                filter=Q(departmentproject__target__state='Completed'),
+                distinct=True
+            ),
+            num_pending_approval_targets=Count(
+                'departmentproject__target',
+                filter=Q(departmentproject__target__state='Pending Approval'),
+                distinct=True
+            ),
+            num_active_targets=Count(
+                'departmentproject__target',
+                filter=Q(departmentproject__target__state='In Progress'),
+                distinct=True
+            ),
+            num_not_started_targets=Count(
+                'departmentproject__target',
+                filter=Q(departmentproject__target__state='Not Started'),
+                distinct=True
+            ),
+
+            resource_allocation_index_projects=Case(
+                When(num_members__gt=0, then=F('num_active_projects') * 1.0 / F('num_members')),
+                default=Value(0.0),
+                output_field=FloatField()
+            ),
+            # --- NEW: Resource Allocation Index (Targets per Member) ---
+            resource_allocation_index_targets=Case(
+                When(num_members__gt=0, then=F('num_active_targets') * 1.0 / F('num_members')),
+                default=Value(0.0),
+                output_field=FloatField()
+            ),
+        )
+        return statistics
 
 
 class Department(models.Model):
@@ -174,6 +364,14 @@ class Department(models.Model):
             return no_of_categories
         return 0
 
+    def get_no_of_units(self) -> int:
+        """Get the number of units in this department"""
+        return self.unit_set.count() if hasattr(self, 'unit_set') else 0
+
+    def get_no_of_subunits(self) -> int:
+        """Get the number of subunits in this department"""
+        return SubUnit.objects.filter(unit_name__unit_department__department_name=self.department_name).count()
+
     def department_leaders(self) -> list[DepartmentMember]:
         leaders = Department.objects.department_leaders()
         return leaders
@@ -203,6 +401,68 @@ class Department(models.Model):
 
         events = [department_project.to_event() for department_project in all_department_projects]
         return events
+
+    def get_overview_statistic(self):
+        """Calculates comprehensive overview statistics for this specific Department instance,
+        including counts of member etc
+        """
+
+        today = timezone.now().date()
+
+        statistics = DepartmentProject.objects.filter(
+            department=self
+        ).aggregate(
+            total_projects=Count('pk', distinct=True),
+            completed_projects=Count('pk', filter=Q(status='Completed'), distinct=True),
+            active_projects=Count('pk', filter=Q(status='In Progress'), distinct=True),
+            not_started_projects=Count('pk', filter=Q(status='Not Status'), distinct=True),
+            overdue_projects=Count(
+                'pk',
+                filter=Q(due_date__lt=today, status__in=['In Progress', 'Not Started']), distinct=True),
+
+            total_targets=Count('target', distinct=True),
+            completed_targets=Count('target', filter=Q(target__state='Pending Approval'), distinct=True),
+            pending_targets=Count('target', filter=Q(target__state='In Progress'), distinct=True),
+            active_targets=Count('target', filter=Q(target__state='Completed'), distinct=True),
+            not_started_targets_in_targets=Count('target', filter=Q(target__state='Not Started'), distinct=True),
+        )
+
+        return statistics
+
+    def calculate_performance_score(self):
+        """
+        Calculates a custom 'performance score' for this specific department based on aggregated
+        project and target statistics.
+        """
+        statistics = self.get_overview_statistic()
+
+        total_projects = statistics.get('total_projects') or 0
+        completed_projects = statistics.get('completed_projects') or 0
+        active_projects = statistics.get('active_projects') or 0
+        not_started_projects = statistics.get('not_started_projects') or 0
+        overdue_projects = statistics.get('overdue_projects') or 0
+
+        total_targets = statistics.get('total_targets') or 0
+        completed_targets = statistics.get('completed_targets') or 0
+        pending_targets = statistics.get('pending_targets') or 0
+        active_targets = statistics.get('active_targets') or 0
+        not_started_targets = statistics.get('not_started_targets_in_targets') or 0
+
+        score = 0.0
+
+        if total_projects > 0:
+            score += (completed_projects / total_projects) * WEIGHT_PROJECT_COMPLETED
+            score -= (overdue_projects / total_projects) * WEIGHT_PROJECT_OVERDUE
+            score -= (not_started_projects / total_projects) * WEIGHT_PROJECT_NOT_STARTED
+
+        if total_targets > 0:
+            score += (completed_targets / total_targets) * WEIGHT_TARGET_COMPLETED
+            score -= (pending_targets / total_targets) * WEIGHT_TARGET_PENDING
+            score -= (not_started_targets / total_targets) * WEIGHT_TARGET_NOT_STARTED
+
+        score = max(0.0, min(100.0, score))
+
+        return score
 
 
 class ProjectTargetManager(models.Manager):
@@ -636,14 +896,6 @@ class CustomDiaconateManager(models.Manager):
 
     def get_performance_score_for_each_diaconate(self):
 
-        WEIGHT_PROJECT_COMPLETED = 60
-        WEIGHT_PROJECT_OVERDUE = 50
-        WEIGHT_PROJECT_NOT_STARTED = 20
-
-        WEIGHT_TARGET_COMPLETED = 30
-        WEIGHT_TARGET_PENDING = 20
-        WEIGHT_TARGET_NOT_STARTED = 25
-
         results = []
 
         diaconate_stats_queryset = self.get_overview_statistics()
@@ -683,14 +935,6 @@ class CustomDiaconateManager(models.Manager):
 
         # Define weights for the performance score components (adjust as needed)
         # These should be consistent with how you score individual Diaconates if comparing.
-
-        WEIGHT_PROJECT_COMPLETED = 60
-        WEIGHT_PROJECT_OVERDUE = 50
-        WEIGHT_PROJECT_NOT_STARTED = 20
-
-        WEIGHT_TARGET_COMPLETED = 30
-        WEIGHT_TARGET_PENDING = 20
-        WEIGHT_TARGET_NOT_STARTED = 25
 
         # Step 1: Aggregate all necessary project counts for the entire organization
         project_counts = DepartmentProject.objects.aggregate(
@@ -741,6 +985,7 @@ class CustomDiaconateManager(models.Manager):
 
         return results
 
+
 class Diaconate(models.Model):
     name = models.CharField(max_length=500, unique=True)
     info = models.TextField(null=True, blank=True)
@@ -784,9 +1029,75 @@ class Diaconate(models.Model):
     def get_absolute_url(self) -> str:
         return reverse_lazy("diaconate:treasury-dashboard")
 
+    def calculate_performance_score(self):
+        """
+        Calculate the performance score for the Diaconate based on the projects and targets
+        across all departments under this diaconate.
+        """
 
+        stats = DepartmentProject.objects.filter(
+            department__in=self.departments.all()
+        ).aggregate(
+            total_projects=Count('pk', distinct=True),
+            completed_projects=Count('pk', filter=Q(status='Completed'), distinct=True),
+            active_projects=Count('pk', filter=Q(status='In Progress'), distinct=True),
+            not_started_projects=Count('pk', filter=Q(status='Not Started'), distinct=True),
+            overdue_projects=Count(
+                'pk',
+                filter=Q(due_date__lt=timezone.now().date(), status__in=['In Progress', 'Not Started']),
+                distinct=True
+            ),
 
- 
+            total_targets=Count('target', distinct=True),
+            completed_targets=Count('target', filter=Q(target__state='Completed'), distinct=True),
+            pending_targets=Count('target', filter=Q(target__state='Pending Approval'), distinct=True),
+            not_started_targets=Count('target', filter=Q(target__state='Not Started'), distinct=True),
+        )
+
+        # Extract aggregated values, providing defaults of 0
+        total_projects = stats.get('total_projects') or 0
+        completed_projects = stats.get('completed_projects') or 0
+        active_projects = stats.get('active_projects') or 0
+        not_started_projects = stats.get('not_started_projects') or 0
+        overdue_projects = stats.get('overdue_projects') or 0
+
+        total_targets = stats.get('total_targets') or 0
+        completed_targets = stats.get('completed_targets') or 0
+        pending_targets = stats.get('pending_targets') or 0
+        active_targets = stats.get('active_targets') or 0
+        not_started_targets = stats.get('not_started_targets_in_targets') or 0
+
+        score = 0.0
+
+        # Calculate project-based contributions to the score
+        if total_projects > 0:
+            score += (completed_projects / total_projects) * WEIGHT_PROJECT_COMPLETED
+            score -= (overdue_projects / total_projects) * WEIGHT_PROJECT_OVERDUE
+            score -= (not_started_projects / total_projects) * WEIGHT_PROJECT_NOT_STARTED
+
+        # Calculate target-based contributions to the score
+        if total_targets > 0:
+            score += (completed_targets / total_targets) * WEIGHT_TARGET_COMPLETED
+            score -= (pending_targets / total_targets) * WEIGHT_TARGET_PENDING
+            score -= (not_started_targets / total_targets) * WEIGHT_TARGET_NOT_STARTED
+
+        score = max(0.0, min(100.0, score))
+
+        return {
+            'performance_score': round(score, 2),
+            # Include all raw counts for transparency
+            'total_projects': total_projects,
+            'completed_projects': completed_projects,
+            'active_projects': active_projects,
+            'not_started_projects': not_started_projects,
+            'overdue_projects': overdue_projects,
+            'total_targets': total_targets,
+            'completed_targets': completed_targets,
+            'pending_targets': pending_targets,
+            'active_targets': active_targets,
+            'not_started_targets_in_targets': not_started_targets,
+        }
+
 
 class CustomUnitManager(models.Manager):
     pass
