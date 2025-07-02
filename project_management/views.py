@@ -144,13 +144,13 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
         handle_view_details_for_various_roles(context)
 
-        if user.is_superuser:  # Overview stats of all the organization
-            # Exclusively for the super admin
-            super_user_details(context)
-
-        else:
-            # For a normal user, get the department they belong to
-            context['member_departments'] = Department.objects.get_member_departments(user)
+        # if user.is_superuser:  # Overview stats of all the organization
+        #     # Exclusively for the super admin
+        #     super_user_details(context, )
+        #
+        # else:
+        #     # For a normal user, get the department they belong to
+        #     context['member_departments'] = Department.objects.get_member_departments(user)
 
         # For Both Super User and Normal User
         # only ensure that the appropriate role only see what is relevant to them
