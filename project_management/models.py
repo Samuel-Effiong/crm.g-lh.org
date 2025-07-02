@@ -730,7 +730,7 @@ class DepartmentProject(models.Model):
         return event
 
     def get_absolute_url(self):
-        return reverse_lazy('project_management:project-detail', args=[self.department, self.id])
+        return reverse_lazy('project_management:project-detail', args=[self.department.department_name, self.id])
 
 
 class PendingDepartmentRequest(models.Model):

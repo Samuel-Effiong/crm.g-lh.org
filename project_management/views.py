@@ -86,7 +86,6 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
     def get(self, request, *args, **kwargs):
 
         department_dashboard = kwargs.get('department', None)
-
         if department_dashboard:
 
             if 'delete_table_id' in request.GET:
@@ -121,7 +120,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
                 if not member_department and not request.user.groups.filter(name__in=required_groups).exists():
                     return HttpResponseForbidden("Please Join A Department before you can access this page.")
 
-            return super().get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -341,17 +340,20 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         pass
 
 
-class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
+class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/project-index.html'
 
-    def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
-            return super().get(request, *args, **kwargs)
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
+
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -447,42 +449,47 @@ class DepartmentProjectListView(LoginRequiredMixin, TemplateView):
         return HttpResponseRedirect(reverse_lazy('project_management:project', args=[department_name]))
 
 
-class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
+class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/project-detail.html'
     model = DepartmentProject
 
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
+
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
+
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
+        if 'change_target_status' in request.GET:
+            target_id = request.GET['target_id']
+            state = request.GET['state']
 
-            if 'change_target_status' in request.GET:
-                target_id = request.GET['target_id']
-                state = request.GET['state']
+            if state in ['Not Started', 'In Progress', 'Completed', 'Pending Approval', 'Reject']:
 
-                if state in ['Not Started', 'In Progress', 'Completed', 'Pending Approval', 'Reject']:
+                target = ProjectTarget.objects.get(id=target_id)
 
-                    target = ProjectTarget.objects.get(id=target_id)
-
-                    if state == 'Reject':
-                        target.state = 'Not Started'
-                    else:
-                        target.state = state
-                    target.date = timezone.now()
-
-                    project = DepartmentProject.objects.get(id=kwargs['pk'])
-                    project.update_current_status_of_project_target()
-
-                    target.save()
-
-                    return JsonResponse({'confirm': True}, safe=False)
+                if state == 'Reject':
+                    target.state = 'Not Started'
                 else:
-                    return JsonResponse({'confirm': False}, safe=False)
+                    target.state = state
+                target.date = timezone.now()
 
-            return super().get(request, *args, **kwargs)
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+                project = DepartmentProject.objects.get(id=kwargs['pk'])
+                project.update_current_status_of_project_target()
+
+                target.save()
+
+                return JsonResponse({'confirm': True}, safe=False)
+            else:
+                return JsonResponse({'confirm': False}, safe=False)
+
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -588,60 +595,64 @@ class DepartmentProjectDetailView(LoginRequiredMixin, DetailView):
         return JsonResponse({'confirm': True}, safe=False)
 
 
-class ProjectManagementSettingView(LoginRequiredMixin, TemplateView):
+class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/app/user-profile.html'
 
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
+
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
+
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
+        if 'mode' in request.GET:
+            department = kwargs['department']
+            department = Department.objects.get(department_name=department)
+            context = {}
 
-                if 'mode' in request.GET:
-                    department = kwargs['department']
-                    department = Department.objects.get(department_name=department)
-                    context = {}
+            if request.GET['mode'] == 'display_unit_member':
+                pk = request.GET['unit_pk']
 
-                    if request.GET['mode'] == 'display_unit_member':
-                        pk = request.GET['unit_pk']
+                try:
+                    department_unit = Unit.objects.get(pk=pk)
+                    context['status'] = True
+                    context['department'] = department
+                    context['department_unit'] = department_unit
 
-                        try:
-                            department_unit = Unit.objects.get(pk=pk)
-                            context['status'] = True
-                            context['department'] = department
-                            context['department_unit'] = department_unit
+                except Unit.DoesNotExist as e:
+                    context['status'] = False
+                return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
 
-                        except Unit.DoesNotExist as e:
-                            context['status'] = False    
-                        return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
-                    
-                    elif request.GET['mode'] == 'remove_unit_member':
-                        department_unit = request.GET['department_unit_pk']
-                        member = request.GET['member_pk']
-                    
-                        try:
-                            department_unit = Unit.objects.get(pk=department_unit)
-                            member = DepartmentMember.objects.get(pk=member)
-                            department_unit.members.remove(member)
+            elif request.GET['mode'] == 'remove_unit_member':
+                department_unit = request.GET['department_unit_pk']
+                member = request.GET['member_pk']
 
-                            context['status'] = True
-                        except (Unit.DoesNotExist, DepartmentMember.DoesNotExist):
-                            context['status'] = False
+                try:
+                    department_unit = Unit.objects.get(pk=department_unit)
+                    member = DepartmentMember.objects.get(pk=member)
+                    department_unit.members.remove(member)
 
-                        return HttpResponse({})
-                    elif request.GET['mode'] == 'display_unit_leader':
-                        unit_pk = request.GET['unit_pk']
+                    context['status'] = True
+                except (Unit.DoesNotExist, DepartmentMember.DoesNotExist):
+                    context['status'] = False
 
-                        department_unit = Unit.objects.get(pk=unit_pk)
-                        context['status'] = True
-                        context['department_unit'] = department_unit
+                return HttpResponse({})
+            elif request.GET['mode'] == 'display_unit_leader':
+                unit_pk = request.GET['unit_pk']
 
-                        return render(request, 'project_management/app/partial_html/display_unit_leader.html', context)
-                    
-                return super().get(request, *args, **kwargs)
-                
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+                department_unit = Unit.objects.get(pk=unit_pk)
+                context['status'] = True
+                context['department_unit'] = department_unit
+
+                return render(request, 'project_management/app/partial_html/display_unit_leader.html', context)
+
+            return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1282,18 +1293,20 @@ class ProjectManagementAdminSettingDepartmentDetailView(LoginRequiredMixin, Temp
         )
 
 
-class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
+class DepartmentProjectCalenderView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/project-calender.html'
 
-    def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
 
-            return super().get(request, *args, **kwargs)
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1320,32 +1333,37 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class DepartmentTableDetailView(LoginRequiredMixin, DetailView):
+class DepartmentTableDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     login_url = reverse_lazy('users-login')
     template_name = "project_management/project-department-tables-detail.html"
-    model = DepartmentTable 
+    model = DepartmentTable
+
+    def test_func(self):
+        user = self.request.user
+        required_groups = ['Diakonate Head', 'Department Head']
+
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...please turn back")
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_staff and (
-                self.request.user.level == 'core_shep'
-                or self.request.user.level == 'chief_shep'
-                or is_member(self.request.user)):
+        if 'table_row_id' in request.GET:
 
-            if 'table_row_id' in request.GET:
+            table_row_id = request.GET['table_row_id']
 
-                table_row_id = request.GET['table_row_id']
-                
-                table = self.get_object()
-                row = table.row_values.get(id=table_row_id)
+            table = self.get_object()
+            row = table.row_values.get(id=table_row_id)
 
-                for value in row.table_field_value.all():
-                    value.delete()
+            for value in row.table_field_value.all():
+                value.delete()
 
-                row.delete()
+            row.delete()
 
-                return JsonResponse({})
-            return super().get(request, *args, **kwargs)
-        return HttpResponseForbidden("You are not Authorized to come here...please Go Back!")
+            return JsonResponse({})
+        return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
