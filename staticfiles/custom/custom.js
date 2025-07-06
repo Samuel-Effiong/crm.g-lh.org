@@ -244,8 +244,131 @@ const select_priority_filter = (element) => {
 const filter_by_priority_and_status = () => {
     const priority = document.getElementById('filter-by-priority').textContent;
     const status = document.getElementById('filter-by-status').textContent;
+    const diakonate = document.getElementById('diakonate_overview_selection').value;
+    const department = document.getElementById('department_overview_selection').value;
 
-    window.location.href = `?filter&status=${status.trim()}&priority=${priority.trim()}`;
+    const formData = new FormData();
+    formData.append('priority', priority.trim());
+    formData.append('status', status.trim());
+    formData.append('diakonate', diakonate);
+    formData.append('department', department);
+    formData.append('csrfmiddlewaretoken', document.querySelector('input[name=csrfmiddlewaretoken]').value);
+    formData.append('project_filter', 'true');
+
+    fetch(window.location.href, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('display_filtered_project').innerHTML = html;
+            initialized_project_complete_percentage_charts();
+        });
+}
+
+const initialized_project_complete_percentage_charts = () => {
+    const chartContainers = document.querySelectorAll('[id^="circle-progress-"]');
+    console.log(chartContainers.length);
+
+    chartContainers.forEach(container => {
+        if (container.classList.contains('apex-chart-initialized')) {
+            return; // Skip if already initialized
+        }
+
+        // Get the parent card elemnt to retrieve the project data from data-attribute
+        const project_data = container.closest('.project-card');
+
+        if (!project_data) {
+            console.warn("Chart conatiner found without a parent '.project-card' element.");
+            return; // Skip if no project data found
+        }
+
+        // Extract data from project data element
+        const percentage = parseFloat(project_data.dataset.projectPercentage);
+        const priority = project_data.dataset.projectPriority;
+
+        // Determine colors based on priority
+        let chartFillColor;
+        let percentageTextColor;
+        let priorityLabelColor;
+
+        if (priority === 'High') {
+            chartFillColor = '#ff0000'; // Red
+            percentageTextColor = '#ff0000'; // Red
+            priorityLabelColor = '#ff0000'; // Red
+        }
+        else if (priority === 'Medium') {
+            chartFillColor = '#ffa500'; // Orange
+            percentageTextColor = '#ffa500'; // Orange
+            priorityLabelColor = '#ffa500'; // Orange
+        } else {
+            chartFillColor = '#008000'; // Green
+            percentageTextColor = '#008000'; // Green
+            priorityLabelColor = '#008000'; // Green
+        }
+
+        const options = {
+            chart: {
+                type: 'radialBar',
+                height: '190', // Consistent height for all charts
+                width: '120',  // Consistent width for all charts
+                fontFamily: 'Helvetica, Arial, sans-serif',
+            },
+            plotOptions: {
+                radialBar: {
+                    startAngle: -90,
+                    endAngle: 270,
+                    hollow: {
+                        size: '50%',
+                        margin: 0,
+                        background: 'transparent',
+                    },
+                    track: {
+                        background: '#f0f0f0',
+                        strokeWidth: '100%',
+                        margin: 0,
+                        dropShadow: {
+                            enabled: false,
+                        }
+                    },
+                    dataLabels: {
+                        show: true,
+                        name: { show: false },
+                        value: {
+                            show: true,
+                            fontSize: '20px',
+                            fontWeight: 600,
+                            color: percentageTextColor, // Use specific text color
+                            offsetY: 8,
+                            formatter: function (val) {
+                                return Math.round(val) + '%';
+                            }
+                        }
+                    }
+                }
+            },
+            fill: {
+                type: 'solid',
+                colors: [chartFillColor] // Use specific fill color
+            },
+            series: [percentage], // Use the project's specific percentage
+            stroke: {
+                lineCap: 'round',
+            },
+            labels: ['Progress']
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+
+        // Mark this container as initialized
+        container.classList.add('apex-chart-initialized');
+    })
 }
 
 // END OF PROJECT MANAGEMENT

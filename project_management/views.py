@@ -37,6 +37,7 @@ from .services import super_user_details, handle_view_details_for_various_roles
 
 title = 'GLH-FAM'
 project_title = 'GLH-PROJ'
+required_groups = ['Diakonate Head', 'Department Head']
 
 
 def is_member(user):
@@ -46,7 +47,7 @@ def is_member(user):
 
 
 class PartialsView:
-    def get_departments(self, request):
+    def get_departments(self, request, all_department_option=None):
         diaconate_name = request.GET.get('diaconate_selection')
         departments = Department.objects.none()
 
@@ -57,20 +58,15 @@ class PartialsView:
             except Diaconate.DoesNotExist:
                 pass
 
-        return render(request, 'project_management/partial_html/dashboard/get_departments_options.html', {'departments': departments})
+            if all_department_option is not None:
+                all_department_option = all_department_option.strip()
+
+        return render(request, 'project_management/partial_html/dashboard/get_departments_options.html', {'departments': departments, 'all_department_option': True if all_department_option else False})
 
 
 class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = reverse_lazy('users-login')
     template_name = 'project_management/index.html'
-
-    # def get_template_names(self):
-    #     self.template_name = super().get_template_names()
-    #
-    #     if self.request.user.is_superuser:
-    #         self.template_name = 'project_management/super_admin_dashboard.html'
-    #
-    #     return self.template_name
 
     def test_func(self):
         user = self.request.user
@@ -359,43 +355,64 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
-        category = kwargs['department']
+        # category = kwargs['department']
 
         context['page'] = 'Project'
-        context['category'] = category
+        # context['category'] = category
 
         context['title'] = title
         context['project_title'] = project_title
         context['user'] = user
 
-        department = Department.objects.get(department_name=category)
+        # department = Department.objects.get(department_name=category)
 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
-        context['department'] = department
-        try:
-            department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
-            context['department_membership'] = department_member
-        except DepartmentMember.DoesNotExist:
-            # To be able to get here, must be a super user
-            pass
+        # context['department'] = department
+        # try:
+        #     department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
+        #     context['department_membership'] = department_member
+        # except DepartmentMember.DoesNotExist:
+        #     # To be able to get here, must be a super user
+        #     pass
 
         if user.is_superuser:
+
+            user_diaconates = Diaconate.objects.all()
+            context['diaconates'] = user_diaconates
+
+            context['department_projects'] = DepartmentProject.objects.exclude(status='Completed').order_by('-due_date')
+
             context['member_departments'] = Department.objects.all()
-        else:
-            context['member_departments'] = Department.objects.get_member_departments(user)
+        elif user.groups.filter(name="Diakonate Head"):  # If user is a diakonate head
+            # Get all the diaconate that belongs to this user is a leader/ assistant in
+            user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user))
 
-        context['department_leaders'] = Department.objects.department_leaders()
+            # Get all the department that this diaconate is under these diaconates
+            department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
+            context['member_departments'] = department_queryset  # Use to display the drop down list of the department in the sidenav
 
-        department_projects = DepartmentProject.objects.filter(department=department)
+            department_project_queryset = DepartmentProject.objects.filter(department__department_diaconate__in=user_diaconates)
+            context['department_projects'] = department_project_queryset.exclude(status='Completed').order_by('-due_date')
+
+        elif user.groups.filter(name='Department Head'):  # If user is a departmental head
+            # Get all the departments that this user is a leader/ sub leader in
+            user_departments = Department.objects.filter(Q(leader__member_name=user) | Q(sub_leader__member_name=user))
+
+            context['member_departments'] = user_departments
+
+            department_project_queryset = DepartmentProject.objects.filter(department__in=user_departments)
+            context['department_projects'] = department_project_queryset.exclude(status='Completed').order_by('-due_date')
+
+        # department_projects = DepartmentProject.objects.filter(department=department)
         if 'filter' in self.request.GET:
             status = self.request.GET['status']
             priority = self.request.GET['priority']
 
             if status != 'All':
-                department_projects = department_projects.filter(status=status)
+                department_projects = context['department_projects'].filter(status=status)
             if priority != 'All':
-                department_projects = department_projects.filter(project_priority=priority)
+                department_projects = context['department_projects'].filter(project_priority=priority)
 
             context['filter_by_status'] = status
             context['filter_by_priority'] = priority
@@ -403,20 +420,51 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
             context['filter_by_status'] = 'All'
             context['filter_by_priority'] = 'All'
 
-        context['department_projects'] = department_projects
+        # context['department_projects'] = department_projects
 
-        context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
-        context['department_members'] = DepartmentMember.objects.get_department_members(department)
+        # context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
+        # context['department_members'] = DepartmentMember.objects.get_department_members(department)
 
-        try:
-            context['is_department_leader'] = department.is_leader(department_member)
-        except UnboundLocalError:
-            # Must be a super user to activate this error
-            context['is_department_leader'] = False
+        # try:
+        #     context['is_department_leader'] = department.is_leader(department_member)
+        # except UnboundLocalError:
+        #     # Must be a superuser to activate this error
+        #     context['is_department_leader'] = False
 
         return context
 
     def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        # Check if the post request is for filtering the project
+        if 'project_filter' in request.POST:
+            priority = request.POST.get('priority', 'All')
+            status = request.POST.get('status', 'All')
+            diaconate = request.POST.get('diakonate', "all")
+            department = request.POST.get('department', "all")
+
+            projects = DepartmentProject.objects.all()
+
+            # Filter first by diaconate
+            if diaconate != 'all':
+                projects = projects.filter(department__department_diaconate__name=diaconate)
+            else:
+                # pass every project that this user is part of the diaconate
+                projects.filter(department__department_diaconate__in=context['diaconates'])
+
+            if department != "all":
+                projects = projects.filter(department__department_name=department)
+
+            if status != 'All':
+                projects = projects.filter(status=status)
+
+            if priority != 'All':
+                projects = projects.filter(project_priority=priority)
+
+            context['department_projects'] = projects
+
+            return render(request, 'project_management/partial_html/project_list/filtered_projects.html', context=context )
+
         department_name = kwargs['department']
         project_name = request.POST.get('project_name', None)
         project_description = request.POST.get('project_description', None)
@@ -434,7 +482,6 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
             if unit:
                 unit = Unit.objects.get(id=unit)
                 members = unit.members.all()
-
         
         department_category = DepartmentCategory.objects.get(category_name=category, department_name=department) if category else None    
 
@@ -456,7 +503,6 @@ class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
 
     def test_func(self):
         user = self.request.user
-        required_groups = ['Diakonate Head', 'Department Head']
 
         return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
 

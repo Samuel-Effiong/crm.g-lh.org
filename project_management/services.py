@@ -69,13 +69,25 @@ def super_user_details(context, user, today, **kwargs):
 
 def diakonate_details(context, user, today, **kwargs):
     user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user))
+    context['diaconates'] = user_diaconates
 
     department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
+    context['member_departments'] = department_queryset
+
     department_project_queryset = DepartmentProject.objects.filter(department__department_diaconate__in=user_diaconates)
 
-    context['member_departments'] = department_queryset
-    context['diaconates'] = user_diaconates
     context['departments_count'] = department_queryset.count()
+
+    project_totals = department_project_queryset.aggregate(
+        active_project=Count('pk', filter=Q(status='In Progress')),
+        pending_project=Count('pk', filter=Q(status='Not Started')),
+        completed_project=Count('pk', filter=Q(status='Completed')),
+        critical_project=Count('pk', filter=Q(project_priority='High'))
+    )
+
+    context['active_projects_count'] = project_totals.get('active_project', 0)
+
+    # context['performance_score'] =
 
 
 def department_details(context, user, today, **kwargs):
