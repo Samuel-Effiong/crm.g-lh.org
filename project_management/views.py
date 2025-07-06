@@ -387,6 +387,7 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
         elif user.groups.filter(name="Diakonate Head"):  # If user is a diakonate head
             # Get all the diaconate that belongs to this user is a leader/ assistant in
             user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user))
+            context['diaconates'] = user_diaconates
 
             # Get all the department that this diaconate is under these diaconates
             department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
@@ -398,6 +399,10 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
         elif user.groups.filter(name='Department Head'):  # If user is a departmental head
             # Get all the departments that this user is a leader/ sub leader in
             user_departments = Department.objects.filter(Q(leader__member_name=user) | Q(sub_leader__member_name=user))
+
+            # Get all the diaconate that this user is in
+            user_diaconates = Diaconate.objects.filter(department__in=user_departments)
+            context['diaconates'] = user_diaconates
 
             context['member_departments'] = user_departments
 

@@ -53,7 +53,7 @@
                     <div class="card {% if is_department_leader and project.any_pending_target_approval %}shadow-box{% endif %}">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-sm-8">
+                                <div class="col-lg-8">
                                     <div class="project-card d-flex align-items-center" 
                                          data-project-id="{{ project.id }}"
                                          data-project-percentage="{{ project.get_complete_percentage }}"
@@ -71,7 +71,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-4 text-sm-right mt-3 mt-sm-0">
+                                <div class="col-lg-4 text-sm-right mt-3 mt-sm-0">
                                     <div class="iq-media-group">
                                         {% for member in project.project_members.all %}
                                             <a href="#" class="iq-media">
