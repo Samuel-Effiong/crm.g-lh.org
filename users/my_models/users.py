@@ -325,6 +325,10 @@ class CustomUser(AbstractUser):
     def get_iso_date_of_birth(self):
         return self.date_of_birth.isoformat()
 
+    def get_name_initials(self):
+        initials = f"{self.first_name[0].upper()}{self.last_name[0].upper()}"
+        return initials
+
     def __validate_leader_roles__(self, leader, role=None):
         if role is None:
             print("I will assume leader is a shepherd")

@@ -401,7 +401,7 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
             user_departments = Department.objects.filter(Q(leader__member_name=user) | Q(sub_leader__member_name=user))
 
             # Get all the diaconate that this user is in
-            user_diaconates = Diaconate.objects.filter(department__in=user_departments)
+            user_diaconates = Diaconate.objects.filter(department__in=user_departments).distinct()
             context['diaconates'] = user_diaconates
 
             context['member_departments'] = user_departments
@@ -560,6 +560,8 @@ class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         context['department'] = department
+
+
 
         try:
             department_member = DepartmentMember.objects.get(member_name=user, department_name=department)

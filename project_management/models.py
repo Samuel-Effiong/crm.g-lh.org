@@ -480,9 +480,11 @@ class ProjectTarget(models.Model):
     )
 
     target_name = models.CharField(max_length=1000)
+    target_description = models.TextField(default="")
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
     state = models.CharField(max_length=25, choices=Choices, default='Not Started')
     date = models.DateField(auto_now=True)
+    due_date = models.DateField()
 
     objects = ProjectTargetManager()
 
@@ -653,13 +655,17 @@ class DepartmentProject(models.Model):
         targets = self.target.all()
 
         # get targets that are completed
-        completed_target = [target for target in targets if target.state == 'Completed']
+        completed_target = targets.filter(state='Completed')
         try:
-            complete_percentage = int((len(completed_target) / len(targets)) * 100)
+            complete_percentage = int((len(completed_target) / targets.count()) * 100)
         except ZeroDivisionError:
             complete_percentage = 0
 
         return complete_percentage
+
+    def get_completed_targets(self):
+        return self.target.filter(state='Completed')
+
 
     def any_pending_target_approval(self) -> bool:
         targets = self.target.all()
