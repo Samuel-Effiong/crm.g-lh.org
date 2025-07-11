@@ -348,21 +348,11 @@ class Department(models.Model):
 
     @admin.display(description='No of Members')
     def get_no_of_members(self) -> int:
-        members = self.member_names.all()
-
-        if members:
-            no_of_member = len(members)
-            return no_of_member
-        return 0
+        return self.member_names.count()
 
     @admin.display(description='No of Category')
     def get_no_of_categories(self) -> int:
-        categories = self.department_categories.all()
-
-        if categories:
-            no_of_categories = len(categories)
-            return no_of_categories
-        return 0
+        return self.department_categories.count()
 
     def get_no_of_units(self) -> int:
         """Get the number of units in this department"""
@@ -1007,7 +997,14 @@ class Diaconate(models.Model):
     @admin.display(description="Number of Departments")
     def get_number_of_departments(self) -> int:
         return self.departments.count()
-    
+
+    def get_number_of_members_in_diaconate(self):
+        return DepartmentMember.objects.filter(department_name__department_diaconate=self).count()
+
+    # FIXME: Create a function to get the overall statistics once
+    def get_number_of_projects_in_diaconate(self):
+        return DepartmentProject.objects.filter(department__department_diaconate=self).count()
+
     def is_a_diaconate_member(self, user):
 
         # check if this user belongs to any department that is part of 

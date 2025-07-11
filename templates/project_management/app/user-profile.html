@@ -13,466 +13,265 @@
             <div class="col-lg-12">
                <div class="card car-transparent">
                   <div class="card-body p-0">
-                     <div class="profile-image position-relative">
-                        <img src="{% static 'assets/images/dashboard/Top.webp' %}" class="img-fluid rounded w-100" alt="profile-image">
+                     <div class="d-flex flex-column justify-content-center align-items-center profile-image position-relative text-center rounded" style="background-image: url({% static 'assets/images/dashboard/Top.webp' %}); background-size: cover; height: 250px">
+{#                        <img src="{% static 'assets/images/dashboard/Top.webp' %}" class="img-fluid rounded w-100" alt="profile-image">#}
+                         {% if mode is None %}
+                             <h1 class="text-white"><b>DIAKONATE</b></h1>
+                             <p class="m-2">
+                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Diakonate</button>
+                             </p>
+                         {% elif mode == 'Diakonate' %}
+                             <h1 class="text-white"><b>{{ diaconate.name }}</b></h1>
+                             <p class="m-2">
+                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Department</button>
+                             </p>
+                         {% elif mode == 'Department' %}
+                             <h1 class="text-white"><b>{{ department.department_name }}</b></h1>
+                             <p class="m-2">
+                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Unit</button>
+                             </p>
+                         {% endif %}
                      </div>
                   </div>
                </div>
             </div>
          </div>
-         <div class="row m-sm-0 px-3">            
-            <div class="col-lg-4 card-profile">
-               <div class="card card-block card-stretch card-height">
-                  <div class="card-body">
-                     <div class="d-flex align-items-center mb-3">
-                        <div class="profile-img position-relative">
-                            {% if department.leader.get_member_image_url %}
-                                <img src="{{ department.leader.get_member_image_url }}" class="img-fluid rounded avatar-110" alt="{{ member.member_name.about }}">
-                           {% else %}
-                               <img src="" class="avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
-                           {% endif %}
+         {% if mode is None %}
+              <div class="row">
+                  {% for office in diaconates %}
+                      <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                          <div class="card border-primary">
+                              <div class="card-body" style="background: linear-gradient(135deg,hsl(230 45% 25%), hsl(265 33% 45%)); color: white; height: 500px">
+                                  <h4 class="card-title text-white">
+                                      <a href="{% url "project_management:project-settings-diakonate" office.name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                          {{ office.name }}
+                                      </a>
+                                  </h4>
+                                  <p class="card-text"><small>Leader: {{ office.head }}</small></p>
 
-                        </div>
-                        <div class="ml-3">
-                           <h4 class="mb-2">{{ department.leader.member_name.get_full_name }}</h4>
-                           <button type="button" class="btn btn-primary font-size-14">Leader</button>
-                        </div>
-                     </div>
-                     <p>{{ department.department_objectives }}</p>
-
-                      <h5 class="mt-2 mb-3">Current Members</h5>
-                      <ul class="list-inline p-0 m-0">
-                          {% for member in department_members %}
-                              {% if department.leader != member %}
-{#                                  IF MEMBER IS NOT A LEADER         #}
-                                  <li class="mb-3">
-                                      <div class="d-flex justify-content-evenly">
-                                          {% if member.get_member_image_url %}
-                                              <img src="{{ member.get_member_image_url }}" class="avatar-40 img-fluid rounded" alt="{{ member.member_name.about }}">
-                                          {% else %}
-                                              <img src="" class="avatar-40 img-fluid rounded" alt="{{ member.member_name.about }}">
-                                          {% endif %}
-                                          <p class="mb-0 ml-4">
-                                              {{ member.member_name.get_full_name }}
-
-                                              {% if department.sub_leader == member %}
-                                                  <span href="#" class="text-primary ml-2">Sub Leader</span>
-                                              {% endif %}
-                                          </p>
+                                  <div class="d-flex justify-content-center mb-3">
+                                      <div class="p-2 mr-2 text-center" style="background-color: hsl(265 33% 45%); border-radius: 10px; width: 100px" >
+                                          <h4 class="text-white">{{ office.get_number_of_departments }}</h4>
+                                          <p class="mb-0"><small>Departments</small></p>
                                       </div>
-                                  </li>
-                             {% endif %}
-                         {% endfor %}
-                     </ul>
+                                      <div class="px-1 py-2 text-center" style="background-color: hsl(265 33% 45%); border-radius: 10px; width: 100px">
+                                          <h4 class="text-white">{{ office.get_number_of_members_in_diaconate }}</h4>
+                                          <p class="mb-0"><small>Members</small></p>
+                                      </div>
+                                  </div>
 
-                      <div class="d-flex justify-content-center mt-3">
-                          <button type="button" class="btn btn-primary p-2" data-target="#add-member" data-toggle="modal">Add Member</button>
-                      </div>
-                  </div>
-               </div>
-            </div>
-            <div class="col-lg-8 card-profile">
-               <div class="card card-block card-stretch card-height">
-                  <div class="card-body">
-                     <ul class="d-flex nav nav-pills mb-3 text-center profile-tab" id="profile-pills-tab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active show" data-toggle="pill" href="#profile1" role="tab" aria-selected="false">Category</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="pill" href="#profile2" role="tab" aria-selected="false">Members</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="pill" href="#profile3" role="tab" aria-selected="false">Projects Timeline</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="pill" href="#profile4" role="tab" aria-selected="false">Units</a>
-                        </li>
-{#                        <li class="nav-item">#}
-{#                            <a id="view-btn" class="nav-link" data-toggle="pill" href="#profile5" role="tab" aria-selected="true">About</a>#}
-{#                        </li>#}
-                    </ul>
-                     <div class="profile-content tab-content">
-                        
-                        <div id="profile1" class="tab-pane fade active show">
-                           <p class="d-flex justify-content-between">
-                               Active Categories in {{ department.department_name }}
-                               <button type="button" class="btn btn-primary p-2" data-target="#add-category" data-toggle="modal">Add Category</button>
-                           </p>
-                           <div class="row">
-                              <div class="col-12">
-                                  <ul class="list-inline p-0 m-0 row">
-                                      {% for category in department_categories %}
-                                          <li class="mb-4 col-12">
-                                              <div class="shadow-bottom p-4 shadow-showcase">
-                                                  <div class="d-flex justify-content-between mb-3">
-                                                      <h4>{{ category.category_name }}</h4>
-                                                      <button type="button" class="btn btn-outline-danger" data-target="#remove-category" data-toggle="modal" onclick="document.getElementById('removed_category').value = '{{ category.pk }}'; document.getElementById('removed_category_name').textContent = '{{ category.category_name|safe }}'">
-                                                          <i class="ri-alert-fill"></i>
-                                                      </button>
-                                                  </div>
-                                                  <p class="text-justify">{{ category.category_objective }}</p>
-                                              </div>
-                                          </li>
+                                  <p><b>Departments</b></p>
+
+                                  <div style="overflow-y: auto; height: 250px" class=" py-2">
+                                      {% for department in office.departments.all %}
+                                          <div class="d-flex justify-content-between">
+                                              <p class="h5">
+                                                  {% if user|has_project_management_permission:"Department Head" %}
+                                                      {% if department in user_leader_in_dept %}
+                                                          <a class="text-white" href="{% url "project_management:project-settings-diakonate-department" office.name department.department_name %}">{{ department.department_name }}</a>
+                                                      {% else %}
+                                                          {{ department.department_name }}
+                                                      {% endif %}
+                                                  {% else %}
+                                                      <a class="text-white" href="{% url "project_management:project-settings-diakonate-department" office.name department.department_name %}">{{ department.department_name }}</a>
+                                                  {% endif %}
+                                            </p>
+                                            <p>{{ department.get_no_of_members }}</p>
+                                          </div>
                                       {% endfor %}
-                                 </ul>
-                                <div class="mt-3 col-12 align-center d-flex justify-content-between">
-                                    <button type="button" class="btn btn-primary p-2" data-target="#add-category" data-toggle="modal">Add Category</button>
-                                </div>
+                                  </div>
                               </div>
-                           </div>
-                        </div>
-                        <div id="profile2" class="tab-pane fade">
-                            <div class="row">
-                                <div class="col-sm-3">
-                                   <div class="nav flex-column nav-pills text-center" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                                        {% for member in department_members %}
-                                            <a class="nav-link {% if forloop.counter0 == 0 %}active show{% endif %}" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-{{ member.pk }}" role="tab" aria-controls="v-pills-{{ member.pk }}" aria-selected="false">{{ member.member_name.get_full_name }}</a>
-                                       {% endfor %}
-                                   </div>
+                          </div>
+                      </div>
+
+                 {% endfor %}
+             </div>
+        {% elif mode == 'Diakonate' %} {# project/settings/diakonate #}
+
+             <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Departments</small></p>
+                                    <span class="badge badge-warning">Anual</span>
                                 </div>
-                                <div class="col-sm-9">
-                                    <div class="tab-content mt-0" id="v-pills-tabContent">
-                                        {% for member in department_members %}
-                                            <div class="tab-pane fade {% if forloop.counter0 == 0 %}active show{% endif %}" id="v-pills-{{ member.pk }}" role="tabpanel" aria-labelledby="v-pills-{{ member.pk }}-tab">
-                                                 <div class="card card-block card-stretch">
-                                                    <div class="card-body p-3">
-                                                       <div class="row py-2">
-                                                           <div class="col-12 text-center mb-3">
-                                                               {% if member.get_member_image_url %}
-                                                                   <img src="{{ member.get_member_image_url }}" class="align-self-start mr-3 avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
-                                                               {% else %}
-                                                                   <img src="" class="align-self-start mr-3 avatar-110 img-fluid rounded" alt="{{ member.member_name.about }}">
-                                                               {% endif %}
-                                                           </div>
-                                                           <div class="col-12 text-center">
-                                                               <p>{{ member.member_name.about }}</p>
-                                                           </div>
-                                                       </div>
-                                                    </div>
-                                                 </div>
-
-                                                <div class="card card-block card-stretch">
-                                                    <div class="card-body p-3">
-                                                       <div class="row align-items-center text-center py-2 d-flex justify-content-center">
-                                                          <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-lg-0">
-                                                             <div class="profile-icon icon m-auto rounded bg-warning">
-                                                                <svg class="svg-icon" width="22" height="22" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                   <path
-                                                                      d="M9.10495 33.9964C8.29026 33.1817 8.71495 33.4114 6.74995 32.8855C5.85838 32.6464 5.07463 32.1871 4.36588 31.6367L0.112441 42.0655C-0.299122 43.0752 0.469629 44.1721 1.559 44.1308L6.4987 43.9424L9.8962 47.5311C10.6462 48.3224 11.9624 48.0758 12.374 47.0661L17.2537 35.1017C16.2375 35.668 15.1096 35.9999 13.9434 35.9999C12.1153 35.9999 10.3978 35.2883 9.10495 33.9964V33.9964ZM35.8875 42.0655L31.634 31.6367C30.9253 32.188 30.1415 32.6464 29.25 32.8855C27.2746 33.4142 27.7078 33.1836 26.895 33.9964C25.6021 35.2883 23.8837 35.9999 22.0556 35.9999C20.8893 35.9999 19.7615 35.6671 18.7453 35.1017L23.625 47.0661C24.0365 48.0758 25.3537 48.3224 26.1028 47.5311L29.5012 43.9424L34.4409 44.1308C35.5303 44.1721 36.299 43.0742 35.8875 42.0655V42.0655ZM24.6562 31.8749C26.0887 30.4171 26.2528 30.5427 28.2928 29.9867C29.595 29.6314 30.6131 28.5955 30.9618 27.2699C31.6631 24.6074 31.4812 24.9289 33.3946 22.9808C34.3481 22.0105 34.7203 20.5958 34.3715 19.2702C33.6712 16.6096 33.6703 16.9808 34.3715 14.3174C34.7203 12.9917 34.3481 11.5771 33.3946 10.6067C31.4812 8.65862 31.6631 8.97925 30.9618 6.31768C30.6131 4.99206 29.595 3.95612 28.2928 3.60081C25.679 2.88737 25.994 3.07393 24.0787 1.12487C23.1253 0.154558 21.735 -0.225129 20.4328 0.130183C17.82 0.842683 18.1846 0.843621 15.5671 0.130183C14.2649 -0.225129 12.8746 0.153621 11.9212 1.12487C10.0078 3.073 10.3228 2.88737 7.70807 3.60081C6.40588 3.95612 5.38776 4.99206 5.03901 6.31768C4.33869 8.97925 4.51963 8.65862 2.60619 10.6067C1.65275 11.5771 1.27963 12.9917 1.62932 14.3174C2.32963 16.9761 2.33057 16.6049 1.62932 19.2692C1.28057 20.5949 1.65275 22.0096 2.60619 22.9808C4.51963 24.9289 4.33776 24.6074 5.03901 27.2699C5.38776 28.5955 6.40588 29.6314 7.70807 29.9867C9.8062 30.5586 9.96276 30.4686 11.3437 31.8749C12.584 33.1377 14.5162 33.3636 16.0068 32.4205C16.6029 32.0421 17.2944 31.8411 18.0004 31.8411C18.7065 31.8411 19.3979 32.0421 19.994 32.4205C21.4837 33.3636 23.4159 33.1377 24.6562 31.8749ZM9.15557 16.4961C9.15557 11.5246 13.1156 7.49425 18 7.49425C22.8843 7.49425 26.8443 11.5246 26.8443 16.4961C26.8443 21.4677 22.8843 25.498 18 25.498C13.1156 25.498 9.15557 21.4677 9.15557 16.4961V16.4961Z"
-                                                                      fill="#AB7007" />
-                                                                </svg>
-                                                             </div>
-                                                              <div class="d-flex justify-content-center">
-                                                                  <h5 class="mb-2 mt-3 icon-text-warning">{{ member.experience_score }}</h5>
-                                                                  <a class="search-link" href="#" title="Edit" data-target="#experience-score" data-toggle="modal" onclick="document.getElementById('experience_id').value = {{ member.pk }}; document.getElementById('experience_score').value = {{ member.experience_score }}"><i class="ri-pencil-fill"></i></a>
-                                                              </div>
-                                                             <p class="mb-0">Experience</p>
-                                                          </div>
-                                                          <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-lg-0">
-                                                             <div class="profile-icon icon m-auto rounded bg-info">
-                                                                <svg class="svg-icon" width="22" height="22" viewBox="0 0 60 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                   <path
-                                                                      d="M23.9091 24.5297C24.495 25.1156 25.4447 25.1156 26.0306 24.5297L27.0909 23.4694C27.6769 22.8834 27.6769 21.9338 27.0909 21.3478L23.7422 18L27.09 14.6512C27.6759 14.0653 27.6759 13.1156 27.09 12.5297L26.0297 11.4694C25.4437 10.8834 24.4941 10.8834 23.9081 11.4694L18.4387 16.9387C17.8528 17.5247 17.8528 18.4744 18.4387 19.0603L23.9091 24.5297V24.5297ZM32.91 23.4703L33.9703 24.5306C34.5563 25.1166 35.5059 25.1166 36.0919 24.5306L41.5613 19.0613C42.1472 18.4753 42.1472 17.5256 41.5613 16.9397L36.0919 11.4703C35.5059 10.8844 34.5563 10.8844 33.9703 11.4703L32.91 12.5306C32.3241 13.1166 32.3241 14.0662 32.91 14.6522L36.2578 18L32.91 21.3488C32.3241 21.9347 32.3241 22.8844 32.91 23.4703V23.4703ZM58.5 39H35.7694C35.7 40.8572 34.3903 42 32.7 42H27C25.2478 42 23.9044 40.3622 23.9278 39H1.5C0.675 39 0 39.675 0 40.5V42C0 45.3 2.7 48 6 48H54C57.3 48 60 45.3 60 42V40.5C60 39.675 59.325 39 58.5 39ZM54 4.5C54 2.025 51.975 0 49.5 0H10.5C8.025 0 6 2.025 6 4.5V36H54V4.5ZM48 30H12V6H48V30Z"
-                                                                      fill="#0170B7" />
-                                                                </svg>
-                                                             </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-info">{{ member.get_active_projects|length }}</h5>
-                                                             <p class="mb-0">Active Project</p>
-                                                          </div>
-                                                          <div class="profile-info col-xl-3 col-sm-6 mb-3 mb-sm-0">
-                                                             <div class="profile-icon icon m-auto rounded bg-danger">
-                                                                <svg class="svg-icon" width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                   <path
-                                                                      d="M35.3676 11.2517C34.8398 11.2372 34.3256 11.3198 33.8438 11.4898V7.03125C33.8438 4.70503 31.9512 2.8125 29.625 2.8125C29.0759 2.8125 28.5517 2.91909 28.0701 3.11072C27.5821 1.32047 25.9428 0 24 0C22.0572 0 20.4179 1.32047 19.9299 3.11072C19.4483 2.91909 18.9241 2.8125 18.375 2.8125C16.0488 2.8125 14.1562 4.70503 14.1562 7.03125V11.4895C13.6747 11.3198 13.1607 11.2372 12.6324 11.2517C10.3711 11.3136 8.53125 13.2316 8.53125 15.5272V48H36.6562V41.2395L38.5637 36.4704C39.1643 34.9689 39.4688 33.3877 39.4688 31.7705V15.5272C39.4688 13.2316 37.6289 11.3136 35.3676 11.2517V11.2517ZM11.3438 45.1875V42.375H33.8438V45.1875H11.3438ZM36.6562 31.7705C36.6562 33.0283 36.4194 34.2581 35.9523 35.4261L34.2979 39.5625H11.3438V15.5272C11.3438 14.7405 11.9564 14.0837 12.7095 14.0631C13.0926 14.0504 13.4561 14.1937 13.7305 14.4607C14.0051 14.7278 14.1563 15.0858 14.1563 15.4687V21.9843H16.9688V7.03125C16.9688 6.25584 17.5997 5.625 18.3751 5.625C19.1505 5.625 19.7813 6.25584 19.7813 7.03125V21.9844H22.5938V4.21875C22.5938 3.44334 23.2247 2.8125 24.0001 2.8125C24.7755 2.8125 25.4063 3.44334 25.4063 4.21875V21.9844H28.2188V7.03125C28.2188 6.25584 28.8497 5.625 29.6251 5.625C30.4005 5.625 31.0313 6.25584 31.0313 7.03125V24.1714C24.712 24.8732 19.7812 30.2467 19.7812 36.75H22.5938C22.5938 31.3222 27.0097 26.9062 32.4375 26.9062H33.8438V15.4688C33.8438 15.0859 33.995 14.7278 34.2696 14.4608C34.544 14.1938 34.9067 14.0508 35.2906 14.0632C36.0436 14.0838 36.6562 14.7406 36.6562 15.5273V31.7705Z"
-                                                                      fill="#6A1615" />
-                                                                </svg>
-                                                             </div>
-                                                             <h5 class="mb-2 mt-3 icon-text-danger">{{ member.get_completed_projects|length }}</h5>
-                                                             <p class="mb-0">Completed</p>
-                                                          </div>
-                                                       </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="card card-block card-stretch">
-                                                  <div class="card-body">
-                                                     <ul class="nav nav-tabs" id="myTab-two" role="tablist">
-                                                        <li class="nav-item">
-                                                           <a class="nav-link" id="not-started-tab-{{ member.pk }}" data-toggle="tab" href="#not-started-{{ member.pk }}" role="tab" aria-controls="not-started-{{ member.pk }}" aria-selected="false">Not Started</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                           <a class="nav-link active" id="active-tab-{{ member.pk }}" data-toggle="tab" href="#active-{{ member.pk }}" role="tab" aria-controls="active-{{ member.pk }}" aria-selected="true">Active</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                           <a class="nav-link" id="completed-tab-{{ member.pk }}" data-toggle="tab" href="#completed-{{ member.pk }}" role="tab" aria-controls="completed-{{ member.pk }}" aria-selected="false">Completed</a>
-                                                        </li>
-                                                     </ul>
-                                                     <div class="tab-content" id="myTabContent-1">
-                                                        <div class="tab-pane fade" id="not-started-{{ member.pk }}" role="tabpanel" aria-labelledby="not-started-tab-{{ member.pk }}">
-                                                            <div class="table-responsive">
-                                                                <table id="datatable" class="table data-table table-hover">
-                                                                   <thead>
-                                                                      <tr>
-                                                                          <th>Name</th>
-                                                                          <th>Priority</th>
-                                                                          <th>Start Date</th>
-                                                                      </tr>
-                                                                   </thead>
-                                                                   <tbody>
-                                                                      {% for project in member.get_inactive_projects %}
-                                                                          <tr>
-                                                                              <td>{{ project.project_name }}</td>
-                                                                              <td>{{ project.project_priority }}</td>
-                                                                              <td>{{ project.start_date }}</td>
-                                                                          </tr>
-
-                                                                      {% endfor %}
-                                                                   </tbody>
-                                                                   <tfoot>
-                                                                      <tr>
-                                                                         <th>Name</th>
-                                                                         <th>Priority</th>
-                                                                         <th>Status</th>
-                                                                      </tr>
-                                                                   </tfoot>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                        <div class="tab-pane fade active show" id="active-{{ member.pk }}" role="tabpanel" aria-labelledby="active-tab-{{ member.pk }}">
-                                                           <div class="table-responsive">
-                                                               <table id="datatable" class="table data-table table-hover">
-                                                                   <thead>
-                                                                      <tr>
-                                                                          <th>Name</th>
-                                                                          <th>Priority</th>
-                                                                          <th>Due date</th>
-                                                                      </tr>
-                                                                   </thead>
-                                                                   <tbody>
-                                                                      {% for project in member.get_active_projects %}
-                                                                          <tr>
-                                                                              <td>{{ project.project_name }}</td>
-                                                                              <td>{{ project.project_priority }}</td>
-                                                                              <td>{{ project.due_date }}</td>
-                                                                          </tr>
-
-                                                                      {% endfor %}
-                                                                   </tbody>
-                                                                   <tfoot>
-                                                                      <tr>
-                                                                         <th>Name</th>
-                                                                         <th>Priority</th>
-                                                                         <th>Due date</th>
-                                                                      </tr>
-                                                                   </tfoot>
-                                                                </table>
-                                                           </div>
-                                                        </div>
-                                                        <div class="tab-pane fade" id="completed-{{ member.pk }}" role="tabpanel" aria-labelledby="completed-tab-{{ member.pk }}">
-                                                           <div class="table-responsive">
-                                                               <table id="datatable" class="table data-table table-hover">
-                                                                   <thead>
-                                                                      <tr>
-                                                                          <th>Name</th>
-                                                                          <th>Priority</th>
-                                                                          <th>Project Leader</th>
-                                                                      </tr>
-                                                                   </thead>
-                                                                   <tbody>
-                                                                      {% for project in member.get_completed_projects %}
-                                                                          <tr>
-                                                                              <td>{{ project.project_name }}</td>
-                                                                              <td>{{ project.project_priority }}</td>
-                                                                              <td>{{ project.project_leader.member_name }}</td>
-                                                                          </tr>
-
-                                                                      {% endfor %}
-                                                                   </tbody>
-                                                                   <tfoot>
-                                                                      <tr>
-                                                                         <th>Name</th>
-                                                                         <th>Priority</th>
-                                                                         <th>Project leader</th>
-                                                                      </tr>
-                                                                   </tfoot>
-                                                                </table>
-                                                           </div>
-                                                        </div>
-                                                     </div>
-                                                  </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-xl-6 col-lg-12">
-                                                       <div class="card card-block card-stretch mb-0">
-                                                          <div class="card-header px-3">
-                                                             <div class="header-title">
-                                                                <h4 class="card-title">Languages</h4>
-                                                             </div>
-                                                          </div>
-                                                          <div class="card-body p-3">
-                                                             <ul class="list-inline p-0 mb-0">
-                                                                <li>
-                                                                   <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                      <p class="mb-0 font-size-16 mr-3">English</p>
-                                                                      <h6>100%</h6>
-                                                                   </div>
-                                                                </li>
-                                                                <li>
-                                                                   <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                      <p class="mb-0">Ibibio</p>
-                                                                      <h6>55%</h6>
-                                                                   </div>
-                                                                </li>
-                                                                <li>
-                                                                   <div class="d-flex align-items-center justify-content-between">
-                                                                      <p class="mb-0">Oron</p>
-                                                                      <h6>40%</h6>
-                                                                   </div>
-                                                                </li>
-                                                             </ul>
-                                                          </div>
-                                                       </div>
-                                                    </div>
-                                                    <div class="col-xl-6 col-lg-12">
-                                                       <div class="card card-block card-stretch mb-0">
-                                                          <div class="card-header px-3">
-                                                             <div class="header-title">
-                                                                <h4 class="card-title">Skills</h4>
-                                                             </div>
-                                                          </div>
-                                                          <div class="card-body p-3">
-                                                              <ul class="list-inline p-0 m-0">
-                                                                  {% for skill in member.member_name.get_skillset %}
-                                                                      <li class="mb-2 d-flex">
-                                                                          <span><i class="lab la-archway icon-text-primary font-size-20 mr-3"></i></span>
-                                                                          <p class="mb-0 line-height">{{ skill.title }}</p>
-                                                                      </li>
-                                                                  {% empty %}
-                                                                      <li class="mb-2 d-flex">
-                                                                          <h6 class="text-danger"><i>No skills</i></h6>
-                                                                      </li>
-                                                                  {% endfor %}
-                                                             </ul>
-                                                          </div>
-                                                       </div>
-                                                    </div>
-                                                 </div>
-
-                                                {% if not member == department.leader %}
-{#                                                    IF MEMBER IS NOT A DEPARTMENT LEADER     #}
-{#                                                    To prevent a leader from been removed    #}
-                                                    <div class="row mt-3">
-                                                        <div class="col-12 d-flex justify-content-center">
-                                                            <button type="button" class="btn btn-danger p-2" data-target="#remove-member" data-toggle="modal" onclick="document.getElementById('removed_member').value = '{{ member.pk }}'; document.getElementById('member_name').textContent = '{{ member.member_name.get_full_name|safe }}'">Remove Member</button>
-                                                        </div>
-                                                    </div>
-                                                {% endif %}
-
-                                            </div>
-                                       {% endfor %}
-                                   </div>
-                                </div>
+                                <h3>{{ diaconate.departments.count }}</h3>
                             </div>
                         </div>
-                        <div id="profile3" class="tab-pane fade">
-                           <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
-                               <ul class="list-inline p-0 m-0 w-100">
-                                   {% for project in department_projects %}
-                                       <li>
-                                           <div class="row align-items-top">
-                                               <div class="col-md-3">
-                                                   <h6 class="mb-2">{{ project.start_date|date:"jS E, Y"}}</h6>
-                                               </div>
-                                               <div class="col-md-9">
-                                                   <div class="media profile-media align-items-top">
-                                                       <div class="profile-dots {% if project.status == 'Not Started' %}bg-danger{% elif project.status == 'In Progress' %}bg-warning{% elif project.status == 'Completed' %}bg-success{% endif %} mt-1" {% if project.status == 'Completed' %}title="Status: Completed, Due date:{{ project.due_date|date:"jS E, Y" }}"{% else %}title="Status: {{ project.status }}"{% endif %}></div>
-                                                       <div class="ml-4">
-                                                           <h6 class=" mb-1">{{ project.project_name}}</h6>
-                                                           <p class="mb-0 font-size-14">Category: {{ project.department_category }}</p>
-                                                           <p class="mb-0 font-size-14">Leader: {{ project.project_leader.member_name.get_full_name }}</p>
-                                                       </div>
-                                                   </div>
-                                               </div>
-                                           </div>
-                                       </li>
-                                   {% endfor %}
-                              </ul>
-                           </div>
-                        </div>
-                        <div id="profile4" class="tab-pane fade">
-                            <p class="d-flex justify-content-between">
-                                Active Units in {{ department.department_name }}
-                                <button type="button" class="btn btn-primary p-2" data-target="#add-unit" data-toggle="modal">Add Unit</button>
-                            </p>
-                            <div class="profile-line m-0 d-flex align-items-center justify-content-between position-relative">
-                                <ul class="list-group list-group-flush col-12">
-                                    {% for unit in department_units %}
-                                        <li class="list-group-item col-12" id="unit_detail_space_{{ unit.pk }}">
-                                            <div class="d-flex justify-content-between text-primary" style="cursor: pointer;" data-target="#display_unit_information" data-toggle="modal"
-                                                onclick="document.getElementById('display_unit_name').value='{{ unit.name }}'; document.getElementById('display_unit_objective').value='{{ unit.objective}}'; document.getElementById('update_unit_pk').value='{{ unit.pk }}'; document.getElementById('update_unit_form').setAttribute('hx-target', '#unit_detail_space_{{ unit.pk}}') "
-                                                hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_leader&unit_pk={{ unit.pk }}"
-                                                hx-target="#display_unit_leader"
-                                                hx-swap="outerHTML"
-                                                hx-indicator="#springBouceLoader"
-                                            >
-                                                <p class="h4">{{ unit.name }}</p>
-                                                <button type="button" class="btn btn-outline-danger" data-target="#remove-unit" data-toggle="modal" onclick="document.getElementById('removed_unit').value = '{{ unit.pk }}'; document.getElementById('removed_unit_name').textContent = '{{ unit.unit_name|safe}}'">
-                                                    <i class="ri-alert-fill"></i>
-                                                </button>
-                                            </div>
-                                            <p>
-                                                {{ unit.objective }}
-                                            </p>
+                    </div>
 
-                                            <div class="d-flex justify-content-between">
-                                                <div>
-                                                    <small>
-                                                        <b>Unit leader: </b>
-                                                        <span>{{ unit.unit_leader.member_name.get_full_name }}</span>
-                                                    </small>
-                                                </div>
-                                                <div>
-                                                    <small style="color: blue; cursor: pointer;" data-target="#display_unit_member" data-toggle="modal"
-                                                        hx-get="{% url 'project_management:project-settings' department.department_name %}?mode=display_unit_member&unit_pk={{ unit.pk }}"
-                                                        hx-trigger="click"
-                                                        hx-target="#unit_member_space"
-                                                        hx-swap="innerHTML"
-                                                        hx-indicator="#springBouceLoader"
-
-                                                        onclick="document.getElementById('unit_to_add_member').value = '{{ unit.pk}}';"
-                                                    >
-                                                        <b>No of Unit Member: </b>
-                                                        <span>{{ unit.get_number_of_unit_members }}</span>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    {% endfor %}
-                                    <button type="button" class="btn btn-primary p-2" data-target="#add-unit" data-toggle="modal">Add Unit</button>
-                                </ul>
-                                
-                                
-                                
-                           </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Members</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ diaconate.get_number_of_members_in_diaconate }}</h3>
+                            </div>
                         </div>
-{#                        <div id="profile5" class="tab-pane fade">#}
-{#                           <p>I'm Web Developer from California. I code and design websites worldwide. Mauris variustellus vitae #}
-{#                              tristique sagittis. Sed aliquet, est nec auctor aliquet, orci ex vestibulum ex, non pharetra lacus#}
-{#                              erat ac nulla.</p>#}
-{#                           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu #}
-{#                              orci, nisi. Magnis elementum vitae eu, dui et. Tempus etiam feugiat sem augue sed sed. Tristique #}
-{#                              feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus #}
-{#                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>#}
-{#                           <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Iaculis mattis nam ipsum pharetra porttitor eu.#}
-{#                              Tristique feugiat mi feugiat integer consectetur sit enim penatibus. Quis sagittis proin fermentum tempus #}
-{#                              uspendisse ultricies. Tellus sapien, convallis proin pretium.</p>#}
-{#                        </div>#}
-                     </div>
-                  </div>
-               </div>
-            </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Projects</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ diaconate.get_number_of_projects_in_diaconate }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
          </div>
+
+             <div class="row">
+                  {% for dept in diaconate.departments.all %}
+                      <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                          <div class="card border-light">
+                              <div class="card-body">
+                                  <h4 class="card-title">
+                                      <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                          {{ dept.department_name }}
+                                      </a>
+                                  </h4>
+                                  <p class="card-text"><small>Leader: {{ dept.leader.member_name.get_full_name }}</small></p>
+
+                                  <div class="d-flex justify-content-center mb-3">
+                                      <div class="p-2 mr-2 text-center bg-light-gray" >
+                                          <h4 class="">{{ dept.get_no_of_members }}</h4>
+                                          <p class="mb-0"><small>Members</small></p>
+                                      </div>
+                                      <div class="px-1 py-2 text-center bg-danger-light" style="background-color: hsl(265 33% 45%); border-radius: 10px; width: 100px">
+                                          <h4 class="">{{ dept.departmentproject_set.count }}</h4>
+                                          <p class="mb-0"><small>Projects</small></p>
+                                      </div>
+                                      <div class="p-2 ml-2 text-center bg-light-gray" style="border-radius: 10px; width: 100px" >
+                                          <h4 class="">{{ dept.get_no_of_units }}</h4>
+                                          <p class="mb-0"><small>Units</small></p>
+                                      </div>
+                                  </div>
+
+                                  <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
+
+                                      <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
+                                          Edit
+                                      </a>
+
+                                      <a class="col-lg-3 btn btn-outline-dark mt-2" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                                      </a>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  {% empty %}
+                      Love God
+
+                 {% endfor %}
+             </div>
+
+        {% elif mode == 'Department' %}  {# project/settings/diakonate/settings #}
+
+
+             <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Units</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ department.unit_set.count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Members</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ department.member_names.count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Projects</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ department.departmentproject_set.count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+         </div>
+
+             <div class="row">
+                  {% for dept in diaconate.departments.all %}
+                      <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                          <div class="card border-light">
+                              <div class="card-body">
+                                  <h4 class="card-title">
+                                      <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                          {{ dept.department_name }}
+                                      </a>
+                                  </h4>
+                                  <p class="card-text"><small>Leader: {{ dept.leader.member_name.get_full_name }}</small></p>
+
+                                  <div class="d-flex justify-content-center mb-3">
+                                      <div class="p-2 mr-2 text-center bg-light-gray" >
+                                          <h4 class="">{{ dept.get_no_of_members }}</h4>
+                                          <p class="mb-0"><small>Members</small></p>
+                                      </div>
+                                      <div class="px-1 py-2 text-center bg-danger-light" style="background-color: hsl(265 33% 45%); border-radius: 10px; width: 100px">
+                                          <h4 class="">{{ dept.departmentproject_set.count }}</h4>
+                                          <p class="mb-0"><small>Projects</small></p>
+                                      </div>
+                                      <div class="p-2 ml-2 text-center bg-light-gray" style="border-radius: 10px; width: 100px" >
+                                          <h4 class="">{{ dept.get_no_of_units }}</h4>
+                                          <p class="mb-0"><small>Units</small></p>
+                                      </div>
+                                  </div>
+
+                                  <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
+
+                                      <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
+                                          Edit
+                                      </a>
+
+                                      <a class="col-lg-3 btn btn-outline-dark mt-2" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                                      </a>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  {% empty %}
+                      Love God
+
+                 {% endfor %}
+             </div>
+
+
+        {% endif %}
       </div>
 {% endblock content %}
     <!-- Wrapper End-->
@@ -485,7 +284,7 @@
                     <h3 class="modal-title" id="add_category_title">Add Category</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=category" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=category" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
@@ -520,7 +319,7 @@
                     <h3 class="modal-title" id="add_unit_title">Add Unit</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=unit" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=unit" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
@@ -579,7 +378,7 @@
                     <h3 class="modal-title" id="add_member_title">Add Member</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=member" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=member" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
@@ -607,7 +406,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_member" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=remove_member" method="post">
                         {% csrf_token %}
                         <div class="row">
 
@@ -643,7 +442,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_category" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=remove_category" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12 mb-3" style="display: none">
@@ -678,7 +477,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Evaluation Score</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=experience_score" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=experience_score" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12 mb-3" style="display: none">
@@ -710,7 +509,7 @@
                     <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' department.department_name %}?settings=remove_unit" method="post">
+                    <form action="{% url 'project_management:project-settings' %}?settings=remove_unit" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12 mb-3" style="display: none">
@@ -762,7 +561,7 @@
                 </div>
                 <div class="modal-footer" style="display: block;">
                     <form
-                        hx-post="{% url 'project_management:project-settings' department.department_name %}?settings=add_unit_member"
+                        hx-post="{% url 'project_management:project-settings' %}?settings=add_unit_member"
                         hx-trigger="submit"
                         hx-target="#unit_member_space"
                         hx-swap="innerHTML"
@@ -805,7 +604,7 @@
                 </div>
                 <div class="modal-body" id="unit_information_space">
                     <form id="update_unit_form"
-                        hx-post="{% url 'project_management:project-settings' department.department_name %}?settings=update_unit_information"
+                        hx-post="{% url 'project_management:project-settings' %}?settings=update_unit_information"
                         hx-trigger="submit"
                         hx-target="" {# will be set by javascript #}
                         hx-swap="innerHTML"
@@ -836,6 +635,61 @@
                                     <label for="display_unit_leader" class="h5">Leader:</label>
                                     <select name="display_unit_leader" id="display_unit_leader" class=" custom-control custom-select">
                                         
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
+                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
+                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="add_roles_modal">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="display_unit_information_title">Unit</h3>
+                </div>
+                <div class="modal-body" id="unit_information_space">
+                    <form id="update_unit_form"
+                        hx-post="{% url 'project_management:project-settings' %}?settings=update_unit_information"
+                        hx-trigger="submit"
+                        hx-target="" {# will be set by javascript #}
+                        hx-swap="innerHTML"
+                        hx-indicator="#springBouceLoader"
+                    >
+                        {% csrf_token %}
+                        <div class="row" id="alert_parent">
+                            <div class="col-lg-12" style="display: none;">
+                                <input type="text" name="update_unit_pk" id="update_unit_pk">
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_name" class="h5">Name:</label>
+                                    <input type="text" name="display_unit_name" id="display_unit_name" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_objective" class="h5">Objective:</label>
+                                    <textarea name="display_unit_objective" id="display_unit_objective" class="form-control" cols="30" rows="10"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group mb-3">
+                                    <label for="display_unit_leader" class="h5">Leader:</label>
+                                    <select name="display_unit_leader" id="display_unit_leader" class=" custom-control custom-select">
+
                                     </select>
                                 </div>
                             </div>
