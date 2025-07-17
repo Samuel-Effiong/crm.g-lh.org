@@ -140,6 +140,6 @@ def has_project_management_permission(user, specific_group=None):
 
         # If no specific group is provided, check for both groups
         # This is the default behavior when no specific group is passed to the filter
-        required_groups = ['Diakonate Head', 'Department Head']
+        required_groups = ['Diakonate Head', 'Department Head', 'Core Leader']
         return user.groups.filter(name__in=required_groups).exists()
     return False

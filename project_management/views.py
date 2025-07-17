@@ -19,6 +19,8 @@ from django.contrib.auth import get_user_model
 from django.http import (HttpResponseRedirect, JsonResponse,
                          HttpResponseForbidden, HttpResponse)
 
+import diaconate
+from users.my_models import CustomUser
 from .models import (
     Department, DepartmentMember, DepartmentCategory,
     DepartmentProject, ProjectTarget, DepartmentTable,
@@ -582,70 +584,116 @@ class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
         return context
 
     def post(self, request, *args, **kwargs):
-        # context = self.get_context_data(**kwargs)
 
-        department_project = DepartmentProject.objects.get(id=kwargs['pk'])
+        department_project = self.get_object()
 
-        project_name = request.POST['project_name']
-        project_description = request.POST['project_description']
-        project_category = request.POST['project_category']
-        project_start_date = request.POST['project_start_date']
-        project_due_date = request.POST['project_due_date']
+        form_submission_type = request.POST.get('form-submission')
 
-        project_priority = request.POST['project_priority']
-        project_leader = request.POST['project_leader']
+        if not form_submission_type:
+            return JsonResponse({'confirm': False}, safe=False, status=400)
 
-        project_background_color = request.POST['project_background_color']
-        project_text_color = request.POST['project_text_color']
+        try:
+            with transaction.atomic():
 
-        project_members = request.POST['project_members']
-        project_members = project_members.split('~')
+                if form_submission_type == 'add-target':
+                    self._add_target(request, department_project)
 
-        project_targets = request.POST['project_targets']
-        project_targets = project_targets.split('~')
-        project_targets = [target.strip() for target in project_targets if target]
+                elif form_submission_type == 'edit-project':
+                    self._edit_project(request, department_project)
+
+                elif form_submission_type == 'manage-members':
+                    self._manage_members(request, department_project)
+
+                elif form_submission_type == 'delete-project':
+                    return self._delete_project(department_project)
+
+                elif form_submission_type == 'add-target':
+                    self._add_target(request, department_project)
+
+                elif form_submission_type == 'manage-target':
+                    pass
+
+        except Exception as e:
+            return JsonResponse({'confirm': False, 'error': str(e)}, safe=False, status=400)
+        return HttpResponseRedirect(reverse_lazy('project_management:project-detail', args=[department_project.department.department_name, department_project.id]))
+
+    def _add_target(self, request, department_project):
+        """Helper method to handle 'add-target' submission"""
+        target_title = request.POST['target-title']
+        target_description = request.POST['target-description']
+        target_state = request.POST['target-state']
+        target_due_date = request.POST['target-due-date']
+
+        project_target = ProjectTarget.objects.create(
+            target_name=target_title,
+            target_description=target_description,
+            state=target_state,
+            due_date=target_due_date,
+            project=department_project
+        )
+
+        department_project.target.add(project_target)
+        department_project.save()
+
+    def _edit_project(self, request, department_project):
+        project_name = request.POST['project-name']
+        project_status = request.POST['project-status']
+        project_priority = request.POST['project-priority']
+        project_description = request.POST['project-description']
+        project_due_date = request.POST['project-due-date']
+        project_background_color = request.POST['project-background-color']
+        project_text_color = request.POST['project-text-color']
 
         department_project.project_name = project_name
         department_project.project_description = project_description
-        department_project.department_category = DepartmentCategory.objects.get(category_name=project_category, department_name=department_project.department)
-        department_project.start_date = project_start_date
-        department_project.due_date = project_due_date
-
         department_project.project_priority = project_priority
+        department_project.status = project_status
+        department_project.due_date = project_due_date
         department_project.project_background_color = project_background_color
         department_project.project_text_color = project_text_color
-        department_project.project_leader = DepartmentMember.objects.get(id=project_leader)
 
-        department_project.project_members.clear()
-        department_project.project_members.add(*[DepartmentMember.objects.get(id=pk) for pk in project_members])
-
-        if department_project.project_leader not in department_project.project_members.all():
-            department_project.project_leader = None
-
-        # In updating the targets list, do not delete those that is already
-        # in the database that the department leader decides to keep, instead remove
-        # those tha is in the database but isn't in the leader updated list
-
-        department_project_targets = ProjectTarget.objects.filter(project=department_project)
-
-        # Delete all the target that is not preserved in the updated target list
-        preserved_target = []
-        for target in department_project_targets:
-            if target.target_name not in project_targets:
-                department_project.target.remove(target)
-                target.delete()
-
-        # Add the new target to the department_project
-        for target in project_targets:
-            test_target = department_project_targets.filter(target_name=target)
-
-            if not test_target:
-                new_target = ProjectTarget(target_name=target, project=department_project)
-                new_target.save()
-                department_project.target.add(new_target)
-    
         department_project.save()
-        return JsonResponse({'confirm': True}, safe=False)
+
+    def _manage_members(self, request, department_project):
+        use_units_toggle_button = request.POST['use-units-toggle-button']
+        project_member_unit = request.POST['units']
+        project_members = request.POST['project-members']
+
+        if use_units_toggle_button:
+            if project_member_unit:
+                unit = Unit.objects.get(id=project_member_unit)
+                members = unit.members.all()
+        else:
+            members = [
+                DepartmentMember.objects.get(member_name__username=mem, department_name=department_project.department)
+                for mem in project_members]
+
+        department_project.project_members.add(*members)
+        department_project.save()
+
+    def _delete_project(self, department_project):
+        """Helper method to handle 'delete-project' submission."""
+        # department_name = department_project.department.department_name  # Get department name before deletion
+        department_project.delete()
+
+        return HttpResponseRedirect(reverse_lazy('project_management:project'))
+
+    def _add_target(self, request, department_project):
+        target_name = request.POST['target-title']
+        target_description = request.POST['target-description']
+        target_due_date = request.POST['target-due-date']
+
+        project_target = ProjectTarget.objects.create(
+            target_name=target_name,
+            target_description=target_description,
+            project=department_project,
+            due_date=target_due_date,
+        )
+
+        department_project.target.add(project_target)
+
+    def _manage_targets(self, request, department_project):
+        pass
 
 
 class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -663,54 +711,14 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             return super().handle_no_permission()
         return HttpResponse("You are not authorized to be here...please turn back")
 
-    # def get(self, request, *args, **kwargs):
-    #     if 'mode' in request.GET:
-    #         department = kwargs['department']
-    #         department = Department.objects.get(department_name=department)
-    #         context = {}
-    #
-    #         if request.GET['mode'] == 'display_unit_member':
-    #             pk = request.GET['unit_pk']
-    #
-    #             try:
-    #                 department_unit = Unit.objects.get(pk=pk)
-    #                 context['status'] = True
-    #                 context['department'] = department
-    #                 context['department_unit'] = department_unit
-    #
-    #             except Unit.DoesNotExist as e:
-    #                 context['status'] = False
-    #             return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
-    #
-    #         elif request.GET['mode'] == 'remove_unit_member':
-    #             department_unit = request.GET['department_unit_pk']
-    #             member = request.GET['member_pk']
-    #
-    #             try:
-    #                 department_unit = Unit.objects.get(pk=department_unit)
-    #                 member = DepartmentMember.objects.get(pk=member)
-    #                 department_unit.members.remove(member)
-    #
-    #                 context['status'] = True
-    #             except (Unit.DoesNotExist, DepartmentMember.DoesNotExist):
-    #                 context['status'] = False
-    #
-    #             return HttpResponse({})
-    #         elif request.GET['mode'] == 'display_unit_leader':
-    #             unit_pk = request.GET['unit_pk']
-    #
-    #             department_unit = Unit.objects.get(pk=unit_pk)
-    #             context['status'] = True
-    #             context['department_unit'] = department_unit
-    #
-    #             return render(request, 'project_management/app/partial_html/display_unit_leader.html', context)
-    #     return super().get(request, *args, **kwargs)
-    #
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
+
+        # get all users
+        all_users = CustomUser.objects.all()
+        context['all_users'] = all_users
 
         category = kwargs.get('diakonate', None)
         mode = None
@@ -737,11 +745,38 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             diaconate = Diaconate.objects.get(name=category)
 
             if sub_category is None:  # # project/settings/diakonate/
-                pass
+                # In the diakonate zone, where diakonate leaders can add departments
+                # But a diakonate leader should be allowed to add department in the place
+                # where they are the leader and not have the ability to add department in other
+                # diakonate
+
+                if user.is_superuser:
+                    user_diaconates = Diaconate.objects.all()
+
+                elif user.groups.filter(name='Diakonate Head').exists():
+                    user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user))
+
+                elif user.groups.filter(name='Department Head').exists():
+                    user_diaconates = Diaconate.objects.filter(
+                        Q(department__leader__member_name=user) | Q(department__sub_leader__member_name=user)
+                    )
+
+                context['diaconates'] = user_diaconates
+
             else:  # project/settings/diakonate/department/
                 mode = 'Department'
+
                 department = Department.objects.get(department_name=sub_category)
                 context['department'] = department
+
+
+
+                if user.is_superuser:
+                    pass
+                elif user.groups.filter(name='Diakonate Head').exists():
+                    pass
+                elif user.groups.filter(name='Department Head').exists():
+                    pass
 
             context['diaconate'] = diaconate
 
@@ -776,6 +811,116 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
         #     )
         # ]
         return context
+
+    def post(self, request, *args, **kwargs):
+        form_submission_type = request.POST.get('form-submission-type', None)
+
+        try:
+            with transaction.atomic():
+                if form_submission_type is None:
+                    diakonate_name = request.POST.get('diakonate-name', None)
+                    diakonate_description = request.POST.get('diakonate-description', None)
+                    diakonate_leader = request.POST.get('diakonate-leader', None)
+                    diakonate_assistant = request.POST.get('diakonate-assistant', None)
+
+                    diakonate_leader = CustomUser.objects.get(username=diakonate_leader)
+                    diakonate_assistant = CustomUser.objects.get(username=diakonate_assistant) if diakonate_assistant else None
+
+                    diakonate = Diaconate.objects.create(
+                        name=diakonate_name,
+                        info=diakonate_description,
+                        head=diakonate_leader,
+                        assistant=diakonate_assistant,
+                    )
+
+                elif form_submission_type == 'Diakonate':
+                    department_name = request.POST.get('department-name', None)
+                    department_abridged_name = request.POST.get('department-abridged-name', None)
+                    department_objective = request.POST.get('department-objective', None)
+
+                    department_head = request.POST.get('department-head', None)
+                    department_head_assistant = request.POST.get('department-head-assistant', None)
+
+                    department_diakonate_name = kwargs.get('diakonate', None)
+                    department_diakonate_name = Diaconate.objects.get(name=department_diakonate_name)
+
+                    department = Department.objects.create(
+                        department_name=department_abridged_name,
+                        department_long_name=department_name,
+                        department_objectives=department_objective,
+                        department_diaconate=department_diakonate_name
+                    )
+
+                    department_head = DepartmentMember.objects.create(
+                        member_name=CustomUser.objects.get(username=department_head),
+                        department_name=department,
+                    )
+                    department.leader = department_head
+                    department.member_names.add(department_head)
+
+                    if department_head_assistant:
+                        department_head_assistant = DepartmentMember.objects.create(
+                            member_name=CustomUser.objects.get(username=department_head_assistant),
+                            department_name=department
+                        )
+                        department.assistant = department_head_assistant
+                        department.member_names.add(department_head_assistant)
+
+                    department.save()
+
+                    # add the department to the diakonate
+                    department_diakonate_name.departments.add(department)
+
+                elif form_submission_type == 'Department':
+                    diakonate = kwargs.get('diakonate', None)
+                    department = kwargs.get('department', None)
+
+                    diakonate = Diaconate.objects.get(name=diakonate)
+                    department = Department.objects.get(department_name=department)
+
+                    unit_name = request.POST.get('unit-name', None)
+                    unit_objective = request.POST.get('unit-objective', None)
+
+                    unit_head = request.POST.get('unit-head', None)
+
+                    if unit_head:
+                        unit_head = department.member_names.get(member_name=unit_head)
+
+                    unit_head_assistant = request.POST.get('unit-head-assistant', None)
+                    if unit_head_assistant:
+                        unit_head_assistant = department.member_names.get(member_name=unit_head_assistant)
+
+                    unit = Unit.objects.create(
+                        name=unit_name,
+                        objective=unit_objective,
+                        unit_leader=unit_head,
+                        sub_leader=unit_head_assistant,
+                    )
+
+                    if unit_head:
+                        unit.members.add(unit_head)
+
+                    if unit_head_assistant:
+                        unit.members.add(unit_head_assistant)
+
+
+
+
+
+                    pass
+
+
+
+        except Exception as e:
+            JsonResponse({'confirm': False, 'error': str(e)}, status=400)
+
+        if form_submission_type is None:
+            return HttpResponseRedirect(reverse_lazy('project_management:project-settings'))
+        elif form_submission_type == 'Diakonate':
+            return HttpResponseRedirect(reverse_lazy('project_management:project-settings-diakonate', args=[kwargs.get('diakonate')]))
+
+        return HttpResponseRedirect(reverse_lazy('project_management:project-settings-diakonate-department', args=[kwargs.get('diakonate'), kwargs.get('department')]))
+
     #
     # def post(self, request, *args, **kwargs):
     #     settings = request.GET.get('settings', None)

@@ -17,18 +17,25 @@
 {#                        <img src="{% static 'assets/images/dashboard/Top.webp' %}" class="img-fluid rounded w-100" alt="profile-image">#}
                          {% if mode is None %}
                              <h1 class="text-white"><b>DIAKONATE</b></h1>
-                             <p class="m-2">
-                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Diakonate</button>
-                             </p>
+
+                             {% if user.is_superuser or user|has_project_management_permission:"Core Leader" %}
+                                 <p class="m-2">
+                                     <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Diakonate</button>
+                                 </p>
+                             {% endif %}
+
                          {% elif mode == 'Diakonate' %}
                              <h1 class="text-white"><b>{{ diaconate.name }}</b></h1>
-                             <p class="m-2">
-                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Department</button>
-                             </p>
+
+                             {% if user.is_superuser or user|has_project_management_permission:"Core Leader" or user|has_project_management_permission:"Diakonate Head" %}
+                                 <p class="m-2">
+                                     <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Department</button>
+                                 </p>
+                             {% endif %}
                          {% elif mode == 'Department' %}
                              <h1 class="text-white"><b>{{ department.department_name }}</b></h1>
                              <p class="m-2">
-                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_model" data-toggle="modal">Add Unit</button>
+                                 <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Unit</button>
                              </p>
                          {% endif %}
                      </div>
@@ -128,7 +135,7 @@
                     </div>
 
                 </div>
-         </div>
+            </div>
 
              <div class="row">
                   {% for dept in diaconate.departments.all %}
@@ -211,7 +218,7 @@
                         <div class="card card-block card-stretch card-height">
                             <div class="card-body">
                                 <div class="top-block d-flex align-items-center justify-content-between">
-                                    <p class="card-text"><small>Total Projects</small></p>
+                                    <p class="card-text"><small>Active Progress</small></p>
                                     <span class="badge badge-warning">Anual</span>
                                 </div>
                                 <h3>{{ department.departmentproject_set.count }}</h3>
@@ -219,21 +226,33 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <p class="card-text"><small>Total Tasks</small></p>
+                                    <span class="badge badge-warning">Anual</span>
+                                </div>
+                                <h3>{{ department.get_no_of_targets }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-         </div>
+             </div>
 
              <div class="row">
-                  {% for dept in diaconate.departments.all %}
+                  {% for unit in departments.unit_set.all %}
                       <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
                           <div class="card border-light">
                               <div class="card-body">
                                   <h4 class="card-title">
                                       <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
                                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-                                          {{ dept.department_name }}
+                                          {{ unit.name }}
                                       </a>
                                   </h4>
-                                  <p class="card-text"><small>Leader: {{ dept.leader.member_name.get_full_name }}</small></p>
+                                  <p class="card-text"><small>Leader: {{ unit.unit_leader.member_name.get_full_name }}</small></p>
 
                                   <div class="d-flex justify-content-center mb-3">
                                       <div class="p-2 mr-2 text-center bg-light-gray" >
@@ -265,7 +284,14 @@
                           </div>
                       </div>
                   {% empty %}
-                      Love God
+                      <div class="card col-12 text-center">
+                         <div class="card-body mb-3">
+                             <p>
+                                 <svg width="98px" height="98px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffa000" d="M10.67276443 3.58608316H6.12087531L4.98290303 2.44811088h-2.8449307c-.62588475 0-1.13797228.51208753-1.13797228 1.13797228v6.82783368c0 .62588475.51208753 1.13797228 1.13797228 1.13797228h8.81928517c.48363822 0 .85347921-.369841.85347921-.85347921V4.72405544c0-.62588475-.51208753-1.13797228-1.13797228-1.13797228z"></path><path fill="#ffca28" d="M11.86763532 5.29304158H4.21477174c-.54053683 0-1.02417505.3982903-1.10952297.93882713l-.96727644 5.32002041h9.01843032c.54053683 0 1.02417505-.3982903 1.10952297-.93882713L12.9771583 6.630159c.14224653-.68278337-.3982903-1.33711743-1.10952298-1.33711743z"></path></g></svg>
+                             </p>
+                            <h4 class="card-title">No Unit in this Department</h4>
+                         </div>
+                      </div>
 
                  {% endfor %}
              </div>
@@ -655,51 +681,190 @@
         <div class="modal-dialog  modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header d-block text-center pb-3 border-bottom">
-                    <h3 class="modal-title" id="display_unit_information_title">Unit</h3>
+                    <h3 class="modal-title">
+                        {% if mode is None %}
+                            Add Diakonate
+                        {% elif mode == 'Diakonate' %}
+                            Add Department
+                        {% elif mode == 'Department' %}
+                            Add Unit
+                        {% endif %}
+                    </h3>
                 </div>
-                <div class="modal-body" id="unit_information_space">
-                    <form id="update_unit_form"
-                        hx-post="{% url 'project_management:project-settings' %}?settings=update_unit_information"
-                        hx-trigger="submit"
-                        hx-target="" {# will be set by javascript #}
-                        hx-swap="innerHTML"
-                        hx-indicator="#springBouceLoader"
-                    >
+                <div class="modal-body">
+                    <form method="post">
                         {% csrf_token %}
-                        <div class="row" id="alert_parent">
-                            <div class="col-lg-12" style="display: none;">
-                                <input type="text" name="update_unit_pk" id="update_unit_pk">
-                            </div>
+                        {% if mode is None %}
+{#                            Add Diakonate #}
+                            <div class="row">
+                                <div class="col-lg-12" style="display: none;">
 
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="display_unit_name" class="h5">Name:</label>
-                                    <input type="text" name="display_unit_name" id="display_unit_name" class="form-control">
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-name" class="h5">Name:</label>
+                                        <input type="text" name="diakonate-name" id="diakonate-name" class="form-control" placeholder="e.g., ADMINISTRATION" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-description" class="h5">Description:</label>
+                                        <textarea name="diakonate-description" id="diakonate-description" class="form-control" cols="30" rows="10" placeholder="Brief description of the diakonate's purpose" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-leader" class="h5">Diakonate Head:</label>
+                                        <select name="diakonate-leader" id="diakonate-leader" class=" custom-control custom-select" required>
+                                            <option value="" disabled selected>Choose Diakonate head</option>
+                                            {% for user in all_users %}
+                                                {% if user|has_project_management_permission:"Core Leader" or user.is_superuser %}
+                                                    <option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-assistant" class="h5">Diakonate Assistant Head:</label>
+                                        <select name="diakonate-assistant" id="diakonate-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Diakonate Assistant</option>
+                                            {% for user in all_users %}
+                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Diakonate</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="display_unit_objective" class="h5">Objective:</label>
-                                    <textarea name="display_unit_objective" id="display_unit_objective" class="form-control" cols="30" rows="10"></textarea>
+                        {% elif mode == 'Diakonate' %}
+{#                            Add Department#}
+                            <div class="row" id="alert_parent">
+                                <div class="col-lg-12" style="display: none;">
+                                    <input type="text" name="form-submission-type" id="form_submission_type" value="{{ mode }}">
                                 </div>
-                            </div>
 
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label for="display_unit_leader" class="h5">Leader:</label>
-                                    <select name="display_unit_leader" id="display_unit_leader" class=" custom-control custom-select">
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-name" class="h5">Name:</label>
+                                        <input type="text" name="department-name" id="department-name" class="form-control" placeholder="Enter department name" required>
+                                    </div>
+                                </div>
 
-                                    </select>
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-abridged_name" class="h5">Name (Abbrev):</label>
+                                        <input type="text" name="department-abridged-name" id="department-abridged-name" class="form-control" placeholder="Enter department abbreviation e.g., GTT" required>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
-                                    <button type="submit" class="btn btn-primary mr-3">Save</button>
-                                    <div class="btn btn-primary" data-dismiss="modal">Cancel</div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-objective" class="h5">Objectives:</label>
+                                        <textarea name="department-objective" id="department-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the department" required></textarea>
+                                    </div>
                                 </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-head" class="h5">Department Head:</label>
+                                        <select name="department-head" id="department-head" class=" custom-control custom-select" required>
+                                            <option value="" disabled selected>Choose Department Head:</option>
+                                            {% for user in all_users %}
+                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-head-assistant" class="h5">Department Head Assistant:</label>
+                                        <select name="department-head-assistant" id="department-head-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Department Head Assistant:</option>
+                                            {% for user in all_users %}
+                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Department</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+
                             </div>
-                        </div>
+                        {% elif mode == 'Department' %}
+                            <div class="row" id="alert_parent">
+                                <div class="col-lg-12" style="display: none;">
+                                    <input type="text" name="form-submission-type" id="form_submission_type" value="{{ mode }}">
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-name" class="h5">Name:</label>
+                                        <input type="text" name="unit-name" id="unit-name" class="form-control" placeholder="Enter unit name" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-objective" class="h5">Objectives:</label>
+                                        <textarea name="unit-objective" id="unit-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the unit" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-head" class="h5">Unit Head:</label>
+                                        <select name="unit-head" id="unit-head" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Unit Head:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-head-assistant" class="h5">Unit Head Assistant:</label>
+                                        <select name="unit-head-assistant" id="department-head-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Unit Head Assistant:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Unit</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        {% endif %}
+
                     </form>
                 </div>
             </div>

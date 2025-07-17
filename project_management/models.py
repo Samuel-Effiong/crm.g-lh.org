@@ -329,7 +329,7 @@ class Department(models.Model):
     department_objectives = models.TextField(null=True, blank=True, default="")
     custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
-    department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE, blank=True, null=True)
+    department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE)
     # department_units = models.ManyToManyField('Unit', blank=True)
     objects = DepartmentManager()
 
@@ -357,6 +357,10 @@ class Department(models.Model):
     def get_no_of_units(self) -> int:
         """Get the number of units in this department"""
         return self.unit_set.count() if hasattr(self, 'unit_set') else 0
+
+    def get_no_of_targets(self):
+        targets = ProjectTarget.objects.filter(project__department=self)
+        return targets.count()
 
     def get_no_of_subunits(self) -> int:
         """Get the number of subunits in this department"""
@@ -582,7 +586,6 @@ class DepartmentProjectManager(models.Manager):
         Retrieves all project that are past their due date and are not yet completed,
         regardless of department or other organizational structure
         """
-
         return self.get_queryset().filter(
             due_date__lt=timezone.now().date(),
             status__in=['In Progress', 'Not Started']
@@ -988,7 +991,7 @@ class Diaconate(models.Model):
     head = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     assistant = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
-    departments = models.ManyToManyField(Department, blank=True)
+    departments = models.ManyToManyField(Department, blank=True, null=True)
     objects = CustomDiaconateManager()
 
     def __str__(self):

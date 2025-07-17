@@ -233,46 +233,37 @@
 
                             <div class="col-lg-6">
                                 <div class="form-group mb-3">
-                                    <label for="category">Category *</label>
-                                    <select name="category" class="selectpicker form-control" id="category" data-style="py-0">
-                                        {% for category in department_categories %}
-                                            <option value="{{ category.category_name }}">{{ category.category_name }}</option>
-                                        {% empty %}
-                                            <option value="" disabled>No Category</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
                                     <label for="due_date">Due Date*</label>
                                     <input type="date" class="form-control" id="due_date" name="due_date" value="" required>
                                 </div>
                             </div>
 
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <label for="category">Diaconate *</label>
-                                    <select name="diaconate" class="selectpicker form-control" id="diaconate" data-style="py-0" required>
-                                        <option value="" disabled selected>Choose Diakonate</option>
-                                        {% for office in diaconates %}
-                                            <option value="{{ office.name }}">{{ office.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
+                            <div class="col-lg-12">
                                 <div class="form-group mb-3">
                                     <label for="category">Department *</label>
                                     <select name="dept" class="selectpicker form-control" id="dept" data-style="py-0" required>
+                                        {% for office in diaconates %}
+                                            <optgroup label="{{ office.name }}">
+                                                {% for dept in office.departments.all %}
+                                                    <option value="{{ dept.id }}">{{ dept.department_name }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
                                         <option value="" disabled selected>Choose Department </option>
                                     </select>
                                 </div>
                             </div>
 
+                            <div class="col-lg-12 mb-2">
+                                <div class="custom-control custom-switch custom-switch-text custom-switch-color custom-control-inline">
+                                    <div class="custom-switch-inner">
+                                       <input type="checkbox" class="custom-control-input bg-primary" name="use_units_toggle_button" id="use_units_toggle_button" onchange="toggle_units_selection()">
+                                       <label class="custom-control-label" for="use_units_toggle_button" data-on-label="Yes" data-off-label="No"></label>
+                                       <span class="mb-0">Toggle to assign members by Units instead</span>
+                                    </div>
+                                 </div>
+                            </div>
 
-                            
                             <div class="col-lg-12" id="members_control">
                                 <div class="form-group mb-3">
                                     <label for="members">Assign Members</label>
@@ -298,17 +289,6 @@
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="col-lg-12">
-                                <div class="custom-control custom-switch custom-switch-text custom-switch-color custom-control-inline">
-                                    <div class="custom-switch-inner">
-                                       <input type="checkbox" class="custom-control-input bg-primary" name="use_units_toggle_button" id="use_units_toggle_button" onchange="toggle_units_selection()">
-                                       <label class="custom-control-label" for="use_units_toggle_button" data-on-label="Yes" data-off-label="No"></label>
-                                       <span class="mb-0">Toggle to assign by Units instead</span>
-                                    </div>
-                                 </div>
-                            </div>
-                            
                             
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
