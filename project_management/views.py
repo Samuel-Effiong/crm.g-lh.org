@@ -763,20 +763,26 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
                 context['diaconates'] = user_diaconates
 
-            else:  # project/settings/diakonate/department/
+            else:
                 mode = 'Department'
 
                 department = Department.objects.get(department_name=sub_category)
                 context['department'] = department
+                unit_category = kwargs.get('unit', None)
 
+                if unit_category is None:  # project/settings/diakonate/department/
+                    if user.is_superuser:
+                        pass
+                    elif user.groups.filter(name='Diakonate Head').exists():
+                        pass
+                    elif user.groups.filter(name='Department Head').exists():
+                        pass
+                else:  # project/settings/diakonate/department/unit
+                    mode = 'Unit'
+                    context['unit'] = unit_category
 
-
-                if user.is_superuser:
-                    pass
-                elif user.groups.filter(name='Diakonate Head').exists():
-                    pass
-                elif user.groups.filter(name='Department Head').exists():
-                    pass
+                    unit = Unit.objects.get(id=unit_category)
+                    context['unit'] = unit
 
             context['diaconate'] = diaconate
 
@@ -872,44 +878,92 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                     department_diakonate_name.departments.add(department)
 
                 elif form_submission_type == 'Department':
+                    form_submission_category = request.POST.get('form-submission-category', None)
                     diakonate = kwargs.get('diakonate', None)
                     department = kwargs.get('department', None)
 
                     diakonate = Diaconate.objects.get(name=diakonate)
                     department = Department.objects.get(department_name=department)
 
-                    unit_name = request.POST.get('unit-name', None)
-                    unit_objective = request.POST.get('unit-objective', None)
+                    if form_submission_category == 'unit':
 
-                    unit_head = request.POST.get('unit-head', None)
+                        unit_name = request.POST.get('unit-name', None)
+                        unit_objective = request.POST.get('unit-objective', None)
 
-                    if unit_head:
-                        unit_head = department.member_names.get(member_name=unit_head)
+                        unit_head = request.POST.get('unit-head', None)
+                        unit_head_assistant = request.POST.get('unit-head-assistant', None)
 
-                    unit_head_assistant = request.POST.get('unit-head-assistant', None)
-                    if unit_head_assistant:
-                        unit_head_assistant = department.member_names.get(member_name=unit_head_assistant)
+                        unit = Unit.objects.create(
+                            name=unit_name,
+                            objective=unit_objective,
+                            unit_department=department,
+                        )
 
-                    unit = Unit.objects.create(
-                        name=unit_name,
-                        objective=unit_objective,
-                        unit_leader=unit_head,
-                        sub_leader=unit_head_assistant,
-                    )
+                        if unit_head:
+                            unit_head = department.member_names.get(member_name=unit_head)
+                            unit.members.add(unit_head)
 
-                    if unit_head:
-                        unit.members.add(unit_head)
+                        if unit_head_assistant:
+                            unit_head_assistant = department.member_names.get(member_name=unit_head_assistant)
+                            unit.members.add(unit_head_assistant)
 
-                    if unit_head_assistant:
-                        unit.members.add(unit_head_assistant)
+                    elif form_submission_category == 'member':
+                        new_member = request.POST.get('new-member', None)
+                        new_member = CustomUser.objects.get(username=new_member)
+                        unit = request.POST.get('member-unit', None)
 
+                        # check if new member already exist in the department
+                        member = DepartmentMember.objects.filter(
+                            member_name=new_member,
+                            department_name=department,
+                        )
 
+                        if member.exists():
+                            new_member = member.first()
+                        else:
+                            new_member = DepartmentMember.objects.create(
+                                member_name=new_member,
+                                department_name=department,
+                            )
 
+                            department.member_names.add(new_member)
 
+                        if unit:
+                            unit = department.unit_set.get(id=unit)
+                            unit.members.add(new_member)
 
-                    pass
+                elif form_submission_type == 'Unit':
+                    form_submission_category = request.POST.get('form-submission-category', None)
 
+                    diakonate = kwargs.get('diakonate', None)
+                    department = kwargs.get('department', None)
+                    unit = kwargs.get('unit', None)
 
+                    diakonate = Diaconate.objects.get(name=diakonate)
+                    department = Department.objects.get(department_name=department)
+                    unit = department.unit_set.get(id=unit)
+
+                    if form_submission_category == 'subunit':
+                        pass
+                    elif form_submission_category == 'member':
+                        new_unit_member = request.POST.get('new-member', None)
+                        new_unit_member = CustomUser.objects.get(username=new_unit_member)
+
+                        member = DepartmentMember.objects.filter(
+                            member_name=new_unit_member,
+                            department_name=department,
+                        )
+
+                        if member.exists():
+                            new_unit_member = member.first()
+                        else:
+                            new_unit_member = DepartmentMember.objects.create(
+                                member_name=new_unit_member,
+                                department_name=department
+                            )
+                            department.member_names.add(new_unit_member)
+
+                        unit.members.add(new_unit_member)
 
         except Exception as e:
             JsonResponse({'confirm': False, 'error': str(e)}, status=400)
@@ -918,167 +972,13 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             return HttpResponseRedirect(reverse_lazy('project_management:project-settings'))
         elif form_submission_type == 'Diakonate':
             return HttpResponseRedirect(reverse_lazy('project_management:project-settings-diakonate', args=[kwargs.get('diakonate')]))
+        elif form_submission_type == 'Department':
+            return HttpResponseRedirect(reverse_lazy('project_management:project-settings-diakonate-department', args=[kwargs.get('diakonate'), kwargs.get('department')]))
 
-        return HttpResponseRedirect(reverse_lazy('project_management:project-settings-diakonate-department', args=[kwargs.get('diakonate'), kwargs.get('department')]))
-
-    #
-    # def post(self, request, *args, **kwargs):
-    #     settings = request.GET.get('settings', None)
-    #     department = kwargs['department']
-    #     department = Department.objects.get(department_name=department)
-    #
-    #     if settings is not None:
-    #         if settings == 'category':
-    #             category_name = request.POST.get('category_name', None).strip()
-    #             category_objective = request.POST.get('category_objective').strip()
-    #
-    #             if category_name:
-    #                 category = DepartmentCategory(category_name=category_name,
-    #                                               category_objective=category_objective,
-    #                                               department_name=department
-    #                                               )
-    #                 category.save()
-    #                 department.department_categories.add(category)
-    #
-    #         if settings == 'unit':
-    #             unit_name = request.POST.get('unit_name', None).strip()
-    #             unit_objective = request.POST.get('unit_objective').strip()
-    #
-    #             unit_leader = request.POST.get('unit_leader', None)
-    #             if unit_leader:
-    #                 unit_leader = DepartmentMember.objects.get(id=unit_leader)
-    #
-    #             unit_members = request.POST.getlist('unit_members')
-    #
-    #             if unit_members:
-    #                 unit_members = [DepartmentMember.objects.get(id=member) for member in unit_members if int(member) != unit_leader.pk]
-    #
-    #             try:
-    #                 with transaction.atomic():
-    #                     department_unit = Unit.objects.create(
-    #                         name=unit_name,
-    #                         unit_leader=unit_leader,
-    #                         objective=unit_objective,
-    #                         unit_department=department
-    #                     )
-    #                     if unit_leader:
-    #                         department_unit.members.add(unit_leader)
-    #                     if unit_members:
-    #                         department_unit.members.add(*unit_members)
-    #
-    #             except IntegrityError as e:
-    #                 pass
-    #
-    #         elif settings == 'member':
-    #             family_members = request.POST.get('family_members', None).strip()
-    #
-    #             if family_members:
-    #                 family_member_list = [member for member in family_members.split(',') if member]
-    #                 try:
-    #                     with transaction.atomic():
-    #                         new_members = [
-    #                             DepartmentMember.objects.create(
-    #                                 member_name=get_user_model().objects.get_user_from_full_name(name),
-    #                                 department_name=department
-    #                             )
-    #                             for name in family_member_list if name
-    #                         ]
-    #                         department.member_names.add(*new_members)
-    #                 except IntegrityError as e:
-    #                     pass
-    #
-    #         elif settings == 'remove_member':
-    #             removed_member = request.POST.get('removed_member', None).strip()
-    #
-    #             if removed_member:
-    #                 department_member = DepartmentMember.objects.get(id=removed_member)
-    #
-    #                 if department.leader == department_member:
-    #                     department.leader = None
-    #                 elif department.sub_leader == department_member:
-    #                     department.sub_leader = None
-    #
-    #                 department_member.delete()
-    #
-    #         elif settings == 'remove_category':
-    #             removed_category = request.POST.get('removed_category', None).strip()
-    #
-    #             if removed_category:
-    #                 department_category = DepartmentCategory.objects.get(id=removed_category)
-    #                 department_category.delete()
-    #
-    #         elif settings == 'remove_unit':
-    #             removed_unit = request.POST.get('removed_unit', None).strip()
-    #
-    #             if removed_unit:
-    #                 department_unit = Unit.objects.get(id=removed_unit)
-    #                 department_unit.delete()
-    #
-    #         elif settings == 'add_unit_member':
-    #             # Partial Html
-    #             department_unit = request.POST.get('unit_to_add_member')
-    #             department_unit = Unit.objects.get(pk=department_unit)
-    #
-    #             member = request.POST.get('add_member_to_unit')
-    #
-    #             if member:
-    #                 member = DepartmentMember.objects.get(pk=member)
-    #
-    #                 if not department_unit.members.contains(member):
-    #                     department_unit.members.add(member)
-    #
-    #             context = {
-    #                 'status': True,
-    #                 'department': department,
-    #                 'department_unit': department_unit
-    #             }
-    #
-    #             return render(request, 'project_management/app/partial_html/display_unit_members.html', context)
-    #
-    #         elif settings == 'update_unit_information':
-    #             unit_pk = request.POST.get('update_unit_pk', None)
-    #             unit = Unit.objects.get(id=unit_pk)
-    #
-    #             new_name = request.POST.get('display_unit_name', None)
-    #             new_objective = request.POST.get('display_unit_objective', None)
-    #
-    #             new_leader = request.POST.get('display_unit_leader', None)
-    #             new_leader = DepartmentMember.objects.get(id=new_leader)
-    #             context = {}
-    #
-    #             try:
-    #                 with transaction.atomic():
-    #
-    #                     unit.name = new_name
-    #                     unit.objective = new_objective
-    #                     unit.unit_leader = new_leader
-    #
-    #                     unit.save()
-    #             except IntegrityError as e:
-    #                 message = str(e)
-    #                 context['status'] = False
-    #                 context['failure_message'] = message
-    #             else:
-    #                 context['status'] = True
-    #                 context['unit'] = unit
-    #                 context['department'] = department
-    #
-    #             return render(request, 'project_management/app/partial_html/update_unit.html', context)
-    #
-    #         elif settings == 'experience_score':
-    #             department_member = request.POST.get('experience_id', None)
-    #
-    #             if department_member:
-    #                 department_member = DepartmentMember.objects.get(id=department_member)
-    #
-    #                 try:
-    #                     new_experience_score = int(request.POST.get('experience_score', None))
-    #                 except (TypeError, ValueError) as e:
-    #                     pass
-    #                 else:
-    #                     department_member.experience_score = new_experience_score
-    #                     department_member.save()
-    #     return HttpResponseRedirect(reverse_lazy('project_management:project-settings', args=[department.department_name]))
+        return HttpResponseRedirect(reverse_lazy(
+            'project_management:project-settings-diakonate-department-unit',
+            args=[kwargs.get('diakonate'), kwargs.get('department'), kwargs.get('unit')])
+        )
 
 
 class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):

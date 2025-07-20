@@ -90,6 +90,30 @@ def add_1000(value: int) -> int:
     """Add 1000 to the value to be able to create unique ids that do not clash"""
     return value + 1000
 
+@register.filter(name='sub') # The 'name' argument defines how you'll use it in the template: |sub
+def subtract(value, arg):
+    """
+    Subtracts the arg from the value.
+    Usage: {{ value|sub:arg }}
+    Example: {{ 5|sub:3 }} will output 2
+    """
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return '' # Or you could return 0 or raise an error depending on desired behavior if non-numeric
+
+@register.filter(name='add') # Example of another common arithmetic filter
+def add(value, arg):
+    """
+    Adds the arg to the value.
+    Usage: {{ value|add:arg }}
+    Example: {{ 5|add:3 }} will output 8
+    """
+    try:
+        return float(value) + float(arg)
+    except (ValueError, TypeError):
+        return '' # Or handle error appropriately
+
 
 @register.filter(is_safe=True)
 def jsonify(json_object):

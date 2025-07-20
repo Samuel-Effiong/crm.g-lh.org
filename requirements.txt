@@ -96,4 +96,3 @@ whitenoise
 wagtail
 django_htmx
 telegram
-python-telegram-bot

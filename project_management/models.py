@@ -98,6 +98,7 @@ class DepartmentMemberManager(models.Manager):
                 'target_completed': member.departmentproject_set.filter(projecttarget__state='Completed').count(),
             })
         member_scores.sort(key=lambda x: x['performance_score'], reverse=True)
+
         if limit:
             return member_scores[:limit]
 
@@ -108,6 +109,8 @@ class DepartmentMember(models.Model):
     member_name = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
     experience_score = models.IntegerField(default=0)
+
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = DepartmentMemberManager()
 
@@ -346,6 +349,12 @@ class Department(models.Model):
     def __str__(self):
         return f"{self.department_name}\t-\t\t{self.department_diaconate}"
 
+    def get_list_of_dept_members_name(self):
+        member_names = self.member_names.all()
+        member_names = [member.member_name.username for member in member_names]
+
+        return member_names
+
     @admin.display(description='No of Members')
     def get_no_of_members(self) -> int:
         return self.member_names.count()
@@ -516,7 +525,7 @@ class DepartmentProjectManager(models.Manager):
         if member is None:
             return department_project
         else:
-            return department_project.filter(project_members=member)
+            return department_project.filter(project_members__contain=member)
 
     def get_inactive_projects(self, department: Department, member: DepartmentMember = None):
         """If member is None it returns all the inactive projects in a particular department
@@ -609,7 +618,7 @@ class DepartmentProject(models.Model):
     project_description = models.TextField()
 
     department_category = models.ForeignKey(DepartmentCategory, on_delete=models.CASCADE, null=True, blank=True)
-    project_members = models.ManyToManyField(DepartmentMember, blank=True)
+    project_members = models.ManyToManyField(DepartmentMember, blank=True, help_text="choose individual members from the project's department.")
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
     project_priority = models.CharField(max_length=50, default='Low', choices=PRIORITY_CHOICES)
@@ -624,20 +633,52 @@ class DepartmentProject(models.Model):
     project_background_color = models.CharField(max_length=100, null=True, blank=True)
     project_text_color = models.CharField(max_length=100, null=True, blank=True)
 
+    assigned_unit = models.ForeignKey(
+        'Unit', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='projects_assigned_to_this_unit',
+        help_text='Assign to an entire unit. All members of this unit will be project members'
+    )
+
     objects = DepartmentProjectManager()
 
     def __str__(self) -> str:
         return self.project_name
 
+
     class Meta:
         verbose_name_plural = 'Department Projects'
-        ordering = ('due_date', )
+        ordering = ('due_date', '-project_priority')
+
+    def get_all_members(self):
+        """
+        Returns a QuerySet of all DepartmentMember objects assigned to this project.
+        Automatically determines if assignment is unit-based or individual-based.
+        """
+        if self.assigned_unit:
+            # If assigned to a unit, all members of that unit are project members.
+            # Use select_related to reduce database queries if you often access user/department data
+            return self.assigned_unit.members.all().select_related('member_name', 'department_name')
+        else:
+            # Otherwise, the project members are the individually assigned ones.
+            return self.project_members.all().select_related('member_name', 'department_name')
 
     @admin.display(description="No of Workers")
     def get_no_of_workers(self) -> int:
-        project_members = self.project_members.all()
+        return self.get_all_members().count()
 
-        return len(project_members)
+    @property
+    def assignment_type(self):
+        """
+        Returns a string indicating how project members are assigned:
+        'Unit-based', 'Individual-based', or 'Unassigned'.
+        """
+        if self.assigned_unit:
+            return "Unit-based"
+        elif self.project_members.exists():
+            return "Individual-based"
+        else:
+            return "Unassigned"
 
     @admin.display(description='No of Targets')
     def get_no_of_target(self) -> int:
@@ -1114,7 +1155,7 @@ class Unit(models.Model):
     objective = models.TextField(null=True, blank=True)
     unit_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
-    members = models.ManyToManyField(DepartmentMember, blank=True, related_name='+')
+    members = models.ManyToManyField(DepartmentMember, blank=True, related_name='member_units_set')
 
     unit_department = models.ForeignKey(Department, on_delete=models.CASCADE)
     sub_units = models.ManyToManyField('SubUnit', blank=True)
@@ -1133,6 +1174,11 @@ class Unit(models.Model):
     @admin.display(description="Number of Sub Units")
     def get_number_of_subunit(self):
         return self.sub_units.count()
+
+    def get_members_in_this_unit(self):
+        members = self.members.all()
+        members = [member.member_name.username for member in members]
+        return members
     
     def get_number_of_unit_members(self):
         return self.members.count()

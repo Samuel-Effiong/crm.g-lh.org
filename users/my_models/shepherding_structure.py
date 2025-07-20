@@ -32,7 +32,7 @@ class Shepherd(models.Model):
         return str(self.name)
 
     class Meta:
-        ordering = ('no_of_sheep', )
+        ordering = ('name__first_name', )
 
     @admin.display(ordering='date_of_appointment', description='Duration of Service')
     def get_service_duration(self):
@@ -80,7 +80,7 @@ class SubShepherd(models.Model):
         return self.get_subshepherd_full_name()
 
     class Meta:
-        ordering = ('no_of_sheep', )
+        ordering = ('name__first_name', )
         verbose_name = "Sub Shepherd"
 
     @admin.display(ordering='date_of_appointment', description='Duration of Service')

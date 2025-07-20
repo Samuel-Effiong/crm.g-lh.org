@@ -30,6 +30,7 @@ urlpatterns = [
     path('project/settings/', views.ProjectManagementSettingView.as_view(), name='project-settings'),
     path('project/settings/<str:diakonate>/', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate'),
     path('project/settings/<str:diakonate>/<str:department>', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate-department'),
+    path('project/settings/<str:diakonate>/<str:department>/<str:unit>', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate-department-unit'),
 
 
     path('partials/', include(partials_url_patterns))
