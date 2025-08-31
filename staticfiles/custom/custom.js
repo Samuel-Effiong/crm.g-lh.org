@@ -371,4 +371,76 @@ const initialized_project_complete_percentage_charts = () => {
     })
 }
 
+
+const initialized_target_progress_charts = () => {
+    const container = document.getElementById('target_progress_bar')
+
+    if (container.classList.contains('apex-chart-initialized')) {
+        return; // Skip if already initialized
+    }
+
+    // Get the parent card elemnt to retrieve the project data from data-attribute
+    const project_data = container.closest('.target-card');
+
+    if (!project_data) {
+        console.warn("Chart conatiner found without a parent '.project-card' element.");
+        return; // Skip if no project data found
+    }
+
+    // Extract data from project data element
+    const percentage = parseFloat(project_data.dataset.targetPercentage);
+    const priority = project_data.dataset.targetState;
+
+    // Determine colors based on priority
+    let chartFillColor;
+    let percentageTextColor;
+    let priorityLabelColor;
+
+    if (priority === 'Not Started') {
+        chartFillColor = '#ff0000'; // Red
+        percentageTextColor = '#ff0000'; // Red
+        priorityLabelColor = '#ff0000'; // Red
+    }
+    else if (priority === 'Completed') {
+        chartFillColor = '#ffa500'; // Orange
+        percentageTextColor = '#ffa500'; // Orange
+        priorityLabelColor = '#ffa500'; // Orange
+    } else {
+        chartFillColor = '#008000'; // Green
+        percentageTextColor = '#008000'; // Green
+        priorityLabelColor = '#008000'; // Green
+    }
+
+    const options = {
+        chart: {
+            type: 'bar',
+            height: '90', // Consistent height for all charts
+            fontFamily: 'Helvetica, Arial, sans-serif',
+        },
+
+        fill: {
+            type: 'solid',
+            colors: [chartFillColor] // Use specific fill color
+        },
+        series: [{
+            name: 'Progress',
+            data: [percentage]
+        }], // Use the project's specific percentage
+        stroke: {
+            lineCap: 'round',
+        },
+        labels: ['Progress'],
+        xaxis: {
+            categories: ['Completed']
+        }
+    };
+
+    const chart = new ApexCharts(container, options);
+    chart.render();
+
+    // Mark this container as initialized
+    container.classList.add('apex-chart-initialized');
+}
+
+
 // END OF PROJECT MANAGEMENT

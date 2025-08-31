@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from .utilities import ValidationError, Validators
 
@@ -24,9 +25,9 @@ class CustomShepherdManager(models.Manager):
 class Shepherd(models.Model):
     name = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, to_field='username',
                                 related_name='+', limit_choices_to={'is_staff': True})
-    no_of_sheep = models.IntegerField()
-    date_of_appointment = models.DateField(validators=[Validators.validate_prevent_future_date])
-    calling = models.CharField(max_length=15, default='unknown', choices=Calling)
+    no_of_sheep = models.IntegerField(default=0, null=True, blank=True)
+    date_of_appointment = models.DateField(validators=[Validators.validate_prevent_future_date], null=True, blank=True)
+    calling = models.CharField(max_length=15, default='unknown', choices=Calling, null=True, blank=True)
 
     def __str__(self):
         return str(self.name)
@@ -72,9 +73,9 @@ class Shepherd(models.Model):
 
 class SubShepherd(models.Model):
     name = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, to_field='username')
-    no_of_sheep = models.IntegerField()
-    date_of_appointment = models.DateField(validators=[Validators.validate_prevent_future_date])
-    calling = models.CharField(max_length=15, choices=Calling)
+    no_of_sheep = models.IntegerField(default=0, blank=True, null=True)
+    date_of_appointment = models.DateField(validators=[Validators.validate_prevent_future_date], default=timezone.now,)
+    calling = models.CharField(max_length=15, choices=Calling, null=True, blank=True)
 
     def __str__(self):
         return self.get_subshepherd_full_name()

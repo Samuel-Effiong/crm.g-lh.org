@@ -6,7 +6,8 @@ from . import models
 # Register your models here.
 @admin.register(models.Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('department_name', 'department_long_name', 'leader', 'sub_leader', 'get_no_of_members', 'get_no_of_categories')
+    list_display = ('department_name', 'department_long_name', 'leader', 'sub_leader', 'get_no_of_members', 'get_no_of_units')
+    search_fields = ('department_name', 'department_long_name', 'leader__member_name', 'sub_leader_member_name')
 
 
 @admin.register(models.DepartmentMember)
@@ -14,15 +15,15 @@ class MemberAdmin(admin.ModelAdmin):
     list_display = ('member_name', 'department_name')
     list_filter = ('department_name', 'member_name')
 
-
-@admin.register(models.DepartmentCategory)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('category_name', 'department_name')
+#
+# @admin.register(models.DepartmentCategory)
+# class CategoryAdmin(admin.ModelAdmin):
+#     list_display = ('category_name', 'department_name')
 
 
 @admin.register(models.DepartmentProject)
 class DepartmentProjectAdmin(admin.ModelAdmin):
-    list_display = ('project_name', 'department', 'department_category',
+    list_display = ('project_name', 'department', 'department_unit',
                     'get_no_of_workers', 'project_priority', 'status',
                     'get_no_of_target')
 

@@ -7,7 +7,7 @@
         <div class="row">
             {% for project in department_projects %}
                 <div class="col-lg-4 col-md-6">
-                    <div class="card card-block card-stretch card-height {% if is_department_leader and project.any_pending_target_approval %}shadow-box{% endif %}">
+                    <div class="card card-block card-stretch card-height {% if project.any_pending_target_approval or project.is_overdue %}shadow-box{% endif %}">
                         <div class="card-body">
                             <div class="project-card d-flex align-items-center justify-content-between mb-4" 
                                  data-project-id="{{ project.id }}"
@@ -17,7 +17,13 @@
                                 <div id="circle-progress-{{ forloop.counter }}" class="circle-progress-01 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="{{ project.get_complete_percentage }}" data-type="percent"></div>
                                 <i title="{{ project.department_category }}" class="ri-star-fill m-0 {% if project.project_priority == 'High' %}text-danger{% elif project.project_priority == 'Medium' %}text-warning{% else  %}text-green{% endif %}"></i>
                             </div>
-                            <h5 class="mb-1"><a href="{% url 'project_management:project-detail' project.department.department_name project.id %}">{{ project.project_name}}</a></h5>
+                            <h5 class="mb-1">
+                                {% if project.department in user_leader_in_dept or user.is_superuser or user|has_project_management_permission:"Diakonate Leader" %}
+                                    <a href="{% url 'project_management:project-detail' project.department.department_name project.id %}">{{ project.project_name}}</a>
+                                {% else %}
+                                    <a>{{ project.project_name}}</a>
+                                {% endif %}
+                            </h5>
                             <p class="mb-3">{{ project.project_description }}</p>
                             <p class="small">
                                 <span title="Diakonate">{{ project.department.department_diaconate.name }}</span> • 
@@ -50,7 +56,7 @@
         <div class="row">
             {% for project in department_projects %}
                 <div class="col-lg-6">
-                    <div class="card {% if is_department_leader and project.any_pending_target_approval %}shadow-box{% endif %}">
+                    <div class="card {% if project.any_pending_target_approval or project.is_overdue %}shadow-box{% endif %}">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-lg-8">
@@ -61,7 +67,13 @@
                                     >
                                         <div id="circle-progress-{{ forloop.counter|add_1000 }}" class="circle-progress-02 circle-progress {% if project.project_priority == 'High' %}circle-progress-danger{% elif project.project_priority == 'Medium' %}circle-progress-warning{% else  %}circle-progress-green{% endif %}" data-min-value="0" data-max-value="100" data-value="{{ project.get_complete_percentage }}" data-type="percent"></div>
                                         <div class="ml-3">
-                                            <h5 class="mb-1"><a href="{% url 'project_management:project-detail' project.department.department_name project.id %}">{{ project.project_name}}</a></h5>
+                                            <h5 class="mb-1">
+                                                {% if project.department in user_leader_in_dept or user.is_superuser or user|has_project_management_permission:"Diakonate Leader" %}
+                                                    <a href="{% url 'project_management:project-detail' project.department.department_name project.id %}">{{ project.project_name}}</a>
+                                                {% else %}
+                                                    <a>{{ project.project_name}}</a>
+                                                {% endif %}
+                                            </h5>
                                             <p class="mb-2">{{ project.project_description }}</p>
                                             <p class="small">
                                                 <span title="Diakonate">{{ project.department.department_diaconate.name }}</span> • 

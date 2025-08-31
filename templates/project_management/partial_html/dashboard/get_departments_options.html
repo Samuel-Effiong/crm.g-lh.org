@@ -4,7 +4,13 @@
     <option value="" disabled selected>Choose Department</option>
 {% endif %}
 {% for department in departments %}
-    <option value="{{ department.department_name }}">{{ department.department_name }}</option>
+    {% if user_leader_in_dept %}
+        {% if department in user_leader_in_dept %}
+            <option value="{{ department.department_name }}">{{ department.department_name }}</option>
+        {% endif %}
+    {% else %}
+        <option value="{{ department.department_name }}">{{ department.department_name }}</option>
+    {% endif %}
 {% endfor %}
 
 

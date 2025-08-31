@@ -1,0 +1,66 @@
+{% load static %}
+
+
+{% for member in department.member_names.all %}
+    <div class="col-lg-3">
+       <div class="card" {% if department.leader == member %}style="box-shadow: 5px 5px 15px #a24c4c" {% endif %}>
+          <img src="{{ member.get_member_image_url }}" class="card-img-top img-fluid" alt="#">
+          <div class="card-body">
+              <h4 class="card-title">{{ member.get_member_full_name }}</h4>
+              <div class="d-flex justify-content-center">
+                  {% if department.leader == member %}
+                      <span class="mt-2 py-2 badge badge-pill border border-danger text-danger">Department Head</span>
+                  {% elif department.sub_leader == member %}
+                      <span class="mt-2 py-3 badge badge-pill border border-warning text-warning">Assistant Head</span>
+                  {% endif %}
+              </div>
+             <p class="card-text text-center pt-2">
+                 {{ member.member_name.email }}
+             </p>
+             <div class="row text-center">
+                 <div class="col-6">
+                   <div class="card border">
+                      <div class="card-body align-center">
+                         <h4 class="card-title ">{{ member.get_active_projects.count }}</h4>
+                         <p class="card-text">Active Project</p>
+                      </div>
+                   </div>
+                 </div>
+
+                 <div class="col-6">
+                   <div class="card border">
+                      <div class="card-body">
+                         <h4 class="card-title">{{ member.get_total_target }}</h4>
+                         <p class="card-text">Total Target</p>
+                      </div>
+                   </div>
+                 </div>
+             </div>
+             <div class="d-flex justify-content-center text-center">
+                 <div class="col-6">
+                   <div class="card border">
+                      <div class="card-body align-center">
+                         <h4 class="card-title">{{ member.get_performance_score }}</h4>
+                         <p class="card-text">Performance</p>
+                      </div>
+                   </div>
+                 </div>
+             </div>
+             <div class="d-flex">
+                 <a href="{% url 'project_management:department-member-detail' department.department_name member.id %}" class="flex-grow-1 py-2 card-link btn btn-primary">View</a>
+             </div>
+          </div>
+       </div>
+    </div>
+{% empty %}
+    <div class="card col-12 text-center">
+         <div class="card-body mb-3">
+             <p>
+                 <svg width="98px" height="98px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffa000" d="M10.67276443 3.58608316H6.12087531L4.98290303 2.44811088h-2.8449307c-.62588475 0-1.13797228.51208753-1.13797228 1.13797228v6.82783368c0 .62588475.51208753 1.13797228 1.13797228 1.13797228h8.81928517c.48363822 0 .85347921-.369841.85347921-.85347921V4.72405544c0-.62588475-.51208753-1.13797228-1.13797228-1.13797228z"></path><path fill="#ffca28" d="M11.86763532 5.29304158H4.21477174c-.54053683 0-1.02417505.3982903-1.10952297.93882713l-.96727644 5.32002041h9.01843032c.54053683 0 1.02417505-.3982903 1.10952297-.93882713L12.9771583 6.630159c.14224653-.68278337-.3982903-1.33711743-1.10952298-1.33711743z"></path></g></svg>
+             </p>
+            <h4 class="card-title">No Member in this Department</h4>
+            <p class="card-text">This Department does not have any members.</p>
+         </div>
+    </div>
+{% endfor %}
+

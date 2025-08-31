@@ -126,8 +126,15 @@ class DepartmentMember(models.Model):
     def __str__(self) -> str:
         return f"{self.member_name.get_full_name()} - {self.department_name}"
 
+    def get_member_full_name(self) -> str:
+        return self.member_name.get_full_name()
+
     def get_member_image_url(self) -> str:
         return self.member_name.get_image_url()
+
+    def get_other_department_membership(self):
+        department_membership = self.member_name.departmentmember_set.all()
+        return department_membership
 
     def get_active_projects(self):
         active_projects = DepartmentProject.objects.get_active_projects(
@@ -146,6 +153,29 @@ class DepartmentMember(models.Model):
             department=self.department_name, member=self
         )
         return completed_projects
+
+    def get_targets(self):
+        targets = ProjectTarget.objects.filter(
+            departmentproject__project_members=self
+        )
+        return targets
+
+    def get_total_target(self):
+        stat = DepartmentProject.objects.filter(
+            project_members=self
+        ).aggregate(
+            total_targets=Count('target', distinct=True)
+        )
+        total_target = stat.get('total_targets') or 0
+
+        return total_target
+
+    def get_total_project(self):
+        total_project = DepartmentProject.objects.get_total_projects(
+            department=self.department_name, member=self
+        )
+
+        return total_project
 
     def get_performance_score(self) -> float:
 
@@ -323,7 +353,6 @@ class Department(models.Model):
     )
 
     member_names = models.ManyToManyField(DepartmentMember, blank=True)
-    department_categories = models.ManyToManyField(DepartmentCategory, blank=True)
     department_name = models.CharField(_('Department'), max_length=255, unique=True)
     department_long_name = models.CharField(_('Department (Long Name)'), max_length=1000, null=True, blank=True)
     leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
@@ -332,8 +361,7 @@ class Department(models.Model):
     department_objectives = models.TextField(null=True, blank=True, default="")
     custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
-    department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE)
-    # department_units = models.ManyToManyField('Unit', blank=True)
+    department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE, null=True, blank=True)
     objects = DepartmentManager()
 
     constraints = [
@@ -350,18 +378,11 @@ class Department(models.Model):
         return f"{self.department_name}\t-\t\t{self.department_diaconate}"
 
     def get_list_of_dept_members_name(self):
-        member_names = self.member_names.all()
-        member_names = [member.member_name.username for member in member_names]
-
-        return member_names
+        return [member.member_name.username for member in self.member_names.all()]
 
     @admin.display(description='No of Members')
     def get_no_of_members(self) -> int:
         return self.member_names.count()
-
-    @admin.display(description='No of Category')
-    def get_no_of_categories(self) -> int:
-        return self.department_categories.count()
 
     def get_no_of_units(self) -> int:
         """Get the number of units in this department"""
@@ -474,6 +495,14 @@ class ProjectTargetManager(models.Manager):
         return pending_target
 
 
+class StateType(models.TextChoices):
+    NOT_STARTED = 'Not Started', _('Not Started')
+    IN_PROGRESS = 'In Progress', _('In Progress')
+    COMPLETED = 'Completed', _('Completed')
+    PENDING_APPROVAL = 'Pending Approval', _('Pending Approval')
+
+
+
 class ProjectTarget(models.Model):
     Choices = (
         ('Not Started', 'Not Started'),
@@ -485,7 +514,7 @@ class ProjectTarget(models.Model):
     target_name = models.CharField(max_length=1000)
     target_description = models.TextField(default="")
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
-    state = models.CharField(max_length=25, choices=Choices, default='Not Started')
+    state = models.CharField(max_length=25, choices=StateType.choices, default=StateType.NOT_STARTED)
     date = models.DateField(auto_now=True)
     due_date = models.DateField()
 
@@ -525,7 +554,12 @@ class DepartmentProjectManager(models.Manager):
         if member is None:
             return department_project
         else:
-            return department_project.filter(project_members__contain=member)
+            return department_project.filter(project_members=member)
+
+    def get_total_projects(self, department: Department, member: DepartmentMember = None):
+        department_project = self.get_queryset().filter(department=department)
+        department_project = department_project.filter(project_members=member)
+        return department_project
 
     def get_inactive_projects(self, department: Department, member: DepartmentMember = None):
         """If member is None it returns all the inactive projects in a particular department
@@ -617,7 +651,7 @@ class DepartmentProject(models.Model):
     project_name = models.CharField(max_length=1000, unique=True)
     project_description = models.TextField()
 
-    department_category = models.ForeignKey(DepartmentCategory, on_delete=models.CASCADE, null=True, blank=True)
+    department_unit = models.ForeignKey('Unit', on_delete=models.SET_NULL, null=True, blank=True)
     project_members = models.ManyToManyField(DepartmentMember, blank=True, help_text="choose individual members from the project's department.")
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
@@ -630,8 +664,8 @@ class DepartmentProject(models.Model):
     due_date = models.DateField(null=True, blank=True)
 
     # Choose colour that will be associated to the project
-    project_background_color = models.CharField(max_length=100, null=True, blank=True)
-    project_text_color = models.CharField(max_length=100, null=True, blank=True)
+    project_background_color = models.CharField(max_length=100, default='#000000')
+    project_text_color = models.CharField(max_length=100, default='#FFFFFF')
 
     assigned_unit = models.ForeignKey(
         'Unit', on_delete=models.SET_NULL,
@@ -649,6 +683,9 @@ class DepartmentProject(models.Model):
     class Meta:
         verbose_name_plural = 'Department Projects'
         ordering = ('due_date', '-project_priority')
+
+    def is_overdue(self):
+        return self.due_date < timezone.now().date()
 
     def get_all_members(self):
         """
@@ -718,40 +755,20 @@ class DepartmentProject(models.Model):
         project as done"""
 
         targets = self.target.all()
-        is_completed = False
-        is_in_progress = False
-        is_not_started = False
 
-        for target in targets:
-            if target.state == 'Completed':
-                is_completed = True
-
-                is_in_progress = False
-                is_not_started = False
-
-            elif target.state == 'In Progress':
-                is_in_progress = True
-
-                is_completed = False
-                is_not_started = False
-
-            elif target.state == 'Not Started':
-                is_not_started = True
-
-                is_completed = False
-                is_in_progress = False
-
-        if is_completed:
-            self.status = 'Completed'
-        elif is_in_progress:
-            self.status = 'In Progress'
-        else:
+        if not targets.exists():
             self.status = 'Not Started'
+        elif all(target.state == 'Completed' for target in targets):
+            self.status = 'Completed'
+        elif all(target.state == 'Not Started' for target in targets):
+            self.status = 'Not Started'
+        else:
+            self.status = 'In Progress'
 
         self.save()
 
     def to_event(self):
-        group_id = self.department_category.category_name if self.department_category else ""
+        group_id = self.department_unit.name if self.department_unit else ""
         title = self.project_name
         start = self.start_date.isoformat()
         end = self.due_date.isoformat()

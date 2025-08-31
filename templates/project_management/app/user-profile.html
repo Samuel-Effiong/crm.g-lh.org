@@ -19,30 +19,46 @@
                              <h1 class="text-white"><b>DIAKONATE</b></h1>
 
                              {% if user.is_superuser or user|has_project_management_permission:"Core Leader" %}
-                                 <p class="m-2">
-                                     <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Diakonate</button>
-                                 </p>
+                                 <div class="d-flex justify-content-center align-items-center">
+
+                                     <p class="m-2">
+                                         <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Diakonate</button>
+                                     </p>
+
+                                 </div>
                              {% endif %}
 
                          {% elif mode == 'Diakonate' %}
                              <h1 class="text-white">DIAKONATE: <b>{{ diaconate.name }}</b></h1>
 
                              {% if user.is_superuser or user|has_project_management_permission:"Core Leader" or user|has_project_management_permission:"Diakonate Head" %}
-                                 <p class="m-2">
-                                     <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Department</button>
-                                 </p>
+                                 <div class="d-flex justify-content-center align-items-center">
+
+                                     <p class="m-2">
+                                         <button type="button" class="btn btn-primary py-2 px-4" data-target="#edit_dialog_modal" data-toggle="modal">Edit Diakonate</button>
+                                     </p>
+
+                                    <p class="m-2">
+                                         <button type="button" class="btn btn-danger py-2 px-4" data-target="#delete_modal" data-toggle="modal">Delete Diakonate</button>
+                                    </p>
+
+                                 </div>
                              {% endif %}
                          {% elif mode == 'Department' %}
                              <h1 class="text-white">DEPARTMENT: <b>{{ department.department_name }}</b></h1>
                              <div class="mt-3">
-                                 <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Unit</button>
-                                 <button type="button" class="btn text-white btn-outline-primary py-2 px-4" data-target="#add_member" data-toggle="modal">Add Member</button>
+                                 <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#edit_dialog_modal" data-toggle="modal">Edit Department</button>
+
+                                 {% if not user|has_project_management_permission:"Department Head" %}
+                                    <button type="button" class="btn btn-danger py-2 px-4" data-target="#delete_modal" data-toggle="modal">Delete Department</button>
+                                 {% endif %}
+
                              </div>
                          {% elif mode == 'Unit' %}
                              <h1 class="text-white">UNIT: <b>{{ unit.name }}</b></h1>
                              <div class="mt-3">
-                                 <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add SubUnit</button>
-                                 <button type="button" class="btn text-white btn-outline-primary py-2 px-4" data-target="#add_member" data-toggle="modal">Add Member</button>
+                                 <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#edit_dialog_modal" data-toggle="modal">Edit Unit</button>
+                                 <button type="button" class="btn btn-danger py-2 px-4" data-target="#delete_modal" data-toggle="modal">Delete Unit</button>
                              </div>
                          {% endif %}
                      </div>
@@ -144,16 +160,40 @@
                 </div>
             </div>
 
+             {% if not user|has_project_management_permission:"Department Head" %}
+                 <div class="row mb-5">
+                    <div class="col-md-6 col-lg-3">
+                         <p class="m-2">
+                             <button type="button" class="btn btn-primary py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Department</button>
+                         </p>
+                    </div>
+                 </div>
+             {% endif %}
+
              <div class="row">
                   {% for dept in diaconate.departments.all %}
-                      <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                      <div class="col-lg-4 col-md-6 mb-4">
                           <div class="card border-light">
                               <div class="card-body">
                                   <h4 class="card-title">
-                                      <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-                                          {{ dept.department_name }}
-                                      </a>
+                                      {% if user|has_project_management_permission:"Department Head" %}
+                                          {% if dept in user_leader_in_dept %}
+                                              <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                                  {{ dept.department_name }}
+                                              </a>
+                                          {% else %}
+                                              <a>
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                                  {{ dept.department_name }}
+                                              </a>
+                                          {% endif %}
+                                      {% else %}
+                                          <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                                              {{ dept.department_name }}
+                                          </a>
+                                      {% endif %}
                                   </h4>
                                   <p class="card-text"><small>Leader: {{ dept.leader.member_name.get_full_name }}</small></p>
 
@@ -172,17 +212,27 @@
                                       </div>
                                   </div>
 
-                                  <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
+                                  {% if user|has_project_management_permission:"Department Head" %}
+                                      {% if dept in user_leader_in_dept %}
+                                          <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
+                                              <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
+                                                  Edit
+                                              </a>
 
-                                      <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
-                                          Edit
-                                      </a>
+                                              <a class="col-lg-3 btn btn-outline-dark mt-2" data-target="#delete_department_modal" data-toggle="modal" onclick="settings_for_modal_delete({{ dept.id }}, '{{ dept.department_name }}', 'Department')">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D">
+                                                      <path d="M3 6h18"></path>
+                                                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                      <line x1="10" x2="10" y1="11" y2="17"></line>
+                                                      <line x1="14" x2="14" y1="11" y2="17"></line>
+                                                  </svg>
+                                              </a>
+                                          </div>
+                                      {% endif %}
+                                  {% endif %}
 
-                                      <a class="col-lg-3 btn btn-outline-dark mt-2" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
-                                      </a>
-                                  </div>
                               </div>
                           </div>
                       </div>
@@ -193,6 +243,13 @@
              </div>
 
         {% elif mode == 'Department' %}  {# project/settings/diakonate/settings #}
+
+             <div class="row mb-3">
+                <div class="col-12">
+                    <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Unit</button>
+                    <button type="button" class="btn text-white btn-primary py-2 px-4" data-target="#add_member" data-toggle="modal">Add Member</button>
+                </div>
+             </div>
 
 
              <div class="card-body p-0">
@@ -274,12 +331,12 @@
 
                                   <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
 
-                                      <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name department.department_name %}">
+                                      <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department-unit" diaconate.name department.department_name unit.id %}">
                                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
                                           Edit
                                       </a>
 
-                                      <a class="col-lg-3 btn btn-outline-dark mt-2" href="{% url "project_management:project-settings-diakonate-department" diaconate.name department.department_name %}">
+                                      <a class="col-lg-3 btn btn-outline-dark mt-2" data-toggle="modal" data-target="#delete_unit_modal" onclick="settings_for_modal_delete({{ unit.id }}, '{{ unit.name }}', 'Unit')">
                                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
                                       </a>
                                   </div>
@@ -300,7 +357,7 @@
              </div>
 
              <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                   <div class="card border-light">
                       <div class="card-body">
                           <h4 class="mb-3">Members</h4>
@@ -312,6 +369,7 @@
                                     <th scope="col">Units</th>
                                     <th scope="col">No of Project</th>
                                     <th scope="col">Performance Score</th>
+                                    <th scope="col">Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -322,6 +380,18 @@
                                         <td>{% for unit in member.member_units_set.all %}{{ unit.name }}{% if not forloop.last %},{% endif %} {% empty %} - {% endfor %}</td>
                                         <td>{{ member.departmentproject_set.count }}</td>
                                         <td>{{ member.get_performance_score }}</td>
+                                        <td>
+                                            {% if member.id != department.leader.id %}
+                                                <button type="button" class="btn btn-primary" data-target="#delete_department_member"
+                                                        data-toggle="modal" onclick="document.getElementById('delete_department_membership').value={{ member.id }};
+                                                        document.getElementById('member_name').textContent='{{ member.get_member_full_name }}'"
+                                                        style="text-wrap: nowrap"
+
+                                                >
+                                                    {% if member.id != department.leader.id %}Remove{% else %}Remove Leader {% endif %}
+                                                </button>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
@@ -330,7 +400,7 @@
                   </div>
                 </div>
 
-                 <div class="col-lg-6">
+                 <div class="col-lg-12">
                       <div class="card border-light">
                           <div class="card-body">
                               <h4 class="mb-3">Projects by Department</h4>
@@ -390,6 +460,12 @@
         {% elif mode == 'Unit' %}
 
              <div class="card-body p-0">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add SubUnit</button>
+                        <button type="button" class="btn text-white btn-primary py-2 px-4 mr-2" data-target="#add_member" data-toggle="modal">Add Member</button>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-6 col-lg-3">
                         <div class="card card-block card-stretch card-height">
@@ -524,13 +600,13 @@
 
                 <div class="tab-pane fade" id="insights-two" role="tabpanel" aria-labelledby="insights-tab-two">
                    <div class="card col-12 text-center">
-                                     <div class="card-body mb-3">
-                                         <p>
-                                             <svg width="98px" height="98px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffa000" d="M10.67276443 3.58608316H6.12087531L4.98290303 2.44811088h-2.8449307c-.62588475 0-1.13797228.51208753-1.13797228 1.13797228v6.82783368c0 .62588475.51208753 1.13797228 1.13797228 1.13797228h8.81928517c.48363822 0 .85347921-.369841.85347921-.85347921V4.72405544c0-.62588475-.51208753-1.13797228-1.13797228-1.13797228z"></path><path fill="#ffca28" d="M11.86763532 5.29304158H4.21477174c-.54053683 0-1.02417505.3982903-1.10952297.93882713l-.96727644 5.32002041h9.01843032c.54053683 0 1.02417505-.3982903 1.10952297-.93882713L12.9771583 6.630159c.14224653-.68278337-.3982903-1.33711743-1.10952298-1.33711743z"></path></g></svg>
-                                         </p>
-                                        <h4 class="card-title">Coming Soon</h4>
-                                     </div>
-                                </div>
+                         <div class="card-body mb-3">
+                             <p>
+                                 <svg width="98px" height="98px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffa000" d="M10.67276443 3.58608316H6.12087531L4.98290303 2.44811088h-2.8449307c-.62588475 0-1.13797228.51208753-1.13797228 1.13797228v6.82783368c0 .62588475.51208753 1.13797228 1.13797228 1.13797228h8.81928517c.48363822 0 .85347921-.369841.85347921-.85347921V4.72405544c0-.62588475-.51208753-1.13797228-1.13797228-1.13797228z"></path><path fill="#ffca28" d="M11.86763532 5.29304158H4.21477174c-.54053683 0-1.02417505.3982903-1.10952297.93882713l-.96727644 5.32002041h9.01843032c.54053683 0 1.02417505-.3982903 1.10952297-.93882713L12.9771583 6.630159c.14224653-.68278337-.3982903-1.33711743-1.10952298-1.33711743z"></path></g></svg>
+                             </p>
+                            <h4 class="card-title">Coming Soon</h4>
+                         </div>
+                    </div>
                 </div>
              </div>
 
@@ -662,42 +738,42 @@
             </div>
         </div>
     </div>
-
-    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-member">
-        <div class="modal-dialog  modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header d-block text-center pb-3 border-bottom">
-                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>
-                </div>
-                <div class="modal-body">
-                    <form action="{% url 'project_management:project-settings' %}?settings=remove_member" method="post">
-                        {% csrf_token %}
-                        <div class="row">
-
-                            <div class="col-lg-12 mb-3" style="display: none">
-                                <input type="text" id="removed_member" name="removed_member">
-                            </div>
-
-                            <div class="col-lg-12 mb-3">
-                                <h6><i>
-                                    Are you sure you want to remove
-                                    <span id="member_name" class="text-danger font-size-20"></span>
-                                    from {{ department }}?. <span class="text-danger">It cannot be restored.</span>
-                                </i></h6>
-                            </div>
-
-                            <div class="col-lg-12">
-                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">
-                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>
-                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+{##}
+{#    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-member">#}
+{#        <div class="modal-dialog  modal-dialog-centered">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header d-block text-center pb-3 border-bottom">#}
+{#                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form action="{% url 'project_management:project-settings' %}?settings=remove_member" method="post">#}
+{#                        {% csrf_token %}#}
+{#                        <div class="row">#}
+{##}
+{#                            <div class="col-lg-12 mb-3" style="display: none">#}
+{#                                <input type="text" id="removed_member" name="removed_member">#}
+{#                            </div>#}
+{##}
+{#                            <div class="col-lg-12 mb-3">#}
+{#                                <h6><i>#}
+{#                                    Are you sure you want to remove#}
+{#                                    <span id="member_name" class="text-danger font-size-20"></span>#}
+{#                                    from {{ department }}?. <span class="text-danger">It cannot be restored.</span>#}
+{#                                </i></h6>#}
+{#                            </div>#}
+{##}
+{#                            <div class="col-lg-12">#}
+{#                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">#}
+{#                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>#}
+{#                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </form>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
 
     <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-category">
         <div class="modal-dialog  modal-dialog-centered">
@@ -1143,7 +1219,9 @@
                                         {% for user in all_users %}
                                             {% if mode == 'Unit' %}
                                                 {% if user.username not in unit.get_members_in_this_unit %}
-                                                	<option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                                    {% if user.username in department.get_list_of_dept_members_name %}
+                                                        <option value="{{ user.username }}">{{ user.get_full_name }}</option>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% else %}
                                                 <option value="{{ user.username }}">{{ user.get_full_name }}</option>
@@ -1167,11 +1245,6 @@
                                 </div>
                             {% endif %}
 
-
-
-
-
-
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
                                     <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Add Member</button>
@@ -1186,13 +1259,823 @@
             </div>
         </div>
     </div>
+{##}
+{#    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="edit_dialog">#}
+{#        <div class="modal-dialog  modal-dialog-centered">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header d-block text-center pb-3 border-bottom">#}
+{#                    <h3 class="modal-title" id="edit_dialog_modal_title">#}
+{#                        {% if mode is None %}#}
+{#                            Edit Diakonate#}
+{#                        {% elif mode == 'Diakonate' %}#}
+{#                            Edit Department#}
+{#                        {% elif mode == 'Department' %}#}
+{#                            Edit Unit#}
+{#                        {% elif mode == 'Unit' %}#}
+{#                            Edit SubUnit#}
+{#                        {% endif %}#}
+{#                    </h3>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form method="post">#}
+{#                        {% csrf_token %}#}
+{#                        {% if mode is None %}#}
+{#                            Add Diakonate #}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{##}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-name" class="h5">Name:</label>#}
+{#                                        <input type="text" name="diakonate-name" id="diakonate-name" class="form-control" placeholder="e.g., ADMINISTRATION" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-description" class="h5">Description:</label>#}
+{#                                        <textarea name="diakonate-description" id="diakonate-description" class="form-control" cols="30" rows="10" placeholder="Brief description of the diakonate's purpose" required></textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-leader" class="h5">Diakonate Head:</label>#}
+{#                                        <select name="diakonate-leader" id="diakonate-leader" class=" custom-control custom-select" required>#}
+{#                                            <option value="" disabled selected>Choose Diakonate head</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                {% if user|has_project_management_permission:"Core Leader" or user.is_superuser %}#}
+{#                                                    <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                                {% endif %}#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-assistant" class="h5">Diakonate Assistant Head:</label>#}
+{#                                        <select name="diakonate-assistant" id="diakonate-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Diakonate Assistant</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Diakonate</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        {% elif mode == 'Diakonate' %}#}
+{#                            Add Department#}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{#                                    <input type="text" name="form-submission-type" value="{{ mode }}">#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-name-full" class="h5">Department Name (Full):</label>#}
+{#                                        <input type="text" name="department-name_full" value="{{ department.department_long_name }}" id="department-name-full" class="form-control" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-name" class="h5">Department Name (Short):</label>#}
+{#                                        <input type="text" name="department-name" value="{{ department.department_name }}" id="department-name" class="form-control" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-objective" class="h5">Objectives:</label>#}
+{#                                        <textarea name="department-objective" id="department-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the department" required>#}
+{#                                            {{ department.department_objectives }}#}
+{#                                        </textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-head" class="h5">Department Head:</label>#}
+{#                                        <select name="department-head" id="department-head" class=" custom-control custom-select" required>#}
+{#                                            <option value="" disabled selected>Choose Department Head:</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-head-assistant" class="h5">Department Head Assistant:</label>#}
+{#                                        <select name="department-head-assistant" id="department-head-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Department Head Assistant:</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Save Changes</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                            </div>#}
+{#                        {% elif mode == 'Department' %}#}
+{#                            <div class="row" id="unit-section">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{#                                    <input type="text" name="form-submission-type" value="{{ mode }}">#}
+{#                                    <input type="text" name="form-submission-category" id="form-submission-category" value="unit">#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-name" class="h5">Name:</label>#}
+{#                                        <input type="text" name="unit-name" id="unit-name" class="form-control" placeholder="Enter unit name" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-objective" class="h5">Objectives:</label>#}
+{#                                        <textarea name="unit-objective" id="unit-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the unit" required></textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-head" class="h5">Unit Head:</label>#}
+{#                                        <select name="unit-head" id="unit-head" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Unit Head:</option>#}
+{#                                            {% for member in department.member_names.all %}#}
+{#                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-head-assistant" class="h5">Unit Head Assistant:</label>#}
+{#                                        <select name="unit-head-assistant" id="department-head-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Unit Head Assistant:</option>#}
+{#                                            {% for member in department.member_names.all %}#}
+{#                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Unit</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                            </div>#}
+{##}
+{#                        {% elif mode == 'Unit' %}#}
+{#                            <div class="col-lg-12">#}
+{#                               <div class="card border-secondary">#}
+{#                                  <div class="card-body text-secondary d-flex justify-content-center align-items-center">#}
+{#                                     <h4 class="card-title text-secondary">Coming Soon</h4>#}
+{#                                  </div>#}
+{#                               </div>#}
+{#                            </div>#}
+{#                        {% endif %}#}
+{##}
+{#                    </form>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_modal">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="delete_modal_title">
+                        Delete {{ mode }}
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if mode == 'Diakonate' %}
+                            <input type="text" name="delete_diaconate" value="{{ diaconate.id }}" style="display: none;">
+                            <div class="row">
+                                <p class="p-3"><i class="delete_display_text">
+                                    Are you sure you want to delete {{ diaconate.name }} Diakonate? This action will
+                                    permanently remove the diakonate, all its department, and all associated
+                                    data including the members. <span class="text-danger bold">This action is irreversible</span>
+                                </i></p>
+                            </div>
+                        {% elif mode == 'Department' %}
+                            <input type="text" name="delete_department" value="{{ department.id }}" style="display: none">
+                            <div class="row">
+                                <p class="p-3"><i class="delete_display_text">
+                                    Are you sure you want to remove {{ department.department_name }} Department from {{ diaconate.name }}?
+                                    This action will permanently remove the department, all its units, and all associated
+                                    data including the members. <span class="text-danger bold">This action is irreversible</span>
+                                </i></p>
+                            </div>
+
+                        {% elif mode == 'Unit' %}
+                            <div class="row">
+                                <input type="text" name="delete_unit" value="{{ unit.id }}" style="display: none">
+                                <p class="p-3"><i class="delete_display_text">
+                                    Are you sure you want to remove {{ unit.name }} Unit from {{ department.department_name }} . <span class="text-danger bold">This action is irreversible</span>
+                                </i></p>
+                            </div>
+                        {% endif %}
+
+                         <div class="col-lg-12">
+                            <div class="d-flex flex-wrap justify-content-end mt-2">
+                                <button type="submit" class="btn btn-outline-danger mr-1 pt-2 pb-2">I Understand</button>
+                                <div class="btn btn-primary flex-grow-1 pt-2 pb-2" data-dismiss="modal">Cancel</div>
+                            </div>
+                         </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if mode == 'Diakonate' %}
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_department_modal">
+            <div class="modal-dialog  modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bottom">
+                        <h3 class="modal-title" id="delete_department_modal_title">
+                            Delete Department
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <input type="text" name="delete_department" id="diaconate_department" value="{{ department.id }}" style="display:none">
+                            <div class="row">
+                                <p class="p-3"><i id="delete_department_display_text">
+                                    Are you sure you want to remove {{ department.department_name }} Department from {{ diaconate.name }}? <span class="text-danger bold">This action is irreversible</span>
+                                </i></p>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap justify-content-end mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-1 pt-2 pb-2">I Understand</button>
+                                    <div class="btn btn-primary flex-grow-1 pt-2 pb-2" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif mode == 'Department' %}
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_unit_modal">
+            <div class="modal-dialog  modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bottom">
+                        <h3 class="modal-title" id="delete_unit_modal_title">
+                            Delete Unit
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="row">
+                                <input type="text" name="delete_unit" id="department_unit" value="{{ unit.id }}" style="display: none">
+                                <p class="p-3"><i id="delete_unit_display_text">
+                                    Are you sure you want to remove {{ unit.name }} Unit from {{ department.department_name }} . <span class="text-danger bold">This action is irreversible</span>
+                                </i></p>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap justify-content-end mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-1 pt-2 pb-2">I Understand</button>
+                                    <div class="btn btn-primary flex-grow-1 pt-2 pb-2" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{##}
+{#    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="edit_diakonate_modal">#}
+{#        <div class="modal-dialog  modal-dialog-centered">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header d-block text-center pb-3 border-bottom">#}
+{#                    <h3 class="modal-title" id="edit_dialog_modal_title">#}
+{#                        {% if mode is None %}#}
+{#                            Edit Diakonate#}
+{#                        {% elif mode == 'Diakonate' %}#}
+{#                            Edit Department#}
+{#                        {% elif mode == 'Department' %}#}
+{#                            Edit Unit#}
+{#                        {% elif mode == 'Unit' %}#}
+{#                            Edit SubUnit#}
+{#                        {% endif %}#}
+{#                    </h3>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form method="post">#}
+{#                        {% csrf_token %}#}
+{#                        {% if mode is None %}#}
+{#                            Add Diakonate #}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{##}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-name" class="h5">Name:</label>#}
+{#                                        <input type="text" name="diakonate-name" id="diakonate-name" class="form-control" placeholder="e.g., ADMINISTRATION" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-description" class="h5">Description:</label>#}
+{#                                        <textarea name="diakonate-description" id="diakonate-description" class="form-control" cols="30" rows="10" placeholder="Brief description of the diakonate's purpose" required></textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-leader" class="h5">Diakonate Head:</label>#}
+{#                                        <select name="diakonate-leader" id="diakonate-leader" class=" custom-control custom-select" required>#}
+{#                                            <option value="" disabled selected>Choose Diakonate head</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                {% if user|has_project_management_permission:"Core Leader" or user.is_superuser %}#}
+{#                                                    <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                                {% endif %}#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="diakonate-assistant" class="h5">Diakonate Assistant Head:</label>#}
+{#                                        <select name="diakonate-assistant" id="diakonate-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Diakonate Assistant</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Diakonate</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        {% elif mode == 'Diakonate' %}#}
+{#                            Add Department#}
+{#                            <div class="row">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{#                                    <input type="text" name="form-submission-type" value="{{ mode }}">#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-name-full" class="h5">Department Name (Full):</label>#}
+{#                                        <input type="text" name="department-name_full" value="{{ department.department_long_name }}" id="department-name-full" class="form-control" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-name" class="h5">Department Name (Short):</label>#}
+{#                                        <input type="text" name="department-name" value="{{ department.department_name }}" id="department-name" class="form-control" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-objective" class="h5">Objectives:</label>#}
+{#                                        <textarea name="department-objective" id="department-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the department" required>#}
+{#                                            {{ department.department_objectives }}#}
+{#                                        </textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-head" class="h5">Department Head:</label>#}
+{#                                        <select name="department-head" id="department-head" class=" custom-control custom-select" required>#}
+{#                                            <option value="" disabled selected>Choose Department Head:</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="department-head-assistant" class="h5">Department Head Assistant:</label>#}
+{#                                        <select name="department-head-assistant" id="department-head-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Department Head Assistant:</option>#}
+{#                                            {% for user in all_users %}#}
+{#                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Save Changes</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                            </div>#}
+{#                        {% elif mode == 'Department' %}#}
+{#                            <div class="row" id="unit-section">#}
+{#                                <div class="col-lg-12" style="display: none;">#}
+{#                                    <input type="text" name="form-submission-type" value="{{ mode }}">#}
+{#                                    <input type="text" name="form-submission-category" id="form-submission-category" value="unit">#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-name" class="h5">Name:</label>#}
+{#                                        <input type="text" name="unit-name" id="unit-name" class="form-control" placeholder="Enter unit name" required>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-objective" class="h5">Objectives:</label>#}
+{#                                        <textarea name="unit-objective" id="unit-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the unit" required></textarea>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-head" class="h5">Unit Head:</label>#}
+{#                                        <select name="unit-head" id="unit-head" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Unit Head:</option>#}
+{#                                            {% for member in department.member_names.all %}#}
+{#                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="form-group mb-3">#}
+{#                                        <label for="unit-head-assistant" class="h5">Unit Head Assistant:</label>#}
+{#                                        <select name="unit-head-assistant" id="department-head-assistant" class=" custom-control custom-select">#}
+{#                                            <option value="" disabled selected>Choose Unit Head Assistant:</option>#}
+{#                                            {% for member in department.member_names.all %}#}
+{#                                                <option value="{{ member.member_name.id }}">{{ member.member_name.get_full_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{##}
+{#                                <div class="col-lg-12">#}
+{#                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">#}
+{#                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Create Unit</button>#}
+{#                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{##}
+{#                            </div>#}
+{##}
+{#                        {% elif mode == 'Unit' %}#}
+{#                            <div class="col-lg-12">#}
+{#                               <div class="card border-secondary">#}
+{#                                  <div class="card-body text-secondary d-flex justify-content-center align-items-center">#}
+{#                                     <h4 class="card-title text-secondary">Coming Soon</h4>#}
+{#                                  </div>#}
+{#                               </div>#}
+{#                            </div>#}
+{#                        {% endif %}#}
+{##}
+{#                    </form>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="edit_dialog_modal">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="edit_dialog_modal_title">
+
+                        {% if mode == 'Diakonate' %}
+                            Edit Diakonate
+                        {% elif mode == 'Department' %}
+                            Edit Department
+                        {% elif mode == 'Unit' %}
+                            Edit Unit
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if mode == 'Diakonate' %}
+                            <div class="row">
+                                <div class="col-lg-12" style="">
+                                    <input type="text" name="update_diakonate" value="{{ diaconate.id }}" style="display: none">
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-name" class="h5">Name:</label>
+                                        <input type="text" name="diakonate-name" id="diakonate-name" value="{{ diaconate.name }}" class="form-control" placeholder="e.g., ADMINISTRATION" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-description" class="h5">Description:</label>
+                                        <textarea name="diakonate-description" id="diakonate-description" class="form-control" cols="30" rows="10" placeholder="Brief description of the diakonate's purpose" required>{{ diaconate.info }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-leader" class="h5">Diakonate Head:</label>
+                                        <select name="diakonate-leader" id="diakonate-leader" class=" custom-control custom-select" required>
+                                            <option value="" disabled>Choose Diakonate head</option>
+                                            {% for user in all_users %}
+                                                {% if user|has_project_management_permission:"Core Leader" or user.is_superuser %}
+                                                    <option value="{{ user.username }}" {% if diaconate.head.username == user.username %}selected{% endif %}>{{ user.get_full_name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate-assistant" class="h5">Diakonate Assistant Head:</label>
+                                        <select name="diakonate-assistant" id="diakonate-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Diakonate Assistant</option>
+                                            {% for user in all_users %}
+                                                <option value="{{ user.username }}" {% if diaconate.assistant.username == user.username %}selected{% endif %}>{{ user.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Update Diakonate</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif mode == 'Department' %}
+                            <div class="row">
+                                <div class="col-lg-12" style="display: none;">
+                                    <input type="text" name="update_department" value="{{ department.id }}" style="display: none">
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-full-name" class="h5">Department Name (Full):</label>
+                                        <input type="text" name="department-full-name" value="{{ department.department_long_name }}" id="department-name-full" class="form-control" required>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-name" class="h5">Department Name (Short):</label>
+                                        <input type="text" name="department-name" value="{{ department.department_name }}" id="department-name" class="form-control" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-objective" class="h5">Objectives:</label>
+                                        <textarea name="department-objective" id="department-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the department" required>{{ department.department_objectives }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-head" class="h5">Department Head:</label>
+                                        <select name="department-head" id="department-head" class=" custom-control custom-select" required>
+                                            <option value="" disabled>Choose Department Head:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.member_name.username }}" {% if department.leader.member_name.username == member.member_name.username %}selected{% endif %}>{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="department-head-assistant" class="h5">Department Head Assistant:</label>
+                                        <select name="department-head-assistant" id="department-head-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Department Head Assistant:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.member_name.username }}" {% if department.sub_leader.member_name.username == member.member_name.username %}selected{% endif %}>{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Save Changes</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        {% elif mode == 'Unit' %}
+                            <div class="row" id="unit-section">
+                                <div class="col-lg-12" style="display: none;">
+                                    <input type="text" name="update_unit" value="{{ unit.id }}">
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-name" class="h5">Name:</label>
+                                        <input type="text" name="unit-name" id="unit-name" value="{{ unit.name }}" class="form-control" placeholder="Enter unit name" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-objective" class="h5">Objectives:</label>
+                                        <textarea name="unit-objective" id="unit-objective" class="form-control" cols="30" rows="10" placeholder="Objective of the unit" required>{{ unit.objective }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-head" class="h5">Unit Head:</label>
+                                        <select name="unit-head" id="unit-head" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Unit Head:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.id }}" {% if unit.unit_leader.id == member.id %}selected{% endif %}>{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="unit-head-assistant" class="h5">Unit Head Assistant:</label>
+                                        <select name="unit-head-assistant" id="department-head-assistant" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Unit Head Assistant:</option>
+                                            {% for member in department.member_names.all %}
+                                                <option value="{{ member.id }}" {% if unit.sub_leader.id == member.id %}selected{% endif %}>{{ member.member_name.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
+                                        <button type="submit" class="flex-grow-1 btn btn-primary mr-1">Save Changes</button>
+                                        <div class="btn btn-outline-light" data-dismiss="modal">Cancel</div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        {% elif mode == 'SubUnit' %}
+                            <div class="col-lg-12">
+                               <div class="card border-secondary">
+                                  <div class="card-body text-secondary d-flex justify-content-center align-items-center">
+                                     <h4 class="card-title text-secondary">Coming Soon</h4>
+                                  </div>
+                               </div>
+                            </div>
+                        {% endif %}
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="delete_department_member">
+        <div class="modal-dialog  modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center pb-3 border-bottom">
+                    <h3 class="modal-title" id="delete_modal_title">
+                        Delete {{ mode }}
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <input type="text" id="delete_department_membership" name="delete_department_membership" style="display: none;">
+                        <div class="row">
+                            <p class="p-3"><i class="delete_display_text">
+                                Are you sure you want to remove <span class="text-danger bold" id="member_name"></span> from
+                                {{ department.department_name }}? This
+                                action will permanently remove all the data associated with this member
+                                <span class="text-danger bold">This action is irreversible</span>
+                            </i></p>
+                        </div>
+
+                         <div class="col-lg-12">
+                            <div class="d-flex flex-wrap justify-content-end mt-2">
+                                <button type="submit" class="btn btn-outline-danger mr-1 pt-2 pb-2">I Understand</button>
+                                <div class="btn btn-primary flex-grow-1 pt-2 pb-2" data-dismiss="modal">Cancel</div>
+                            </div>
+                         </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 {% endblock modal %}
 
 {% block extra_js %}
     <script src="{% static 'custom/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'custom/to_do/to_do.js' %}"></script>
     <script>
-        let searchIndex = {{ family_members|jsonify }};
+        const settings_for_modal_delete = (id, name, mode) => {
+            let hidden_input_element = null;
+            let delete_display_text = null;
+
+
+            if (mode === 'Department') {
+                hidden_input_element = document.querySelector("#diaconate_department");
+                let modal_title = document.getElementById('delete_department_modal_title')
+                modal_title.textContent = 'Delete Department'
+
+                delete_display_text = `Are you sure you want to remove ${name} Department from {{ diaconate.name }}? <span class="text-danger bold">This action is irreversible</span>`
+                let display_board = document.querySelector('#delete_department_display_text');
+                display_board.innerHTML = delete_display_text;
+
+            } else if (mode === 'Unit') {
+                hidden_input_element = document.querySelector("#department_unit");
+                let modal_title = document.getElementById('delete_unit_modal_title')
+                modal_title.textContent = "Delete Unit";
+
+                delete_display_text = `Are you sure you want to remove ${name} unit from {{ department.department_name }}? <span class="text-danger bold">This action is irreversible</span>`
+                let display_board = document.querySelector('#delete_unit_display_text')
+                display_board.innerHTML = delete_display_text;
+            }
+
+            if (hidden_input_element) {
+
+                hidden_input_element.value = id;
+            }
+
+        }
+
+        let searchIndex = {% if family_members %}{{ family_members|jsonify }}{% else %}{}{% endif %};
     </script>
     <script src="{% static 'custom/autocomplete/auto_complete.js' %}"></script>
 

@@ -144,6 +144,8 @@ INSTALLED_APPS = [
     'bot',    
     'unperplexed',
     'transcription',
+
+    "django_browser_reload",
 ]
 
 
@@ -176,7 +178,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     "django_htmx.middleware.HtmxMiddleware",
-    "allauth.account.middleware.AccountMiddleware"
+    "allauth.account.middleware.AccountMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
+
 ]
 
 # if DEBUG:

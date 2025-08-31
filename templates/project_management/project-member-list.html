@@ -1,0 +1,50 @@
+{% extends 'project_management/index.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'custom/blinking_border/blinking_border.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-sm-12 col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-3">Select Department</h3>
+                        <select id="diakonate_overview_selection" class="form-control mb-3" name="department_selection" required
+                            hx-get="{% url 'project_management:get_members' %}"
+                            hx-target="#department_member_selection"
+                            hx-swap="innerHTML"
+                            hx-trigger="change"
+                            hx-indicator="#springBouceLoader"
+                        >
+                            {% if user.is_superuser or user|has_project_management_permission %}
+                                <option value="" disabled selected>Choose Department</option>
+                                {% for office in diaconates %}
+                                    <optgroup label="{{ office.name }}">
+                                        {% for dept in office.departments.all %}
+                                            {% if dept in user_leader_in_dept or user.is_superuser or user|has_project_management_permission:"Diakonate Head" %}
+                                                <option value="{{ dept.id }}">{{ dept.department_name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="department_member_selection">
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}

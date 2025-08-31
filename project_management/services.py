@@ -91,6 +91,8 @@ def diakonate_details(context, user, today, **kwargs):
 
 
 def department_details(context, user, today, **kwargs):
+    user_departments = Department.objects.filter(Q(leader__member_name=user) | Q(sub_leader__member_name=user))
+
     user_diaconates = Diaconate.objects.filter(
         Q(department__leader__member_name=user) | Q(department__sub_leader__member_name=user)
     ).distinct()
@@ -98,9 +100,9 @@ def department_details(context, user, today, **kwargs):
     department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
     department_project_queryset = DepartmentProject.objects.filter(department__department_diaconate__in=user_diaconates)
 
-    context['member_departments'] = department_queryset
+    context['member_departments'] = user_departments
     context['diaconates'] = user_diaconates
-    context['departments_count'] = department_queryset.count()
+    context['departments_count'] = user_departments.count()
 
 
 def unit_leader_details(context):
