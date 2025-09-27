@@ -152,14 +152,17 @@
                                   </a>
                             </li>
 
-                            <li class="{% if page == 'Members' %}active{% endif %}">
-                                  <a href="{% url 'project_management:project-members' %}" class="svg-icon">
-                                      <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                                      </svg>
-                                      <span class="ml-4">Members</span>
-                                  </a>
-                            </li>
+                            {% if user.is_superuser or user|has_project_management_permission %}
+                                <li class="{% if page == 'Members' %}active{% endif %}">
+                                    <a href="{% url 'project_management:project-members' %}" class="svg-icon">
+                                        <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        <span class="ml-4">Members</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+
                           <li class="">
                               <a href="#calender" class="collapsed" data-toggle="collapse" aria-expanded="false">
                                   <svg class="svg-icon" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -354,13 +357,14 @@
                                           {% csrf_token %}
                                           <input type="text" name="dashboard_selection" value="overview" style="display: none">
                                           <div class="form-group col-lg-3">
+                                            <div class="text-danger font-weight-800" for="diakonate_overview_selection">Step 1</div>
                                             <label for="diakonate_overview_selection">Select Diakonate</label>
                                             <select id="diakonate_overview_selection" class="form-control mb-3" name="diaconate_selection" required
                                                 hx-get="{% url 'project_management:get_departments' %}"
                                                 hx-target="#department_overview_selection"
                                                 hx-swap="innerHTML"
                                             >
-                                                {% if user.is_superuser or user|has_project_management_permission %}
+                                                {% if user.is_superuser or user|has_project_management_permission or user.departmentmember_set.exists %}
                                                     <option value="" disabled selected>Choose Diakonate</option>
                                                     {% for office in diaconates %}
                                                         <option value="{{ office.name }}">{{ office.name }}</option>
@@ -369,6 +373,7 @@
                                             </select>
                                           </div>
                                           <div class="form-group col-lg-3">
+                                                <div class="text-danger font-weight-800" for="diakonate_overview_selection">Step 2</div>
                                                 <label for="department_overview_selection">Select Department</label>
                                                 <select id="department_overview_selection" class="form-control mb-3" name="department_selection" required>
                                                     <option value="" disabled selected>Choose Department</option>
@@ -377,6 +382,7 @@
                                       
                                           {% if user.is_superuser %} 
                                               <div class="col-lg-3">
+                                                    <div class="text-danger font-weight-800" for="diakonate_overview_selection">Step 3</div>
                                                     <label>Dashboard View</label>
                                                     <button type="submit" value="overview" name="submit_button" class="btn btn-lg btn-primary btn-block d-flex justify-content-center align-content-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye h-4 w-4 mr-1" data-lov-id="src/components/SuperAdminControls.tsx:115:16" data-lov-name="Eye" data-component-path="src/components/SuperAdminControls.tsx" data-component-line="115" data-component-file="SuperAdminControls.tsx" data-component-name="Eye" data-component-content="%7B%22className%22%3A%22h-4%20w-4%20mr-1%22%7D"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -386,6 +392,11 @@
                                           {% endif %}
                                       
                                         <div class="col-lg-3">
+                                            {% if user.is_superuser %}
+                                                <div class="text-danger font-weight-800" for="diakonate_overview_selection">Step 4</div>
+                                            {% else %}
+                                                <div class="text-danger font-weight-800" for="diakonate_overview_selection">Step 3</div>
+                                            {% endif %}
                                             <label>Quick Actions</label>
                                             <div class="d-flex">
                                                 {% if user.is_superuser or user|has_project_management_permission:"Diakonate Head" %}

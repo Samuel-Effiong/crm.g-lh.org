@@ -27,6 +27,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 from home.views import short_links
 
 
+
 # Send signal every 12 hours
 
 # hours = 60 * 60 * 24
@@ -52,8 +53,10 @@ urlpatterns = [
     path('unperplexed/', include('unperplexed.urls')),
     path('', include('home.urls')),
     path("__reload__/", include('django_browser_reload.urls')),
+    path("__debug__/", include('debug_toolbar.urls')),
 
-    re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|unperplexed|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|treasury-request-form|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin/__reload__/).*$', short_links, name='short-links')
+
+    re_path(r'^(?!admin|api|auth|media|cms|documents|pages|bot|accounts|unperplexed|fetch|deactivate|users-profile|users-registration|users-login|users-logout|users-recover-password|users-tasks|treasury-request-form|coming-soon|personal-development|church-work|evangelism|prophetic-vision|catalog|suggestion-complaints|update-counter|pastoring|project-management|site_admin/__reload__/|__debug__/).*$', short_links, name='short-links')
 ]
 
 if settings.DEBUG:

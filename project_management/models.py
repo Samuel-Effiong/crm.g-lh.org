@@ -1,5 +1,4 @@
-import random
-from typing import Tuple, Dict
+
 from users.my_models import CustomUser
 
 # from django.conf import settings
@@ -32,21 +31,141 @@ WEIGHT_TARGET_NOT_STARTED = 25
 class DepartmentMemberManager(models.Manager):
     def get_department_members(self, department):
         """Get all the members that belongs to a specific department"""
-        members = self.get_queryset().filter(department_name=department)
-        return members
+        return self.filter(department_name=department)
 
     def get_user_departments(self, user: CustomUser) -> list[str]:
         """Get a list of all the department a user is a member to"""
-        departments_membership = self.get_queryset().filter(member_name=user)
-        departments: list[str] = [department.department_name for department in departments_membership]
+        # departments_membership = self.get_queryset().filter(member_name=user)
+        # departments: list[str] = [department.department_name for department in departments_membership]
 
-        return departments
+        return list(self.filter(member_name=user).values_list('department_name__department_name', flat=True))
+
+        # return departments
 
     def is_in_a_department(self, user: CustomUser) -> bool:
         """Check if user is a member of any department"""
-        member = self.get_queryset().filter(member_name=user)
+        return self.filter(member_name=user).exists()
 
-        return len(self.get_user_departments(user)) > 0
+    def get_ranked_members(self, limit: int = None, diaconate: 'Diaconate' = None, member: 'DepartmentMember' = None):
+        """
+        Retrieves a list of DepartmentMembers with Calculated performance scores
+        sorted in descending order. Uses efficient database aggregation.
+        """
+
+        today = timezone.now().date()
+
+        queryset = self.select_related('member_name', 'department_name')
+
+        if diaconate:
+            queryset = queryset.filter(department_name__diaconate=diaconate)
+        if member:
+            queryset = queryset.filter(pk=member.pk)
+
+        # Aggregate project and target statistics in a single query
+        ranked_member_query = queryset.annotate(
+            total_projects=Count('member_name__project_members', distinct=True),
+            completed_projects=Count(
+                'member_name__project_members',
+                filter=Q(member_name__project_members__status='Completed'),
+                distinct=True
+            ),
+            not_started_projects=Count(
+                'member_name__project_members',
+                filter=Q(member_name__project_members__status='Not Started'),
+                distinct=True
+            ),
+            overdue_project=Count(
+                'member_name__project_members',
+                filter=Q(member_name__project_members__due_date__lt=today, member_name__project_members__status__in=['In Progress', 'Not Started']),
+                distinct=True
+            ),
+            total_targets=Count('member_name__project_members__target', distinct=True),
+            completed_targets=Count(
+                'member_name__project_members__target',
+                filter=Q(
+                    member_name__project_members__target__state='Not Started'
+                ),
+                distinct=True
+            ),
+            pending_targets=Count(
+                'member_name__project_members__target',
+                filter=Q(member_name_project_members__target__state="Pending Approval"),
+            ),
+            not_started_targets=Count(
+                'member_name__project_members__target',
+                filter=Q(member_name__project_members__target__state="Not Started"),
+                distinct=True
+            )
+        ).annotate(
+            project_score_part=Case(
+                When(total_projects__gt=0, then=(
+                (F('completed_projects') / F('total_projects')) * Value(WEIGHT_PROJECT_COMPLETED) -
+                (F('overdue_projects') / F('total_projects')) * Value(WEIGHT_PROJECT_OVERDUE) -
+                (F('not_started_projects') / F('total_projects')) * Value(WEIGHT_PROJECT_NOT_STARTED)
+                )),
+                default=Value(0),
+                output_field=FloatField()
+            ),
+            target_score_part=Case(
+                When(total_projects__gt=0, then=(
+                    (F('completed_targets') / F('total_targets')) * Value(WEIGHT_TARGET_COMPLETED) -
+                    (F('pending_targets') / F('total_targets')) * Value(WEIGHT_TARGET_PENDING) -
+                    (F('not_started_targets') / F('total_targets')) * Value(WEIGHT_TARGET_NOT_STARTED)
+                )),
+                default=Value(0),
+                output_field=FloatField()
+            ),
+            performance_score=models.functions.Greatest(
+                Value(0.0),
+                models.functions.Least(
+                    Value(100.0),
+                    F('project_score_part') + F('target_score_part')
+                )
+            )
+        ).order_by('-performance_score')
+
+        if limit:
+            ranked_member_query = ranked_member_query[:limit]
+
+        # Structure the final output
+        results = []
+        for member in ranked_member_query:
+            results.append({
+                'member_id': member.id,
+                'member_name': member.member_name.get_full_name(),
+                'performance_score': round(member.performance_score, 2),
+                'department_name': member.department_name.department_name,
+                'project_completed': member.completed_projects,
+                'target_completed': member.completed_targets
+            })
+
+        return results
+
+
+    def get_top_lowest_members(self, limit: int = None):
+        top_members = self.get_ranked_members(limit=limit)
+
+        # Get the bottom members by reversing the sort
+        lowest_members = self.get_ranked_members().order_by('performance_score')
+        if limit:
+            lowest_members = lowest_members[:limit]
+
+        bottom_members_formatted = [
+            {
+                'member_id': member.id,
+                'member_name': member.member_name.get_full_name(),
+                'performance_score': round(member.performance_score, 2),
+                'department_name': member.department_name.department_name,
+                'project_completed': member.completed_projects,
+                'target_completed': member.completed_targets,
+            }
+            for member in lowest_members
+        ]
+
+        return {'top': top_members, 'bottom': bottom_members_formatted}
+
+    def get_ranking_of_performing_members_in_a_diaconate(self, limit: int, diaconate: 'Diaconate'):
+        return self.get_ranked_members(limit=limit, diaconate=diaconate)
 
     def get_top_and_lowest_performing_members(self, limit: int = None):
         """
@@ -110,7 +229,7 @@ class DepartmentMember(models.Model):
     department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
     experience_score = models.IntegerField(default=0)
 
-    date_joined = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(auto_now_add=True, db_index=True)
 
     objects = DepartmentMemberManager()
 
@@ -122,12 +241,21 @@ class DepartmentMember(models.Model):
                 name="members_constraints"
             )
         ]
+        
+        indexes = [
+            models.Index(fields=['member_name']),
+            models.Index(fields=['department_name'])
+        ]
 
     def __str__(self) -> str:
         return f"{self.member_name.get_full_name()} - {self.department_name}"
 
     def get_member_full_name(self) -> str:
         return self.member_name.get_full_name()
+
+    def get_member_list_of_skills(self):
+        skills = self.member_name.skills.strip()
+        return skills.split(',') if skills else []
 
     def get_member_image_url(self) -> str:
         return self.member_name.get_image_url()
@@ -176,6 +304,9 @@ class DepartmentMember(models.Model):
         )
 
         return total_project
+
+    def is_leader(self):
+        return self.department_name.is_leader(self)
 
     def get_performance_score(self) -> float:
 
@@ -255,8 +386,8 @@ class DepartmentCategoryManager(models.Manager):
 
 
 class DepartmentCategory(models.Model):
-    category_name = models.CharField(max_length=255)
-    department_name = models.ForeignKey('Department', on_delete=models.CASCADE)
+    category_name = models.CharField(max_length=255, db_index=True)
+    department_name = models.ForeignKey('Department', on_delete=models.CASCADE, db_index=True)
     category_objective = models.TextField()
 
     objects = DepartmentCategoryManager()
@@ -343,22 +474,17 @@ class DepartmentManager(models.Manager):
         return statistics
 
 
+
+
 class Department(models.Model):
-    CHOICES = (
-        ('GMT', 'GMT'),
-        ('Extraction', 'Extraction Team'),
-        ('Website', 'Website Team'),
-        ('Archive', 'Archive'),
-        ('GRT', 'GRT'),
-    )
 
     member_names = models.ManyToManyField(DepartmentMember, blank=True)
-    department_name = models.CharField(_('Department'), max_length=255, unique=True)
-    department_long_name = models.CharField(_('Department (Long Name)'), max_length=1000, null=True, blank=True)
+    department_name = models.CharField(_('Department'), max_length=255, unique=True, db_index=True)
+    department_long_name = models.CharField(_('Department (Long Name)'), max_length=1000, null=True, blank=True, db_index=True)
     leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
-    department_objectives = models.TextField(null=True, blank=True, default="")
+    department_objectives = models.TextField(null=True, blank=True, default="", db_index=True)
     custom_tables = models.ManyToManyField('DepartmentTable', blank=True)
 
     department_diaconate = models.ForeignKey('Diaconate', on_delete=models.CASCADE, null=True, blank=True)
@@ -504,18 +630,12 @@ class StateType(models.TextChoices):
 
 
 class ProjectTarget(models.Model):
-    Choices = (
-        ('Not Started', 'Not Started'),
-        ('In Progress', 'In Progress'),
-        ('Completed', 'Completed'),
-        ('Pending Approval', 'Pending Approval')
-    )
 
-    target_name = models.CharField(max_length=1000)
-    target_description = models.TextField(default="")
+    target_name = models.CharField(max_length=1000, db_index=True)
+    target_description = models.TextField(default="", db_index=True)
     project = models.ForeignKey('DepartmentProject', on_delete=models.CASCADE)
-    state = models.CharField(max_length=25, choices=StateType.choices, default=StateType.NOT_STARTED)
-    date = models.DateField(auto_now=True)
+    state = models.CharField(max_length=25, choices=StateType.choices, default=StateType.NOT_STARTED, db_index=True)
+    date = models.DateField(auto_now=True, db_index=True)
     due_date = models.DateField()
 
     objects = ProjectTargetManager()
@@ -635,33 +755,35 @@ class DepartmentProjectManager(models.Manager):
         )
 
 
-class DepartmentProject(models.Model):
-    PRIORITY_CHOICES = (
-        ('High', 'High'),
-        ('Medium', 'Medium'),
-        ('Low', 'Low')
-    )
+class PriorityType(models.TextChoices):
+    HIGH = 'High', _('High')
+    MEDIUM = 'Medium', _('Medium')
+    LOW = 'Low', _('Low')
 
-    STATUS_CHOICES = (
-        ('In Progress', 'In Progress'),
-        ('Completed', 'Completed'),
-        ('Not Started', 'Not Started')
-    )
+
+class StatusType(models.TextChoices):
+    IN_PROGRESS = 'In Progress', _('In Progress')
+    COMPLETED = 'Completed', _('Completed')
+    NOT_STARTED = 'Not Started', _('Not Started')
+
+
+class DepartmentProject(models.Model):
+
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    project_name = models.CharField(max_length=1000, unique=True)
-    project_description = models.TextField()
+    project_name = models.CharField(max_length=1000, unique=True, db_index=True)
+    project_description = models.TextField(db_index=True)
 
     department_unit = models.ForeignKey('Unit', on_delete=models.SET_NULL, null=True, blank=True)
     project_members = models.ManyToManyField(DepartmentMember, blank=True, help_text="choose individual members from the project's department.")
     project_leader = models.ForeignKey(DepartmentMember, on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
-    project_priority = models.CharField(max_length=50, default='Low', choices=PRIORITY_CHOICES)
-    status = models.CharField(max_length=50, default="Not Started", choices=STATUS_CHOICES)
+    project_priority = models.CharField(max_length=50, default=PriorityType.LOW, choices=PriorityType.choices, db_index=True)
+    status = models.CharField(max_length=50, default=StatusType.NOT_STARTED, choices=StatusType.choices, db_index=True)
 
     target = models.ManyToManyField(ProjectTarget, blank=True)
 
-    start_date = models.DateField(default=timezone.now)
-    due_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(default=timezone.now, db_index=True)
+    due_date = models.DateField(null=True, blank=True, db_index=True)
 
     # Choose colour that will be associated to the project
     project_background_color = models.CharField(max_length=100, default='#000000')
@@ -802,10 +924,10 @@ class PendingDepartmentRequest(models.Model):
 
 class DepartmentTable(models.Model):
     department_name = models.ForeignKey(Department, on_delete=models.CASCADE)
-    table_name = models.CharField(max_length=100, unique=True)
-    table_name_plural = models.CharField(max_length=255)
+    table_name = models.CharField(max_length=100, unique=True, db_index=True)
+    table_name_plural = models.CharField(max_length=255, db_index=True)
     table_description = models.TextField()
-    date = models.DateTimeField(default=timezone.now)
+    date = models.DateTimeField(default=timezone.now, db_index=True)
 
     fields = models.ManyToManyField('CustomField', blank=True)
     row_values = models.ManyToManyField('FieldValueIndex', blank=True)
@@ -829,28 +951,30 @@ class DepartmentTable(models.Model):
             return 0
 
 
+class FieldType(models.TextChoices):
+    TEXT = 'text', _('text')
+    PASSWORD = 'password', _('password')
+    TEXTAREA = 'textarea', _('textarea')
+    EMAIL = 'email', _('email')
+    NUMBER = 'number', _('number')
+    CHECKBOX = 'checkbox', _('checkbox')
+    TEL = 'tel', _('tel')
+    URL = 'url', _('url')
+    DATE = 'date', _('date')
+    TIME = 'time', _('time')
+    FILE = 'file', _('file')
+    SEARCH = 'search', _('search')
+    RANGE = 'range', _('range')
+    COLOR = 'color', _('color')
+    MONTH = 'month', _('month')
+    WEEK = 'week', _('week')
+    DATETIME_LOCAL = 'datetime-local', _('datetime-local')
+
+
 class CustomField(models.Model):
-    FIELD_TYPE_CHOICES = (
-        ('text', 'text'),
-        ('password', 'password'),
-        ('textarea', 'textarea'),
-        ('email', 'email'),
-        ('number', 'number'),
-        ('checkbox', 'checkbox'),
-        ('tel', 'tel'),
-        ('url', 'url'),
-        ('date', 'date'),
-        ('time', 'time'),
-        ('file', 'file'),
-        ('search', 'search'),
-        ('range', 'range'),
-        ('color', 'color'),
-        ('month', 'month'),
-        ('week', 'week'),
-        ('datetime-local', 'datetime-local'),
-    )
-    name = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=255, choices=FIELD_TYPE_CHOICES)
+    
+    name = models.CharField(max_length=255, db_index=True)
+    field_type = models.CharField(max_length=255, choices=FieldType.choices, default=FieldType.TEXT, db_index=True)
     table = models.ForeignKey(DepartmentTable, on_delete=models.CASCADE)
     foreign_key = models.CharField(max_length=255, blank=True, null=True,
                                    help_text="Know which other it links to")
@@ -1044,8 +1168,8 @@ class CustomDiaconateManager(models.Manager):
 
 
 class Diaconate(models.Model):
-    name = models.CharField(max_length=500, unique=True)
-    info = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=500, unique=True, db_index=True)
+    info = models.TextField(null=True, blank=True, db_index=True)
     head = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     assistant = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
@@ -1168,8 +1292,8 @@ class CustomUnitManager(models.Manager):
 
 
 class Unit(models.Model):
-    name = models.CharField(max_length=500)
-    objective = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=500, db_index=True)
+    objective = models.TextField(null=True, blank=True, db_index=True)
     unit_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
     sub_leader = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     members = models.ManyToManyField(DepartmentMember, blank=True, related_name='member_units_set')
@@ -1184,6 +1308,13 @@ class Unit(models.Model):
             name='unique_department_unit'
         )
     ]
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['unit_department', 'name']),
+            models.Index(fields=['unit_leader']),
+            models.Index(fields=['sub_leader'])
+        ]
 
     def __str__(self):
         return f"{self.name}\t-\t\t{self.unit_department}"
@@ -1206,8 +1337,8 @@ class SubUnitManager(models.Manager):
 
 
 class SubUnit(models.Model):
-    name = models.CharField(max_length=500)
-    info = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=500, db_index=True)
+    info = models.TextField(null=True, blank=True, db_index=True)
     head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True)
     assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
@@ -1235,8 +1366,8 @@ class TeamManager(models.Manager):
 
 
 class Team(models.Model):
-    name = models.CharField(max_length=500)
-    info = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=500, db_index=True)
+    info = models.TextField(null=True, blank=True, db_index=True)
     head = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='member_head')
     assistant = models.ForeignKey(DepartmentMember, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 

@@ -18,8 +18,8 @@
                                 <i title="{{ project.department_category }}" class="ri-star-fill m-0 {% if project.project_priority == 'High' %}text-danger{% elif project.project_priority == 'Medium' %}text-warning{% else  %}text-green{% endif %}"></i>
                             </div>
                             <h5 class="mb-1">
-                                {% if project.department in user_leader_in_dept or user.is_superuser or user|has_project_management_permission:"Diakonate Leader" %}
-                                    <a href="{% url 'project_management:project-detail' project.department.department_name project.id %}">{{ project.project_name}}</a>
+                                {% if project.department in user_leader_in_dept or user.is_superuser or user|has_project_management_permission:"Diakonate Leader" or project.department in member_departments %}
+                                    <a href="{% url 'project_management:project-detail' project.department.department_name project.id %}" class="text-blue">{{ project.project_name}}</a>
                                 {% else %}
                                     <a>{{ project.project_name}}</a>
                                 {% endif %}

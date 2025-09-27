@@ -323,7 +323,7 @@
                             </li>
                         {% endif %}
 
-                        {% if user|has_project_management_permission or user.is_superuser %}
+                        {% if user|has_project_management_permission or user.is_superuser or user.departmentmember_set.exists %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'project_management:dashboard' %}" target="_blank">
                                     <i class="icon">

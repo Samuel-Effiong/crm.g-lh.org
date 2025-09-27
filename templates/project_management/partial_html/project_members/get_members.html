@@ -2,9 +2,9 @@
 
 
 {% for member in department.member_names.all %}
-    <div class="col-lg-3">
+    <div class="col-lg-4">
        <div class="card" {% if department.leader == member %}style="box-shadow: 5px 5px 15px #a24c4c" {% endif %}>
-          <img src="{{ member.get_member_image_url }}" class="card-img-top img-fluid" alt="#">
+          <img src="{{ member.get_member_image_url }}" class="card-img-top img-fluid" style="height: 400px;" alt="#">
           <div class="card-body">
               <h4 class="card-title">{{ member.get_member_full_name }}</h4>
               <div class="d-flex justify-content-center">

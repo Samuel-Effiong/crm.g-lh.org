@@ -1,3 +1,5 @@
+{% load extra_tags %}
+
 <div class="card border-dark">
   <div class="card-body">
       <h4 class="card-title mb-3">Project Progress</h4>
@@ -20,22 +22,24 @@
               <h5 class="card-title mb-1">{{ target.target_name }}</h5>
               <div class="d-flex">
                   {% if target.state == 'Pending Approval' %}
-                      <button type="button" class="badge btn-primary badge-pill mr-2"
-                              hx-get="{% url 'project_management:change_target_status' target.id %}?leader_approval=Completed"
-                              hx-target="#manage_target_body"
-                              hx-swap="innerHTML"
-                              hx-indicator="#springBouceLoader"
-                      >
-                          Approve
-                      </button>
-                      <button type="button" class="badge btn-danger badge-pill"
-                              hx-get="{% url 'project_management:change_target_status' target.id %}?leader_approval=Not Started"
-                              hx-target="#manage_target_body"
-                              hx-swap="innerHTML"
-                              hx-indicator="#springBouceLoader"
-                      >
-                          Reject
-                      </button>
+                      {% if user.is_superuser or user|has_project_management_permission %}
+                          <button type="button" class="badge btn-primary badge-pill mr-2"
+                                  hx-get="{% url 'project_management:change_target_status' target.id %}?leader_approval=Completed"
+                                  hx-target="#manage_target_body"
+                                  hx-swap="innerHTML"
+                                  hx-indicator="#springBouceLoader"
+                          >
+                              Approve
+                          </button>
+                          <button type="button" class="badge btn-danger badge-pill"
+                                  hx-get="{% url 'project_management:change_target_status' target.id %}?leader_approval=Not Started"
+                                  hx-target="#manage_target_body"
+                                  hx-swap="innerHTML"
+                                  hx-indicator="#springBouceLoader"
+                          >
+                              Reject
+                          </button>
+                      {% endif %}
                   {% else %}
                       <select name="update_target_state" class="form-control form-control-sm" id="update_target_state" data-style="py-0"
                               hx-get="{% url 'project_management:change_target_status' target.id %}"

@@ -1,4 +1,6 @@
 {% load humanize %}
+{% load extra_tags %}
+
 <input id="current_display_state" type="text" value="{{ display_category }}" style="display: none">
 {% if display_category == 'diakonate' %}
     <div id="kpi" class="row">
@@ -604,10 +606,12 @@
                                             <div class="mb-3">
                                                 <div class="d-flex justify-content-between">
                                                     <h4>Database</h4>
-                                                    
-                                                    <a class="h2">
-                                                        <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
-                                                    </a>
+
+                                                    {% if user.is_superuser or user|has_project_management_permission %}
+                                                        <a class="h2">
+                                                            <i class="ri-add-fill text-primary" style="cursor: grab"  data-target="#new_table" data-toggle="modal"></i>
+                                                        </a>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>

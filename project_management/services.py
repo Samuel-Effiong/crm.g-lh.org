@@ -133,9 +133,16 @@ def handle_view_details_for_various_roles(context):
         diakonate_details(context, user, today)
     elif user.groups.filter(name='Department Head').exists():
         department_details(context, user, today)
-    else:
-        pass
+    else:  # Belonged to a department
+        user_departments = Department.objects.filter(Q(member_names__member_name=user))
 
+        user_diaconates = Diaconate.objects.filter(
+            Q(department__in=user_departments)
+        )
+
+        context['member_departments'] = user_departments
+        context['diaconates'] = user_diaconates
+        context['departments_count'] = user_departments.count()
 
 
 def subunit_leader_details(context):

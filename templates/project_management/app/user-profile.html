@@ -91,7 +91,11 @@
                                       </div>
                                   </div>
 
-                                  <p><b>Departments</b></p>
+
+                                  <div class="d-flex justify-content-between">
+                                      <p><b>Department</b></p>
+                                      <p><b>Members</b></p>
+                                  </div>
 
                                   <div style="overflow-y: auto; height: 250px" class=" py-2">
                                       {% for department in office.departments.all %}

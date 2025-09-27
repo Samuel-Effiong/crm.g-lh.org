@@ -2,9 +2,11 @@ import json
 from typing import Any, Dict
 from datetime import datetime
 
+from django.urls.exceptions import Http404
+
 import pandas as pd
 from django.core.signals import request_started
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Prefetch
 
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -153,7 +155,11 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return (
+            user.groups.filter(name__in=required_groups).exists() or 
+            self.request.user.is_superuser or 
+            self.request.user.departmentmember_set.exists()
+        )
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -168,9 +174,9 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
             if 'delete_table_id' in request.GET:
                 delete_table_id = request.GET['delete_table_id']
 
-                department = Department.objects.get(department_name=department_dashboard)
+                department = Department.objects.only('id').get(department_name=department_dashboard)
 
-                department_table = department.custom_tables.get(id=delete_table_id)
+                department_table = department.custom_tables.only('id').get(id=delete_table_id)
                 department_table.delete()
 
                 return JsonResponse({})
@@ -184,9 +190,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
             # Get the department the user is in and select the first
             if request.user.is_superuser:
                 pass
-                member_department = Department.objects.count()
-
-                if member_department == 0:
+                if not Department.objects.only('id').exists():
                     return HttpResponseRedirect(reverse_lazy('project_management:project-admin-settings'))
             else:
                 # A Diakonate can explicitly not be in any department to have access to the site
@@ -220,47 +224,16 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
         handle_view_details_for_various_roles(context)
 
-        # if user.is_superuser:  # Overview stats of all the organization
-        #     # Exclusively for the super admin
-        #     super_user_details(context, )
-        #
-        # else:
-        #     # For a normal user, get the department they belong to
-        #     context['member_departments'] = Department.objects.get_member_departments(user)
-
         # For Both Super User and Normal User
         # only ensure that the appropriate roles only see what is relevant to them
         context['department_leaders'] = [leader.member_name for leader in Department.objects.department_leaders() if leader]
 
-        # try:
-        #     department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
-        #     context['department_membership'] = department_member
-        #     # context['is_department_leader'] = department.is_leader(department_member)
-        # except DepartmentMember.DoesNotExist:
-        #     context['is_department_leader'] = False
-
-        # department_projects = DepartmentProject.objects.filter(department=department, status__in=['In Progress', 'Not Started'])
-        # context['department_projects'] = department_projects
-        #
-        # department_projects_status_statistic = DepartmentProject.objects.get_department_projects_status_statistic(department)
-        # context['department_project_status_statistic'] = department_projects_status_statistic
-
-        # all_department_pending_target = ProjectTarget.objects.all_department_pending_target(department)
-        # context['all_department_pending_target'] = all_department_pending_target
-
-        # GET Member Activity in the project
-        # members, complete_project = department.member_activity_in_a_department()
-        # context['member_activity_in_a_department'] = zip(members, complete_project)
-
-        # context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
-
         # check if there is a treasury diaconate and adds a special link section
         # to access treasury related pages
         try:
-            treasury = Diaconate.objects.get(name='TREASURY')
-            membership = treasury.is_a_diaconate_member(user)
+            treasury = Diaconate.objects.prefetch_related('departments').select_related('head', 'assistant').get(name='TREASURY')
 
-            if membership:
+            if treasury.is_a_diaconate_member(user).exists():
                 context['treasury_membership'] = True
         except Diaconate.DoesNotExist as e:
             context['treasury_diaconate_unavailable'] = True
@@ -281,7 +254,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
             context = self.get_context_data(**kwargs)
 
-            diaconate = Diaconate.objects.get(name=diaconate_selection)
+            diaconate = Diaconate.objects.select_related('head', 'assistant').prefetch_related('departments').get(name=diaconate_selection)
             context['diaconate'] = diaconate
 
             if diaconate_selection:
@@ -292,7 +265,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
                     # Accessible only by diakonate head and super admin
                     no_of_members_in_diaconate = DepartmentMember.objects.filter(
                         department_name__department_diaconate__name=diaconate_selection
-                    ).count()
+                    ).select_related('member_name', 'department_name').count()
 
                     context['no_of_members_in_diaconate'] = no_of_members_in_diaconate
 
@@ -357,7 +330,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
                 elif submit_button == 'department':
                     # Accessible by department leader, diakonate head and super admin
-                    department = diaconate.departments.get(department_name=department_selection)
+                    department = diaconate.departments.get(department_name=department_selection).select_related('leader', 'sub_leader').prefetch_related('member_names', 'custom_tables')
                     context['department'] = department
 
                     department_stats = department.get_overview_statistic()
@@ -420,13 +393,12 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
 
     def test_func(self):
         user = self.request.user
-
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
             return super().handle_no_permission()
-        return HttpResponse("You are not authorized to be here...please turn back")
+        return HttpResponse("You are not authorized to be here...Join a Department")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -445,26 +417,40 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
-        user_leader_in_dept = Department.objects.filter(
+        user_leader_in_dept = Department.objects.select_related('leader', 'sub_leader').prefetch_related(
+            'member_names', 'custom_tables'
+        ).filter(
             Q(leader__member_name=user) | Q(sub_leader__member_name=user)
         )
         context['user_leader_in_dept'] = user_leader_in_dept
 
         if user.is_superuser:
 
-            user_diaconates = Diaconate.objects.all()
+            user_diaconates = Diaconate.objects.all().select_related(
+                'head', 'assistant'
+            ).prefetch_related(
+                Prefetch('departments', queryset=Department.objects.only('id', 'department_name'))
+            )
             context['diaconates'] = user_diaconates
 
             context['department_projects'] = DepartmentProject.objects.order_by('-due_date')
+            context['member_departments'] = Department.objects.all().select_related(
+                'leader', 'sub_leader'
+            ).prefetch_related('member_names', 'custom_tables')
 
-            context['member_departments'] = Department.objects.all()
         elif user.groups.filter(name="Diakonate Head"):  # If user is a diakonate head
             # Get all the diaconate that belongs to this user is a leader/ assistant in
-            user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user))
+            user_diaconates = Diaconate.objects.filter(Q(head=user) | Q(assistant=user)).select_related(
+                'head', 'assistant'
+            ).prefetch_related(
+                'departments'
+            )
             context['diaconates'] = user_diaconates
 
             # Get all the department that this diaconate is under these diaconates
-            department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
+            department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates).select_related(
+                'leader', 'sub_leader'
+            )
             context['member_departments'] = department_queryset  # Use to display the drop down list of the department in the sidenav
 
             department_project_queryset = DepartmentProject.objects.filter(department__department_diaconate__in=user_diaconates)
@@ -482,6 +468,17 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
 
             department_project_queryset = DepartmentProject.objects.filter(department__in=user_departments)
             context['department_projects'] = department_project_queryset.exclude(status='Completed').order_by('-due_date')
+        else:
+            user_departments = Department.objects.filter(Q(member_names__member_name=user))
+            user_diaconates = Diaconate.objects.filter(
+                Q(department__in=user_departments)
+            )
+            department_project_queryset = DepartmentProject.objects.filter(department__in=user_departments)
+            context['department_projects'] = department_project_queryset.exclude(status='Completed').order_by('-due_date')
+
+            context['member_departments'] = user_departments
+            context['diaconates'] = user_diaconates
+
 
         # department_projects = DepartmentProject.objects.filter(department=department)
         if 'filter' in self.request.GET:
@@ -572,8 +569,7 @@ class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
 
     def test_func(self):
         user = self.request.user
-
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -779,7 +775,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -862,22 +858,45 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                         pass
                 else:  # project/settings/diakonate/department/unit
                     mode = 'Unit'
-                    context['unit'] = unit_category
 
-                    unit = Unit.objects.get(id=unit_category)
-                    context['unit'] = unit
+                    try:
+                        unit = Unit.objects.select_related(
+                            'unit_leader', 'unit_leader__member_name', 
+                            'sub_leader', 'sub_leader__member_name', 
+                            'unit_department'
+                        ).prefetch_related(
+                            'members', 'members__member_name',
+                            'departmentproject_set', 
+                            'departmentproject_set__project_members',
+                            'departmentproject_set__target'
+                        ).get(id=int(unit_category))
+                        context['unit'] = unit
+                    except (Unit.DoesNotExist, ValueError) as e:
+                        raise Http404("Unit not found") from e
 
             context['diaconate'] = diaconate
 
         context['mode'] = mode
 
         if user.is_superuser:
-            context['member_departments'] = Department.objects.all()
+            context['member_departments'] = Department.objects.select_related(
+                'leader', 'sub_leader', 'department_diaconate'
+            ).all()
         elif user.groups.filter(name='Diakonate Head').exists():
-            department_queryset = Department.objects.filter(department_diaconate__in=user_diaconates)
+            department_queryset = Department.objects.filter(
+                department_diaconate__in=user_diaconates
+            ).select_related(
+                'leader', 'sub_leader'
+            )
+
             context['member_departments'] = department_queryset
+
         elif user.groups.filter(name='Department Head').exists():
-            user_departments = Department.objects.filter(Q(leader__member_name=user) | Q(sub_leader__member_name=user))
+            user_departments = Department.objects.filter(
+                Q(leader__member_name=user) | Q(sub_leader__member_name=user)
+            ).select_related(
+                'leader', 'sub_leader', 'department_diaconate'
+            )
             context['member_departments'] = user_departments
 
 
@@ -1665,7 +1684,7 @@ class DepartmentProjectCalenderView(LoginRequiredMixin, UserPassesTestMixin, Tem
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -1704,7 +1723,7 @@ class DepartmentTableDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -1839,7 +1858,7 @@ class ProjectMemberView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or user.is_superuser or user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -1880,7 +1899,7 @@ class DepartmentMemberDetailView(LoginRequiredMixin, UserPassesTestMixin, Detail
 
     def test_func(self):
         user = self.request.user
-        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser
+        return user.groups.filter(name__in=required_groups).exists() or self.request.user.is_superuser or self.request.user.departmentmember_set.exists()
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
