@@ -621,8 +621,6 @@ class DepartmentProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
 
         context['department'] = department
 
-
-
         try:
             department_member = DepartmentMember.objects.get(member_name=user, department_name=department)
             context['department_membership'] = department_member
@@ -793,7 +791,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
         user_leader_in_dept = Department.objects.filter(
             Q(leader__member_name=user) | Q(sub_leader__member_name=user)
-        )
+        ).select_related('leader', 'sub_leader', 'department_diaconate').prefetch_related('custom_tables', 'member_name')
         context['user_leader_in_dept'] = user_leader_in_dept
 
         category = kwargs.get('diakonate', None)
@@ -907,26 +905,6 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
         # department = Department.objects.get(department_name=category)
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
-        # context['department'] = department
-        #
-        # if user.is_superuser:
-        #     context['member_departments'] = Department.objects.all()
-        # else:
-        #     context['member_departments'] = Department.objects.get_member_departments(user)
-        #
-        # context['department_leaders'] = Department.objects.department_leaders()
-
-        # context['department_projects'] = DepartmentProject.objects.filter(department=department).order_by('-start_date')
-        # context['department_categories'] = DepartmentCategory.objects.get_department_categories(department)
-        # context['department_members'] = DepartmentMember.objects.get_department_members(department)
-        # context['department_units'] = department.unit_set.all()
-
-        # family_members not in the department
-        # context['family_members'] = [
-        #     f"{brethren.get_full_name()} @{brethren.username}" for brethren in get_user_model().objects.exclude(
-        #         username__in=[member.member_name.username for member in context['department_members']]
-        #     )
-        # ]
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1232,6 +1210,80 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             'project_management:project-settings-diakonate-department-unit',
             args=[kwargs.get('diakonate'), kwargs.get('department'), kwargs.get('unit')])
         )
+
+
+class ProjectManagementUnitSettingView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = reverse_lazy('users-login')
+    template_name = 'project_management/project-unit.html'
+
+    def test_func(self):
+        user = self.request.user
+        return (
+                user.groups.filter(name__in=required_groups).exists() or
+                self.request.user.is_superuser or
+                self.request.user.departmentmember_set.exists()
+        )
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return HttpResponse("You are not authorized to be here...Please turn back")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        all_users = CustomUser.objects.all()
+        context['all_users'] = all_users
+
+        user_leader_in_dept = Department.objects.filter(
+            Q(leader__member_name=user) | Q(sub_leader__member_name=user)
+        )
+
+        context['user_leader_in_dept'] = user_leader_in_dept
+        category = kwargs.get('diakonate', None)
+        mode = 'Unit'
+
+        try:
+            unit = Unit.objects.select_related(
+                'unit_department', 'unit_department__department_diaconate'
+            ).prefetch_related(
+                'members', 'members__member_name',
+                'departmentproject_set',
+                'departmentproject_set__project_members',
+                'departmentproject_set__target'
+            ).get(id=kwargs.get('unit'))
+
+            context['unit'] = unit
+
+            context['diaconates'] = unit.unit_department.department_diaconate
+            context['mode'] = mode
+        except (Unit.DoesNotExist, ValueError) as e:
+            raise Http404('Unit not found') from e
+
+        if user.is_superuser:
+            context['member_departments'] = Department.objects.select_related(
+                'leader', 'sub_leader', 'department_diaconate'
+            ).all()
+        # elif user.groups.filter(name='Diakonate Head').exists():
+        #     department_queryset = Department.objects.filter(
+        #         department_diaconate__in=user_diaconates
+        #     ).select_related(
+        #         'leader', 'sub_leader'
+        #     )
+
+        elif user.groups.filter(name='Department Head').exists():
+            user_departments = Department.objects.filter(
+                Q(leader__member_name=user) | Q(sub_leader__member_name=user)
+            )
+            context['member_departments'] = user_departments
+
+        context['project_title'] = project_title
+        context['user'] = user
+
+        context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
+
+        return context
 
 
 class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):

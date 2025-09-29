@@ -892,6 +892,7 @@
                 </div>
                 <div class="modal-body">
                     <form method="post">
+                        {% csrf_token %}
                         <div class="row">
                             <input type="text" style="display: none" value="delete-project" name="form-submission">
                             <div class="col-lg-12 mb-3">
@@ -905,7 +906,7 @@
                             <div class="col-lg-12">
                                 <div class="d-flex flex-wrap align-items-center justify-content-end">
                                     <button class="btn btn-outline-light mr-1" data-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-danger" data-dismiss="modal">Delete Project</button>
+                                    <button type="submit" class="btn btn-danger">Delete</button>
                                 </div>
                             </div>
 

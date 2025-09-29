@@ -25,8 +25,10 @@ project_settings_patterns = [
     path('', views.ProjectManagementSettingView.as_view(), name='project-settings'),
     path('<str:diakonate>/', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate'),
     path('<str:diakonate>/<str:department>', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate-department'),
-    path('<str:diakonate>/<str:department>/<str:unit>', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate-department-unit'),
+    # path('<str:diakonate>/<str:department>/<str:unit>', views.ProjectManagementSettingView.as_view(), name='project-settings-diakonate-department-unit'),
+path('<str:diakonate>/<str:department>/<str:unit>', views.ProjectManagementUnitSettingView.as_view(), name='project-settings-diakonate-department-unit'),
 ]
+
 
 urlpatterns = [
     path('', views.ProjectManagementView.as_view(), name='dashboard'),
