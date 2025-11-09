@@ -18,7 +18,7 @@ cryptography==46.0.1
 defusedxml==0.7.1
 distlib==0.4.0
 dj-database-url==3.0.1
-Django==4.2.24
+Django==4.2.26
 django-allauth==65.11.2
 django-browser-reload==1.21.0
 django-cloudinary-storage==0.3.0
