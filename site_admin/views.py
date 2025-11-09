@@ -147,7 +147,7 @@ class SiteAdminListView(LoginRequiredMixin, ListView):
                             callings=callings
                         )
             except IntegrityError as e:
-                return HttpResponseRedirect(f"{reverse_lazy("site_admin:admin-category", args=[kwargs['category'], kwargs['sub_category']])}?status=True&message={str(e)}&upload=failed")
+                return HttpResponseRedirect(f"""{reverse_lazy("site_admin:admin-category", args=[kwargs['category'], kwargs['sub_category']])}?status=True&message={str(e)}&upload=failed""")
 
         elif sub_category == 'members_schedule':
             pass

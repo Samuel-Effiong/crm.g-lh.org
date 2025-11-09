@@ -347,7 +347,7 @@
                                                     {% for office in diaconates %}
                                                         <option value="{{ office.name }}">{{ office.name }}</option>
                                                     {% endfor %}
-                                                {% elif user|has_project_management_permission:"Department Head" %}
+                                                {% elif user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                                                 {% endif %}
                                             </select>
                                           </div>

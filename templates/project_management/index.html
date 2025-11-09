@@ -339,7 +339,7 @@
                                                   Super Admin
                                               {% elif user|has_project_management_permission:"Diakonate Head" %}
                                                   Diakonate
-                                              {% elif user|has_project_management_permission:"Department Head" %}
+                                              {% elif user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                                                   Department
                                               {% endif %} 
                                                Dashboard Controls

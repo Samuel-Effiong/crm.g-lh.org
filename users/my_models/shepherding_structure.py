@@ -37,16 +37,16 @@ class Shepherd(models.Model):
 
     @admin.display(ordering='date_of_appointment', description='Duration of Service')
     def get_service_duration(self):
-        if self.date_of_appointment:
-            now = datetime.date.today()
+        if not self.date_of_appointment:
+            return 'N/A'
 
-            duration = now - self.date_of_appointment
-            duration_year = duration.days // 365
-            duration_days = duration.days % 365
+        now = datetime.date.today()
 
-            return f"{duration_year} year {duration_days} days"
-        else:
-            raise ValueError("Date of appointment must be set")
+        duration = now - self.date_of_appointment
+        duration_year = duration.days // 365
+        duration_days = duration.days % 365
+
+        return f"{duration_year} year {duration_days} days"
 
     @admin.display(description="Full name")
     def get_shepherd_full_name(self):
@@ -74,7 +74,10 @@ class Shepherd(models.Model):
 class SubShepherd(models.Model):
     name = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, to_field='username')
     no_of_sheep = models.IntegerField(default=0, blank=True, null=True)
-    date_of_appointment = models.DateField(validators=[Validators.validate_prevent_future_date], default=timezone.now,)
+    date_of_appointment = models.DateField(
+        validators=[Validators.validate_prevent_future_date],
+        default=timezone.now, null=True, blank=True
+    )
     calling = models.CharField(max_length=15, choices=Calling, null=True, blank=True)
 
     def __str__(self):
@@ -86,16 +89,16 @@ class SubShepherd(models.Model):
 
     @admin.display(ordering='date_of_appointment', description='Duration of Service')
     def get_service_duration(self):
-        if self.date_of_appointment:
-            now = datetime.date.today()
+        if not self.date_of_appointment:
+            return 'N/A'
 
-            duration = now - self.date_of_appointment
-            duration_year = duration.days // 365
-            duration_days = duration.days % 365
+        now = datetime.date.today()
 
-            return f"{duration_year} year {duration_days} days"
-        else:
-            raise ValueError("Date of appointment must be set")
+        duration = now - self.date_of_appointment
+        duration_year = duration.days // 365
+        duration_days = duration.days % 365
+
+        return f"{duration_year} year {duration_days} days"
 
     @admin.display(description="Full name")
     def get_subshepherd_full_name(self):

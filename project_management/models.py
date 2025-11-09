@@ -1324,9 +1324,7 @@ class Unit(models.Model):
         return self.sub_units.count()
 
     def get_members_in_this_unit(self):
-        members = self.members.all()
-        members = [member.member_name.username for member in members]
-        return members
+        return self.members.all()
     
     def get_number_of_unit_members(self):
         return self.members.count()

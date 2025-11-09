@@ -50,7 +50,7 @@
                              <div class="mt-3">
                                  <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#edit_dialog_modal" data-toggle="modal">Edit Department</button>
 
-                                 {% if not user|has_project_management_permission:"Department Head" %}
+                                 {% if not user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                                     <button type="button" class="btn btn-danger py-2 px-4" data-target="#delete_modal" data-toggle="modal">Delete Department</button>
                                  {% endif %}
 
@@ -106,7 +106,7 @@
                                           {% for department in office.departments.all %}
                                               <div class="d-flex justify-content-between">
                                                   <p class="h5">
-                                                      {% if user|has_project_management_permission:"Department Head" %}
+                                                      {% if user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                                                           {% if department in user_leader_in_dept %}
                                                               <a class="text-white" href="{% url "project_management:project-settings-diakonate-department" office.name department.department_name %}">{{ department.department_name }}</a>
                                                           {% else %}
@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                 {% if not user|has_project_management_permission:"Department Head" %}
+                 {% if not user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                      <div class="row mb-5">
                         <div class="col-md-6 col-lg-3">
                              <p class="m-2">
@@ -185,7 +185,7 @@
                               <div class="card border-light">
                                   <div class="card-body">
                                       <h4 class="card-title">
-                                          {% if user|has_project_management_permission:"Department Head" %}
+                                          {% if user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" %}
                                               {% if dept in user_leader_in_dept %}
                                                   <a href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
                                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 h-5 w-5" data-lov-id="src/pages/Settings.tsx:182:28" data-lov-name="Building2" data-component-path="src/pages/Settings.tsx" data-component-line="182" data-component-file="Settings.tsx" data-component-name="Building2" data-component-content="%7B%22className%22%3A%22h-5%20w-5%22%7D"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
@@ -221,13 +221,19 @@
                                           </div>
                                       </div>
 
-                                      {% if user|has_project_management_permission:"Department Head" %}
-                                          {% if dept in user_leader_in_dept %}
+                                      {% if user|has_project_management_permission:"Department Head" or user|has_project_management_permission:"Department Assistant" or user.is_superuser %}
+                                          {% if dept in user_leader_in_dept or user.is_superuser %}
                                               <div class="d-flex flex-wrap gap-1 pl-2 justify-content-center" style="">
-                                                  <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-7" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
+                                                  <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-3" href="{% url "project_management:project-settings-diakonate-department" diaconate.name dept.department_name %}">
                                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen h-3 w-3 mr-1" data-lov-id="src/pages/Settings.tsx:296:30" data-lov-name="Edit" data-component-path="src/pages/Settings.tsx" data-component-line="296" data-component-file="Settings.tsx" data-component-name="Edit" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
                                                       Edit
                                                   </a>
+
+                                                  <a class="btn btn-outline-dark mt-2 mr-lg-2 col-lg-3" data-target="#transfer_department_modal" data-toggle="modal" onclick="document.getElementById('transfer_department').value = {{ dept.id }}" title="Move Department to another Diakonate">
+                                                      <svg height="24px" width="24px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g id="transfer"> <g> <polygon style="fill:#030104;" points="32,24 7.992,24 7.992,28 0,22 7.992,16 7.992,20 32,20 "></polygon> <polygon style="fill:#030104;" points="0,12 24,12 24,16 32,10 24,4 24,8 0,8 "></polygon> </g> </g> </g> </g></svg>
+                                                      Transfer
+                                                  </a>
+
 
                                                   <a class="col-lg-3 btn btn-outline-dark mt-2" data-target="#delete_department_modal" data-toggle="modal" onclick="settings_for_modal_delete({{ dept.id }}, '{{ dept.department_name }}', 'Department')">
                                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 h-3 w-3" data-lov-id="src/pages/Settings.tsx:300:30" data-lov-name="Trash2" data-component-path="src/pages/Settings.tsx" data-component-line="300" data-component-file="Settings.tsx" data-component-name="Trash2" data-component-content="%7B%22className%22%3A%22h-3%20w-3%22%7D">
@@ -258,6 +264,19 @@
                         <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add Unit</button>
                         <button type="button" class="btn text-white btn-primary py-2 px-4" data-target="#add_member" data-toggle="modal">Add Member</button>
                     </div>
+                    {% if error_message %}
+
+                        <div class="col-12 mt-3 alert text-white bg-secondary" role="alert">
+                            <div class="iq-alert-icon">
+                               <i class="ri-information-line"></i>
+                            </div>
+                            <div class="iq-alert-text">{{ error_message }}</div>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <i class="ri-close-line"></i>
+                            </button>
+                         </div>
+
+                    {% endif %}
                  </div>
 
                  <div class="card-body p-0">
@@ -464,162 +483,6 @@
                           </div>
                         </div>
                      </div>
-
-            {% elif mode == 'Unit' %}
-
-                 <div class="card-body p-0">
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-primary mr-2 py-2 px-4" data-target="#add_roles_modal" data-toggle="modal">Add SubUnit</button>
-                            <button type="button" class="btn text-white btn-primary py-2 px-4 mr-2" data-target="#add_member" data-toggle="modal">Add Member</button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 col-lg-3">
-                            <div class="card card-block card-stretch card-height">
-                                <div class="card-body">
-                                    <div class="top-block d-flex align-items-center justify-content-between">
-                                        <p class="card-text"><small>Unit Members</small></p>
-                                        <span class="badge badge-warning">Anual</span>
-                                    </div>
-                                    <h3>{{ unit.members.count }}</h3>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-lg-3">
-                            <div class="card card-block card-stretch card-height">
-                                <div class="card-body">
-                                    <div class="top-block d-flex align-items-center justify-content-between">
-                                        <p class="card-text"><small>Sub Units</small></p>
-                                        <span class="badge badge-warning">Anual</span>
-                                    </div>
-                                    <h3>Coming Soon...</h3>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-lg-3">
-                            <div class="card card-block card-stretch card-height">
-                                <div class="card-body">
-                                    <div class="top-block d-flex align-items-center justify-content-between">
-                                        <p class="card-text"><small>Projects by Unit</small></p>
-                                        <span class="badge badge-warning">Anual</span>
-                                    </div>
-                                    <h3>{{ unit.projects_assigned_to_this_unit.count }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                 </div>
-
-                 <ul class="nav nav-tabs" id="myTab-two" role="tablist">
-                    <li class="nav-item">
-                       <a class="nav-link active" id="members-tab-two" data-toggle="tab" href="#members-two" role="tab" aria-controls="members" aria-selected="true">Members ({{ unit.members.count }})</a>
-                    </li>
-
-                    <li class="nav-item">
-                       <a class="nav-link" id="insights-tab-two" data-toggle="tab" href="#insights-two" role="tab" aria-controls="insights" aria-selected="false">Insights</a>
-                    </li>
-                 </ul>
-
-
-                 <div class="tab-content" id="myTabContent-1">
-                    <div class="tab-pane fade show active" id="members-two" role="tabpanel" aria-labelledby="members-tab-two">
-                       <div class="card-body p-0">
-                            <div class="row">
-                                <div class="col-lg-12 mt-2 mb-3">
-                                    <h3>Unit Members ({{ unit.members.count }})</h3>
-                                </div>
-                                <div class="col-lg-8">
-
-                                    {% for member in unit.members.all %}
-                                        <div class="card card-block card-stretch">
-                                            <div class="card-body">
-                                                <div class="top-block d-flex align-items-center justify-content-between">
-                                                    <h3>{{ member.member_name.get_full_name }}</h3>
-                                                    <span class="badge badge-warning">{{ member.get_performance_score }}</span>
-                                                </div>
-
-                                                <div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail h-3 w-3 mr-1" data-lov-id="src/pages/Unit.tsx:294:34" data-lov-name="Mail" data-component-path="src/pages/Unit.tsx" data-component-line="294" data-component-file="Unit.tsx" data-component-name="Mail" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                                    <span>{{ member.member_name.email }}</span>
-                                                </div>
-
-                                                <div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-3 w-3 mr-1" data-lov-id="src/pages/Unit.tsx:298:34" data-lov-name="Calendar" data-component-path="src/pages/Unit.tsx" data-component-line="298" data-component-file="Unit.tsx" data-component-name="Calendar" data-component-content="%7B%22className%22%3A%22h-3%20w-3%20mr-1%22%7D"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
-                                                    <span>Joined {{ member.date_joined|date:"D d M Y" }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-
-                                    <div class="card border-light">
-                                      <div class="card-body">
-                                          <h4 class="mb-3">Projects by Unit</h4>
-                                          <table class="table table-striped table-hover">
-                                                <thead>
-                                                <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">Project Name</th>
-                                                    <th scope="col">% Completion</th>
-                                                    <th scope="col">No of Target</th>
-                                                    <th scope="col">Priority</th>
-                                                    <th scope="col">Status</th>
-
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-
-                                                {% for project in unit.projects_assigned_to_this_unit.all %}
-                                                    <tr>
-                                                        <th scope="row">{{ forloop.counter }}</th>
-                                                        <td>{{ project.project_name }}</td>
-                                                        <td>{{ project.get_complete_percentage }}</td>
-                                                        <td>{{ project.get_no_of_target }}</td>
-                                                        <td>{{ project.project_priority }}</td>
-                                                        <td>{{ project.status }}</td>
-                                                    </tr>
-                                                {% empty %}
-                                                    <td colspan="6"><h5>No current project</h5></td>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table>
-                                      </div>
-                                    </div>
-
-                                </div>
-
-                                <div class="col-lg-4">
-                                    <div class="card card-block card-stretch card-height">
-                                        <div class="card-body">
-                                            <div class="top-block d-flex align-items-center justify-content-between">
-                                                <p class="card-text"><small>Sub Units</small></p>
-                                                <span class="badge badge-warning">Anual</span>
-                                            </div>
-                                            <h3>Coming Soon...</h3>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                       </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="insights-two" role="tabpanel" aria-labelledby="insights-tab-two">
-                       <div class="card col-12 text-center">
-                             <div class="card-body mb-3">
-                                 <p>
-                                     <svg width="98px" height="98px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffa000" d="M10.67276443 3.58608316H6.12087531L4.98290303 2.44811088h-2.8449307c-.62588475 0-1.13797228.51208753-1.13797228 1.13797228v6.82783368c0 .62588475.51208753 1.13797228 1.13797228 1.13797228h8.81928517c.48363822 0 .85347921-.369841.85347921-.85347921V4.72405544c0-.62588475-.51208753-1.13797228-1.13797228-1.13797228z"></path><path fill="#ffca28" d="M11.86763532 5.29304158H4.21477174c-.54053683 0-1.02417505.3982903-1.10952297.93882713l-.96727644 5.32002041h9.01843032c.54053683 0 1.02417505-.3982903 1.10952297-.93882713L12.9771583 6.630159c.14224653-.68278337-.3982903-1.33711743-1.10952298-1.33711743z"></path></g></svg>
-                                 </p>
-                                <h4 class="card-title">Coming Soon</h4>
-                             </div>
-                        </div>
-                    </div>
-                 </div>
-
-
-
             {% endif %}
 
          {% endblock mode_section %}
@@ -748,43 +611,6 @@
             </div>
         </div>
     </div>
-{##}
-{#    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-member">#}
-{#        <div class="modal-dialog  modal-dialog-centered">#}
-{#            <div class="modal-content">#}
-{#                <div class="modal-header d-block text-center pb-3 border-bottom">#}
-{#                    <h3 class="modal-title" id="add_remove_member_title">Confirm Removal</h3>#}
-{#                </div>#}
-{#                <div class="modal-body">#}
-{#                    <form action="{% url 'project_management:project-settings' %}?settings=remove_member" method="post">#}
-{#                        {% csrf_token %}#}
-{#                        <div class="row">#}
-{##}
-{#                            <div class="col-lg-12 mb-3" style="display: none">#}
-{#                                <input type="text" id="removed_member" name="removed_member">#}
-{#                            </div>#}
-{##}
-{#                            <div class="col-lg-12 mb-3">#}
-{#                                <h6><i>#}
-{#                                    Are you sure you want to remove#}
-{#                                    <span id="member_name" class="text-danger font-size-20"></span>#}
-{#                                    from {{ department }}?. <span class="text-danger">It cannot be restored.</span>#}
-{#                                </i></h6>#}
-{#                            </div>#}
-{##}
-{#                            <div class="col-lg-12">#}
-{#                                <div class="d-flex flex-wrap align-items-center justify-content-center mt-2">#}
-{#                                    <button type="submit" class="btn btn-outline-danger mr-3">Remove</button>#}
-{#                                    <div class="btn btn-success" data-dismiss="modal">Cancel</div>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </form>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-
     <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="remove-category">
         <div class="modal-dialog  modal-dialog-centered">
             <div class="modal-content">
@@ -1224,20 +1050,13 @@
                             <div class="col-lg-12">
                                 <div class="form-group mb-3">
                                     <label for="new-member" class="h5">Full Name:</label>
-                                    <select name="new-member" id="new-member" class=" custom-control custom-select" required>
-                                        <option value="" disabled selected>Add Member:</option>
+
+                                    <input class="form-control" list="all_users" id="new-mem" name="new-member" placeholder="Type to search..." required>
+                                    <datalist id="all_users">
                                         {% for user in all_users %}
-                                            {% if mode == 'Unit' %}
-                                                {% if user.username not in unit.get_members_in_this_unit %}
-                                                    {% if user.username in department.get_list_of_dept_members_name %}
-                                                        <option value="{{ user.username }}">{{ user.get_full_name }}</option>
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% else %}
-                                                <option value="{{ user.username }}">{{ user.get_full_name }}</option>
-                                            {% endif %}
+                                            <option value="{{ user.username }}">{{ user.get_full_name }}</option>
                                         {% endfor %}
-                                    </select>
+                                    </datalist>
                                 </div>
                             </div>
 
@@ -1269,7 +1088,7 @@
             </div>
         </div>
     </div>
-{##}
+
 {#    <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="edit_dialog">#}
 {#        <div class="modal-dialog  modal-dialog-centered">#}
 {#            <div class="modal-content">#}
@@ -1550,6 +1369,50 @@
                                 <p class="p-3"><i id="delete_department_display_text">
                                     Are you sure you want to remove {{ department.department_name }} Department from {{ diaconate.name }}? <span class="text-danger bold">This action is irreversible</span>
                                 </i></p>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="d-flex flex-wrap justify-content-end mt-2">
+                                    <button type="submit" class="btn btn-outline-danger mr-1 pt-2 pb-2">I Understand</button>
+                                    <div class="btn btn-primary flex-grow-1 pt-2 pb-2" data-dismiss="modal">Cancel</div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade bd-example-modal-lg" role="dialog" aria-modal="true" id="transfer_department_modal">
+            <div class="modal-dialog  modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header d-block text-center pb-3 border-bottom">
+                        <h3 class="modal-title" id="transfer_department_modal_title">
+                            Transfer Department
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <input type="text" name="transfer_department" id="transfer_department" style="display:none">
+                            <div class="row">
+                                <p class="p-3">
+                                    Are you sure you want to transfer department to another Diakonate? <span class="text-danger bold">This action is irreversible</span>
+                                </p>
+
+                                <div class="col-lg-12">
+                                    <div class="form-group mb-3">
+                                        <label for="diakonate" class="h5">Diakonate:</label>
+                                        <select name="diakonate" id="diakonate" class=" custom-control custom-select">
+                                            <option value="" disabled selected>Choose Diakonate</option>
+                                            {% for office in diaconates %}
+                                                <option value="{{ office.id }}" >{{ office.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-lg-12">

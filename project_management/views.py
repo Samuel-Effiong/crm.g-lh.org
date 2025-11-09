@@ -42,7 +42,7 @@ from .services import super_user_details, handle_view_details_for_various_roles
 
 title = 'GLH-FAM'
 project_title = 'GLH-PROJ'
-required_groups = ['Diakonate Head', 'Department Head']
+required_groups = ['Diakonate Head', 'Department Head', 'Department Assistant']
 
 
 def is_member(user):
@@ -231,7 +231,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         # check if there is a treasury diaconate and adds a special link section
         # to access treasury related pages
         try:
-            treasury = Diaconate.objects.prefetch_related('departments').select_related('head', 'assistant').get(name='TREASURY')
+            treasury = Diaconate.objects.select_related('head', 'assistant').prefetch_related('departments').get(name='TREASURY')
 
             if treasury.is_a_diaconate_member(user).exists():
                 context['treasury_membership'] = True
@@ -330,7 +330,7 @@ class ProjectManagementView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
                 elif submit_button == 'department':
                     # Accessible by department leader, diakonate head and super admin
-                    department = diaconate.departments.get(department_name=department_selection).select_related('leader', 'sub_leader').prefetch_related('member_names', 'custom_tables')
+                    department = diaconate.departments.select_related('leader', 'sub_leader').prefetch_related('member_names', 'custom_tables').get(department_name=department_selection)
                     context['department'] = department
 
                     department_stats = department.get_overview_statistic()
@@ -417,10 +417,10 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
-        user_leader_in_dept = Department.objects.select_related('leader', 'sub_leader').prefetch_related(
-            'member_names', 'custom_tables'
-        ).filter(
+        user_leader_in_dept = Department.objects.filter(
             Q(leader__member_name=user) | Q(sub_leader__member_name=user)
+        ).select_related('leader', 'sub_leader').prefetch_related(
+            'member_names', 'custom_tables'
         )
         context['user_leader_in_dept'] = user_leader_in_dept
 
@@ -434,9 +434,7 @@ class DepartmentProjectListView(LoginRequiredMixin, UserPassesTestMixin, Templat
             context['diaconates'] = user_diaconates
 
             context['department_projects'] = DepartmentProject.objects.order_by('-due_date')
-            context['member_departments'] = Department.objects.all().select_related(
-                'leader', 'sub_leader'
-            ).prefetch_related('member_names', 'custom_tables')
+            context['member_departments'] = Department.objects.all()
 
         elif user.groups.filter(name="Diakonate Head"):  # If user is a diakonate head
             # Get all the diaconate that belongs to this user is a leader/ assistant in
@@ -791,8 +789,8 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
         user_leader_in_dept = Department.objects.filter(
             Q(leader__member_name=user) | Q(sub_leader__member_name=user)
-        ).select_related('leader', 'sub_leader', 'department_diaconate').prefetch_related('custom_tables', 'member_name')
-        context['user_leader_in_dept'] = user_leader_in_dept
+        )
+        context['user_leader_in_dept'] = list(user_leader_in_dept)
 
         category = kwargs.get('diakonate', None)
         mode = None
@@ -812,6 +810,7 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                 # context['user_leader_in_dept'] = user_leader_in_dept
 
             context['diaconates'] = user_diaconates
+
         else:
             mode = 'Diakonate'
             sub_category = kwargs.get('department', None)
@@ -897,7 +896,6 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             )
             context['member_departments'] = user_departments
 
-
         # context['category'] = category
         context['project_title'] = project_title
         context['user'] = user
@@ -924,7 +922,6 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
             except Exception as e:
                 context['delete_error'] = str(e)
                 return self.render_to_response(context)
-
 
         elif 'update_diakonate' in request.POST:
             diakonate = request.POST['update_diakonate']
@@ -988,7 +985,6 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                 context['update_error'] = str(e)
                 return self.render_to_response(context)
 
-
         elif 'update_unit' in request.POST:
             unit = request.POST['update_unit']
             unit = Unit.objects.get(id=unit)
@@ -1009,7 +1005,6 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                     if unit_sub_leader:
                         unit.sub_leader = DepartmentMember.objects.get(id=unit_sub_leader)
                     unit.save()
-
 
                 return HttpResponseRedirect(reverse_lazy(
                     'project_management:project-settings-diakonate-department-unit',
@@ -1048,6 +1043,25 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                 'project_management:project-settings-diakonate-department',
                 args=[kwargs.get('diakonate'), kwargs.get('department')])
             )
+
+        elif 'transfer_department' in request.POST:
+            department_id = request.POST['transfer_department']
+            department = Department.objects.get(id=department_id)
+            old_diaconate = department.department_diaconate
+
+            new_diaconate = request.POST.get('diakonate', '').strip()
+            new_diaconate = Diaconate.objects.get(id=new_diaconate)
+
+            department.department_diaconate = new_diaconate
+            new_diaconate.departments.add(department)
+
+            old_diaconate.departments.remove(department)
+            department.save()
+
+            return HttpResponseRedirect(reverse_lazy(
+                'project_management:project-settings-diakonate',
+                args=[new_diaconate.name]
+            ))
 
         else:
             form_submission_type = request.POST.get('form-submission-type', None)
@@ -1197,7 +1211,8 @@ class ProjectManagementSettingView(LoginRequiredMixin, UserPassesTestMixin, Temp
                             unit.members.add(new_unit_member)
 
             except Exception as e:
-                JsonResponse({'confirm': False, 'error': str(e)}, status=400)
+                context['error_message'] = "User does not exist"
+                return self.render_to_response(context=context)
 
             if form_submission_type is None:
                 return HttpResponseRedirect(reverse_lazy('project_management:project-settings'))
@@ -1284,6 +1299,84 @@ class ProjectManagementUnitSettingView(LoginRequiredMixin, UserPassesTestMixin, 
         context['member_percentage'] = DepartmentProject.objects.calc_member_completed_percentage(user)
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        unit = kwargs.get('unit', None)
+
+        unit = Unit.objects.select_related('unit_department', 'unit_department__department_diaconate').get(id=unit)
+        department = unit.unit_department
+        diakonate = department.department_diaconate
+
+
+        if 'delete_unit' in request.POST:
+            unit_id = request.POST['delete_unit']
+            unit = Unit.objects.get(id=unit_id)
+            unit.delete()
+
+            return HttpResponseRedirect(reverse_lazy(
+                'project_management:project-settings-diakonate-department',
+                args=[kwargs.get('diakonate'), kwargs.get('department')])
+            )
+
+        elif 'update_unit' in request.POST:
+            unit_id = request.POST['update_unit']
+            unit = Unit.objects.get(id=unit_id)
+            unit_name = request.POST.get('unit-name', '').strip()
+            unit_objective = request.POST.get('unit-objective', '').strip()
+            unit_head = request.POST.get('unit-head', '').strip()
+
+            unit_sub_leader = request.POST.get('unit-head-assistant', '').strip()
+            unit_sub_leader = unit_sub_leader if unit_sub_leader else None
+
+            try:
+                with transaction.atomic():
+                    if unit_name:
+                        unit.name = unit_name
+                    if unit_objective:
+                        unit.objective = unit_objective
+
+                    unit.unit_leader = DepartmentMember.objects.only('id').get(id=unit_head) if unit_head else None
+                    unit.sub_leader = DepartmentMember.objects.only('id').get(id=unit_sub_leader) if unit_sub_leader else None
+
+                    unit.save()
+            except Exception as e:
+                pass
+
+
+        elif 'add-member' in request.POST:
+            new_unit_member = request.POST.get('new-member', None).strip()
+            new_unit_member = CustomUser.objects.get(username=new_unit_member)
+
+            member = DepartmentMember.objects.filter(
+                member_name=new_unit_member,
+                department_name=department
+            )
+
+            if member.exists():
+                new_unit_member = member.first()
+            else:
+                new_unit_member = DepartmentMember.objects.create(
+                    member_name=new_unit_member,
+                    department_name=department
+                )
+                department.member_names.add(new_unit_member)
+            unit.members.add(new_unit_member)
+
+
+        else:
+            form_submission_type = request.POST.get('form-submission-type', None)
+            try:
+                with transaction.atomic():
+
+                    pass
+            except Exception as e:
+                JsonResponse({'confirm': False, 'error': str(e)}, status=400)
+
+        return HttpResponseRedirect(reverse_lazy(
+            'project_management:project-settings-diakonate-department-unit',
+            args=[kwargs.get('diakonate'), kwargs.get('department'), kwargs.get('unit')])
+        )
 
 
 class ProjectManagementAdminSettingView(LoginRequiredMixin, TemplateView):
